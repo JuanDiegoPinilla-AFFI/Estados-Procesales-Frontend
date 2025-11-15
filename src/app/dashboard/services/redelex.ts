@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class RedelexService {
-  private apiUrl = 'http://localhost:4000/api/redelex';
+  private apiUrl = 'http://redelex-ayhxghaje6c3gkaz.eastus-01.azurewebsites.net/api/redelex';
 
   constructor(private http: HttpClient) {}
 
