@@ -1,0 +1,63 @@
+<div class="affi-auth-page">
+  <div class="affi-auth-card">
+    <div class="affi-auth-card__header">
+      <img src="/Affi_logo.png" alt="Affi" class="affi-logo" />
+
+      <h1>Crear cuenta</h1>
+      <p>Crea tu usuario para acceder al panel.</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="affi-auth-form">
+      <label class="field">
+        <span class="field__label">Nombre completo</span>
+        <input
+          class="field__input"
+          type="text"
+          formControlName="name"
+          placeholder="Nombre y apellidos"
+        />
+        <span class="field__error"
+              *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+          El nombre es obligatorio.
+        </span>
+      </label>
+
+      <label class="field">
+        <span class="field__label">Correo electrónico</span>
+        <input
+          class="field__input"
+          type="email"
+          formControlName="email"
+          placeholder="tucorreo@ejemplo.com"
+        />
+        <span class="field__error"
+              *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+          Ingresa un correo válido.
+        </span>
+      </label>
+
+      <label class="field">
+        <span class="field__label">Contraseña</span>
+        <input
+          class="field__input"
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+        />
+        <span class="field__error"
+              *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+          La contraseña es obligatoria.
+        </span>
+      </label>
+
+      <button class="btn btn--primary" type="submit" [disabled]="form.invalid">
+        Crear cuenta
+      </button>
+    </form>
+
+    <p class="affi-auth-footer">
+      ¿Ya tienes cuenta?
+      <a routerLink="/auth/login">Iniciar sesión</a>
+    </p>
+</div>
+</div>

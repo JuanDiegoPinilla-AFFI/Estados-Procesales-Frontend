@@ -1,0 +1,169 @@
+.affi-auth-page {
+  height: calc(100vh - 50px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: #ffffff url('/FondoHome.png') center/cover no-repeat;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;            // 👈 importante para posicionar el footer
+  overflow: hidden;              // 👈 evita scroll
+}
+
+.affi-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+  border-radius: 22px;
+  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.16);
+  padding: 2.2rem 2.1rem 1.8rem;
+  text-align: center;
+}
+
+.affi-auth-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+}
+
+.affi-logo {
+  width: 68px;
+  height: auto;
+}
+
+/* FORM */
+
+.affi-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  text-align: left;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field__label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.field__input {
+  border-radius: 0.7rem;
+  border: 1px solid #d1d5db;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  outline: none;
+  background: #ffffff;
+}
+
+.field__input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
+}
+
+.field__error {
+  font-size: 0.75rem;
+  color: #b91c1c;
+}
+
+/* BOTÓN */
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 0.8rem;
+}
+
+.btn--primary {
+  width: 100%;
+  background: #4f46e5;
+  color: #f9fafb;
+}
+
+.btn--primary:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.btn--primary:not(:disabled):hover {
+  background: #4338ca;
+}
+
+/* FOOTER */
+
+.affi-auth-footer {
+  margin-top: 1.3rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+
+  a {
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.affi-auth-footer-page {
+  position: absolute;
+  bottom: 22px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #6b7280;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+
+  a {
+    color: #4f46e5;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 640px) {
+  .affi-auth-footer-page {
+    bottom: 12px;
+    font-size: 0.75rem;
+  }
+}
+
+
+
+

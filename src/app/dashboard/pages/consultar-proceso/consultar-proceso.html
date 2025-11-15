@@ -1,0 +1,125 @@
+<div class="page">
+  <div class="page__header">
+    <h2>Consultar procesos</h2>
+    <p>Busca procesos por identificación o por ID de proceso.</p>
+  </div>
+
+  <div class="layout">
+    <!-- COLUMNA IZQUIERDA: BUSQUEDA -->
+    <section class="card card--search">
+      <h3>Búsqueda por identificación</h3>
+
+      <label class="field">
+        <span class="field__label">Cédula / NIT</span>
+        <input
+          class="field__input"
+          type="text"
+          placeholder="Ej: 63560272"
+          [(ngModel)]="identificacion"
+        />
+      </label>
+
+      <button class="btn btn--primary" (click)="buscarPorCedula()">
+        Buscar procesos
+      </button>
+
+      <div class="divider">
+        <span>o</span>
+      </div>
+
+      <h3>Búsqueda por ID de proceso</h3>
+
+      <label class="field">
+        <span class="field__label">ID del proceso</span>
+        <input
+          class="field__input"
+          type="number"
+          placeholder="Ej: 398059"
+          [(ngModel)]="procesoId"
+        />
+      </label>
+
+      <button class="btn btn--secondary" (click)="consultarPorId()">
+        Consultar
+      </button>
+
+      <p class="helper" *ngIf="loading">Consultando información...</p>
+    </section>
+
+    <!-- COLUMNA DERECHA: LISTA + DETALLE -->
+    <section class="right-column">
+      <!-- LISTA DE PROCESOS POR CÉDULA -->
+      <div class="card" *ngIf="procesosPorCedula.length > 0">
+        <h3>Procesos asociados a {{ identificacion }}</h3>
+        <p class="helper">
+          Selecciona un proceso para ver el detalle.
+        </p>
+
+        <ul class="process-list">
+          <li
+            *ngFor="let id of procesosPorCedula"
+            (click)="seleccionarProceso(id)"
+            class="process-list__item"
+          >
+            <div>
+              <span class="process-id">Proceso {{ id }}</span>
+            </div>
+            <span class="process-list__chevron">›</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- MENSAJE SI NO HAY PROCESOS -->
+      <div class="card card--empty" *ngIf="procesosPorCedula.length === 0 && identificacion.trim() && !loading">
+        <p>No se encontraron procesos para esta identificación.</p>
+      </div>
+
+      <!-- DETALLE DEL PROCESO -->
+      <div class="card card--detail" *ngIf="proceso">
+        <h3>Detalle del proceso</h3>
+
+        <div class="detail-grid">
+          <div>
+            <p class="detail-label">Demandante</p>
+            <p class="detail-value">
+              {{ proceso.Demandante }}
+              <span *ngIf="proceso.DemandanteIdentificacion">
+                ({{ proceso.DemandanteIdentificacion }})
+              </span>
+            </p>
+          </div>
+
+          <div>
+            <p class="detail-label">Demandado</p>
+            <p class="detail-value">
+              {{ proceso.Demandado }}
+              <span *ngIf="proceso.DemandadoIdentificacion">
+                ({{ proceso.DemandadoIdentificacion }})
+              </span>
+            </p>
+          </div>
+
+          <div>
+            <p class="detail-label">Etapa</p>
+            <p class="detail-value">{{ proceso.Etapa }}</p>
+          </div>
+
+          <div>
+            <p class="detail-label">Tema</p>
+            <p class="detail-value">{{ proceso.Tema }}</p>
+          </div>
+
+          <div *ngIf="proceso.Estado">
+            <p class="detail-label">Estado</p>
+            <p class="detail-value">{{ proceso.Estado }}</p>
+          </div>
+
+          <div *ngIf="proceso.Regional">
+            <p class="detail-label">Regional</p>
+            <p class="detail-value">{{ proceso.Regional }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
