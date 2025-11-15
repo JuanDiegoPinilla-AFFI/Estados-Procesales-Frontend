@@ -26,7 +26,7 @@ import { Router, RouterOutlet, RouterLink } from '@angular/router';
                class="nav-link is-active"
                (click)="closeSidebarOnMobile()">
               <span class="nav-link__icon">📄</span>
-              <span class="nav-link__text">Consultar Procesos</span>
+              <span class="nav-link__text">Procesos Redelex</span>
             </a>
           </div>
 
@@ -65,7 +65,7 @@ import { Router, RouterOutlet, RouterLink } from '@angular/router';
           <div class="breadcrumb">
             <span class="breadcrumb__item">Consultas</span>
             <span class="breadcrumb__separator">/</span>
-            <span class="breadcrumb__item breadcrumb__item--active">Consultar Procesos</span>
+            <span class="breadcrumb__item breadcrumb__item--active">Procesos Redelex</span>
           </div>
 
           <div class="top-header__actions">
