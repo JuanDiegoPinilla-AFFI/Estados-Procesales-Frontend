@@ -50,14 +50,33 @@
     <section class="right-column">
       <!-- LISTA DE PROCESOS POR CÉDULA -->
       <div class="card" *ngIf="procesosPorCedula.length > 0">
-        <h3>Procesos asociados a {{ identificacion }}</h3>
-        <p class="helper">
-          Selecciona un proceso para ver el detalle.
+        <div class="card__header">
+          <h3>Procesos asociados a {{ identificacion }}</h3>
+          <div class="count-badge">{{ procesosFiltrados.length }} de {{ procesosPorCedula.length }}</div>
+        </div>
+
+        <!-- FILTRO DE BÚSQUEDA -->
+        <div class="filter-section">
+          <label class="field field--inline">
+            <span class="field__label">Filtrar por ID</span>
+            <input
+              class="field__input"
+              type="text"
+              placeholder="Buscar ID..."
+              [(ngModel)]="filtroProcesoId"
+              (ngModelChange)="filtrarProcesos()"
+            />
+          </label>
+        </div>
+
+        <p class="helper" *ngIf="procesosFiltrados.length === 0 && filtroProcesoId">
+          No se encontraron procesos que coincidan con "{{ filtroProcesoId }}"
         </p>
 
-        <ul class="process-list">
+        <!-- LISTA PAGINADA -->
+        <ul class="process-list" *ngIf="procesosFiltrados.length > 0">
           <li
-            *ngFor="let id of procesosPorCedula"
+            *ngFor="let id of procesosPaginados"
             (click)="seleccionarProceso(id)"
             class="process-list__item"
           >
@@ -67,6 +86,29 @@
             <span class="process-list__chevron">›</span>
           </li>
         </ul>
+
+        <!-- PAGINACIÓN -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button 
+            class="pagination__btn"
+            [disabled]="currentPage === 1"
+            (click)="cambiarPagina('prev')"
+          >
+            ← Anterior
+          </button>
+          
+          <span class="pagination__info">
+            Página {{ currentPage }} de {{ totalPages }}
+          </span>
+          
+          <button 
+            class="pagination__btn"
+            [disabled]="currentPage === totalPages"
+            (click)="cambiarPagina('next')"
+          >
+            Siguiente →
+          </button>
+        </div>
       </div>
 
       <!-- MENSAJE SI NO HAY PROCESOS -->

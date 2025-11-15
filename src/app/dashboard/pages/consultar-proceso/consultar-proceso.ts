@@ -17,8 +17,14 @@ export class ConsultarProcesoComponent {
 
   identificacion: string = '';
   procesosPorCedula: number[] = [];
+  procesosFiltrados: number[] = [];
+  filtroProcesoId: string = '';
 
   loading = false;
+
+  // Paginación
+  currentPage = 1;
+  itemsPerPage = 20;
 
   constructor(private redelexService: RedelexService) {}
 
@@ -81,12 +87,16 @@ export class ConsultarProcesoComponent {
 
     this.loading = true;
     this.procesosPorCedula = [];
+    this.procesosFiltrados = [];
     this.proceso = null;
+    this.filtroProcesoId = '';
+    this.currentPage = 1;
 
     this.redelexService.getProcesosByIdentificacion(cedula).subscribe({
       next: (res) => {
         this.loading = false;
         this.procesosPorCedula = res.procesos || [];
+        this.procesosFiltrados = [...this.procesosPorCedula];
 
         if (!this.procesosPorCedula.length) {
           AffiAlert.fire({
@@ -107,6 +117,7 @@ export class ConsultarProcesoComponent {
       error: () => {
         this.loading = false;
         this.procesosPorCedula = [];
+        this.procesosFiltrados = [];
 
         AffiAlert.fire({
           icon: 'error',
@@ -115,6 +126,38 @@ export class ConsultarProcesoComponent {
         });
       }
     });
+  }
+
+  filtrarProcesos() {
+    const filtro = this.filtroProcesoId.trim();
+    
+    if (!filtro) {
+      this.procesosFiltrados = [...this.procesosPorCedula];
+    } else {
+      this.procesosFiltrados = this.procesosPorCedula.filter(id => 
+        id.toString().includes(filtro)
+      );
+    }
+    
+    this.currentPage = 1;
+  }
+
+  get procesosPaginados(): number[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.procesosFiltrados.slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.procesosFiltrados.length / this.itemsPerPage);
+  }
+
+  cambiarPagina(direccion: 'prev' | 'next') {
+    if (direccion === 'prev' && this.currentPage > 1) {
+      this.currentPage--;
+    } else if (direccion === 'next' && this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
   }
 
   seleccionarProceso(id: number) {
