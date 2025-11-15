@@ -63,7 +63,7 @@ import { Router, RouterOutlet, RouterLink } from '@angular/router';
           </button>
 
           <div class="breadcrumb">
-            <span class="breadcrumb__item">Dashboard</span>
+            <span class="breadcrumb__item">Consultas</span>
             <span class="breadcrumb__separator">/</span>
             <span class="breadcrumb__item breadcrumb__item--active">Consultar Procesos</span>
           </div>
