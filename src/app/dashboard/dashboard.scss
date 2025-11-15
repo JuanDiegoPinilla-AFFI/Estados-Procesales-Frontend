@@ -419,8 +419,9 @@
 /* Content */
 .main__content {
   padding: 2rem;
+  padding-bottom: 9rem;
   width: 100%;
-  height: calc(100vh - 60px - 50px);
+  height: calc(100vh - 60px);
   margin-top: 60px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -445,7 +446,8 @@
 
   @media (max-width: 768px) {
     padding: 1rem;
-    height: calc(100vh - 60px - 90px);
+    padding-bottom: 10rem;
+    height: calc(100vh - 60px);
   }
 }
 
