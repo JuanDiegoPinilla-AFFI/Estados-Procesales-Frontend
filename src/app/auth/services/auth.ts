@@ -24,7 +24,7 @@ export interface ResetPasswordPayload {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://redelex-ayhxghaje6c3gkaz.eastus-01.azurewebsites.net/api/auth';
+  private apiUrl = 'https://redelex-ayhxghaje6c3gkaz.eastus-01.azurewebsites.net/api/auth';
 
   constructor(private http: HttpClient) {}
 
