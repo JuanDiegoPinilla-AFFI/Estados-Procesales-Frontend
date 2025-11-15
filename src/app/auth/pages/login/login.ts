@@ -45,7 +45,11 @@ export class LoginComponent {
 
     this.authService.login(this.form.value).subscribe({
       next: res => {
+        // Guarda el token
         this.authService.saveToken(res.token);
+
+        // Guarda los datos del usuario
+        this.authService.saveUserData(res.user);
 
         AffiAlert.fire({
           icon: 'success',

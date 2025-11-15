@@ -181,9 +181,17 @@
 .nav-link__icon {
   font-size: 1.1rem;
   width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 }
 
 .nav-link__text {
@@ -377,6 +385,89 @@
   margin-left: auto;
 }
 
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.2s;
+
+  @media (max-width: 968px) {
+    padding: 0.3rem 0.6rem;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    background: transparent;
+    border: none;
+    padding: 0;
+    
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.user-info__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.user-info__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.2;
+}
+
+.user-info__role {
+  font-size: 0.7rem;
+  color: #673ab7;
+  background: #ede7f6;
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  @media (max-width: 968px) {
+    display: none;
+  }
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border: 2px solid #e8eaf6;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  span {
+    user-select: none;
+  }
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+}
+
 .icon-btn {
   background: transparent;
   border: none;
@@ -389,6 +480,10 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+
+  svg {
+    display: block;
+  }
 
   &:hover {
     background: #f5f5f5;
@@ -405,13 +500,30 @@
   }
 }
 
+.icon-btn--help {
+  @media (max-width: 968px) {
+    display: none;
+  }
+}
+
 .icon-btn--logout {
+  svg {
+    display: block;
+  }
+
   @media (max-width: 768px) {
-    background: #fee;
-    color: #d32f2f;
+    background: #fee2e2;
+    color: #dc2626;
 
     &:hover {
-      background: #ffcdd2;
+      background: #fecaca;
+    }
+  }
+
+  @media (min-width: 769px) {
+    &:hover {
+      background: #fee2e2;
+      color: #dc2626;
     }
   }
 }
@@ -419,7 +531,7 @@
 /* Content */
 .main__content {
   padding: 2rem;
-  padding-bottom: 9rem;
+  padding-bottom: 3rem;
   width: 100%;
   height: calc(100vh - 60px);
   margin-top: 60px;
@@ -446,7 +558,7 @@
 
   @media (max-width: 768px) {
     padding: 1rem;
-    padding-bottom: 10rem;
+    padding-bottom: 8rem;
     height: calc(100vh - 60px);
   }
 }

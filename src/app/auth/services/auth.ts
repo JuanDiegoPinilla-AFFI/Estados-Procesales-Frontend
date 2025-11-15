@@ -20,6 +20,13 @@ export interface ResetPasswordPayload {
   password: string;
 }
 
+export interface UserData {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -50,8 +57,38 @@ export class AuthService {
     return localStorage.getItem('redelex_token');
   }
 
+  // -----------------------------
+  // USER DATA
+  // -----------------------------
+  saveUserData(userData: UserData): void {
+    const normalizedData = {
+      id: userData.id,
+      nombre: userData.name || '',
+      email: userData.email || '',
+      rol: userData.role || 'Usuario'
+    };
+    localStorage.setItem('redelex_user', JSON.stringify(normalizedData));
+  }
+
+  getUserData(): UserData | null {
+    const data = localStorage.getItem('redelex_user');
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch (error) {
+        console.error('Error al parsear datos de usuario:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // -----------------------------
+  // LOGOUT
+  // -----------------------------
   logout(): void {
     localStorage.removeItem('redelex_token');
+    localStorage.removeItem('redelex_user');
   }
 
   // -----------------------------
