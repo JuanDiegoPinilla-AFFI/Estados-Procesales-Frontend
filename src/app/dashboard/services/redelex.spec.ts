@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Redelex } from './redelex';
+import { RedelexService } from './redelex';
 
 describe('Redelex', () => {
-  let service: Redelex;
+  let service: RedelexService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Redelex);
+    service = TestBed.inject(RedelexService);
   });
 
   it('should be created', () => {
