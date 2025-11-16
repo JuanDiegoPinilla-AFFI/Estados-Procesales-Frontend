@@ -84,7 +84,7 @@ export class AuthService {
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
-  // 👉 método que usa tu LoginComponent
+  // Guardar access + refresh juntos
   saveTokens(accessToken: string, refreshToken: string): void {
     this.saveToken(accessToken);
     this.saveRefreshToken(refreshToken);
@@ -116,12 +116,54 @@ export class AuthService {
   }
 
   // -----------------------------
-  // LOGOUT (local)
+  // LOGOUT
   // -----------------------------
-  logout(): void {
+
+  /** Llama al backend para invalidar la sesión actual */
+  private logoutApi(): Observable<any> {
+    const token = this.getToken();
+
+    return this.http.post(
+      `${this.apiUrl}/logout`,
+      {},
+      {
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : {},
+      }
+    );
+  }
+
+  /** Limpia todo lo local (tokens + usuario) */
+  private logoutLocal(): void {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+  }
+
+  /**
+   * Logout completo:
+   * - Intenta invalidar la sesión en backend
+   * - Limpia el estado local siempre
+   */
+  logout(): void {
+    const token = this.getToken();
+
+    if (!token) {
+      this.logoutLocal();
+      return;
+    }
+
+    this.logoutApi().subscribe({
+      next: () => {
+        this.logoutLocal();
+      },
+      error: (err) => {
+        console.error('Error en logout API:', err);
+        // Aunque falle el backend, limpiamos local para no dejar la UI trabada
+        this.logoutLocal();
+      },
+    });
   }
 
   // -----------------------------
