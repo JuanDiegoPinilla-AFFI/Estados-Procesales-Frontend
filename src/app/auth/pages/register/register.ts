@@ -48,6 +48,8 @@ export class RegisterComponent {
       next: res => {
         this.authService.saveToken(res.token);
 
+        this.authService.saveUserData(res.user);
+
         AffiAlert.fire({
           icon: 'success',
           title: 'Registro exitoso',
