@@ -5,7 +5,9 @@
   </div>
 
   <div class="layout">
-    <!-- COLUMNA IZQUIERDA: BUSQUEDA -->
+    <!-- =============================== -->
+    <!-- COLUMNA IZQUIERDA: BÚSQUEDA    -->
+    <!-- =============================== -->
     <section class="card card--search">
       <h3>Búsqueda por identificación</h3>
 
@@ -46,13 +48,17 @@
       <p class="helper" *ngIf="loading">Consultando información...</p>
     </section>
 
+    <!-- =============================== -->
     <!-- COLUMNA DERECHA: LISTA + DETALLE -->
+    <!-- =============================== -->
     <section class="right-column">
       <!-- LISTA DE PROCESOS POR CÉDULA -->
       <div class="card" *ngIf="procesosPorCedula.length > 0">
         <div class="card__header">
           <h3>Procesos asociados a {{ identificacion }}</h3>
-          <div class="count-badge">{{ procesosFiltrados.length }} de {{ procesosPorCedula.length }}</div>
+          <div class="count-badge">
+            {{ procesosFiltrados.length }} de {{ procesosPorCedula.length }}
+          </div>
         </div>
 
         <!-- FILTRO DE BÚSQUEDA -->
@@ -69,7 +75,10 @@
           </label>
         </div>
 
-        <p class="helper" *ngIf="procesosFiltrados.length === 0 && filtroProcesoId">
+        <p
+          class="helper"
+          *ngIf="procesosFiltrados.length === 0 && filtroProcesoId"
+        >
           No se encontraron procesos que coincidan con "{{ filtroProcesoId }}"
         </p>
 
@@ -89,19 +98,19 @@
 
         <!-- PAGINACIÓN -->
         <div class="pagination" *ngIf="totalPages > 1">
-          <button 
+          <button
             class="pagination__btn"
             [disabled]="currentPage === 1"
             (click)="cambiarPagina('prev')"
           >
             ← Anterior
           </button>
-          
+
           <span class="pagination__info">
             Página {{ currentPage }} de {{ totalPages }}
           </span>
-          
-          <button 
+
+          <button
             class="pagination__btn"
             [disabled]="currentPage === totalPages"
             (click)="cambiarPagina('next')"
@@ -112,56 +121,380 @@
       </div>
 
       <!-- MENSAJE SI NO HAY PROCESOS -->
-      <div class="card card--empty" *ngIf="procesosPorCedula.length === 0 && identificacion.trim() && !loading">
+      <div
+        class="card card--empty"
+        *ngIf="
+          procesosPorCedula.length === 0 &&
+          identificacion.trim() &&
+          !loading
+        "
+      >
         <p>No se encontraron procesos para esta identificación.</p>
       </div>
 
-      <!-- DETALLE DEL PROCESO -->
+      <!-- =============================== -->
+      <!--        DETALLE DEL PROCESO      -->
+      <!-- =============================== -->
       <div class="card card--detail" *ngIf="proceso">
         <h3>Detalle del proceso</h3>
 
-        <div class="detail-grid">
-          <div>
-            <p class="detail-label">Demandante</p>
-            <p class="detail-value">
-              {{ proceso.Demandante }}
-              <span *ngIf="proceso.DemandanteIdentificacion">
-                ({{ proceso.DemandanteIdentificacion }})
-              </span>
-            </p>
+        <!-- 1. DATOS DEL PROCESO -->
+        <div
+          class="detail-section"
+          [class.detail-section--collapsed]="!sectionOpen.proceso"
+        >
+          <div
+            class="detail-section__header"
+            (click)="toggleSection('proceso')"
+          >
+            <h4>Datos del proceso</h4>
+            <span class="detail-section__chevron">
+              {{ sectionOpen.proceso ? '▾' : '▸' }}
+            </span>
           </div>
 
-          <div>
-            <p class="detail-label">Demandado</p>
-            <p class="detail-value">
-              {{ proceso.Demandado }}
-              <span *ngIf="proceso.DemandadoIdentificacion">
-                ({{ proceso.DemandadoIdentificacion }})
-              </span>
-            </p>
+          <div class="detail-section__body" *ngIf="sectionOpen.proceso">
+            <div class="detail-grid">
+              <div>
+                <p class="detail-label">ID Proceso</p>
+                <p class="detail-value">{{ proceso.idProceso }}</p>
+              </div>
+
+              <div>
+                <p class="detail-label">Número de radicación</p>
+                <p class="detail-value">
+                  {{ proceso.numeroRadicacion || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Código alterno (Cuenta Quasar)</p>
+                <p class="detail-value">
+                  {{ proceso.codigoAlterno || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Clase de proceso</p>
+                <p class="detail-value">
+                  {{ proceso.claseProceso || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Etapa procesal</p>
+                <p class="detail-value">
+                  {{ proceso.etapaProcesal || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Estado</p>
+                <p class="detail-value">
+                  {{ proceso.estado || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Regional</p>
+                <p class="detail-value">
+                  {{ proceso.regional || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Tema (estado del inmueble)</p>
+                <p class="detail-value">
+                  {{ proceso.tema || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Fecha creación expediente</p>
+                <p class="detail-value">
+                  {{ proceso.fechaCreacion || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Fecha entrega abogado</p>
+                <p class="detail-value">
+                  {{ proceso.fechaEntregaAbogado || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Fecha admisión demanda</p>
+                <p class="detail-value">
+                  {{ proceso.fechaAdmisionDemanda || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Fecha recepción proceso</p>
+                <p class="detail-value">
+                  {{ proceso.fechaRecepcionProceso || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Ubicación contrato</p>
+                <p class="detail-value">
+                  {{ proceso.ubicacionContrato || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Sentencia 1ra instancia</p>
+                <p class="detail-value">
+                  {{ proceso.sentenciaPrimeraInstanciaResultado || '-' }}
+                  <span *ngIf="proceso.sentenciaPrimeraInstanciaFecha">
+                    ({{ proceso.sentenciaPrimeraInstanciaFecha }})
+                  </span>
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Calificación (recuperabilidad)</p>
+                <p class="detail-value">
+                  {{ proceso.calificacion || '-' }}
+                </p>
+              </div>
+
+              <div
+                *ngIf="
+                  proceso.ultimaActuacionFecha ||
+                  proceso.ultimaActuacionTipo ||
+                  proceso.ultimaActuacionObservacion
+                "
+              >
+                <p class="detail-label">Última actuación</p>
+                <p class="detail-value">
+                  <strong>{{ proceso.ultimaActuacionTipo || '-' }}</strong
+                  ><br />
+                  Fecha: {{ proceso.ultimaActuacionFecha || '-' }}<br />
+                  Observación:
+                  {{ proceso.ultimaActuacionObservacion || '-' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DATOS DEL DEMANDANTE -->
+        <div
+          class="detail-section"
+          [class.detail-section--collapsed]="!sectionOpen.demandante"
+        >
+          <div
+            class="detail-section__header"
+            (click)="toggleSection('demandante')"
+          >
+            <h4>Datos del demandante</h4>
+            <span class="detail-section__chevron">
+              {{ sectionOpen.demandante ? '▾' : '▸' }}
+            </span>
           </div>
 
-          <div>
-            <p class="detail-label">Etapa</p>
-            <p class="detail-value">{{ proceso.Etapa }}</p>
+          <div class="detail-section__body" *ngIf="sectionOpen.demandante">
+            <div class="detail-grid">
+              <div>
+                <p class="detail-label">Nombre (Inmobiliaria)</p>
+                <p class="detail-value">
+                  {{ proceso.demandanteNombre || '-' }}
+                </p>
+              </div>
+              <div>
+                <p class="detail-label">Identificación</p>
+                <p class="detail-value">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. DATOS DEL DEMANDADO -->
+        <div
+          class="detail-section"
+          [class.detail-section--collapsed]="!sectionOpen.demandado"
+        >
+          <div
+            class="detail-section__header"
+            (click)="toggleSection('demandado')"
+          >
+            <h4>Datos del demandado</h4>
+            <span class="detail-section__chevron">
+              {{ sectionOpen.demandado ? '▾' : '▸' }}
+            </span>
           </div>
 
-          <div>
-            <p class="detail-label">Tema</p>
-            <p class="detail-value">{{ proceso.Tema }}</p>
+          <div class="detail-section__body" *ngIf="sectionOpen.demandado">
+            <div class="detail-grid">
+              <div>
+                <p class="detail-label">Nombre (Inquilino)</p>
+                <p class="detail-value">
+                  {{ proceso.demandadoNombre || '-' }}
+                </p>
+              </div>
+              <div>
+                <p class="detail-label">Identificación</p>
+                <p class="detail-value">
+                  {{ proceso.demandadoIdentificacion || '-' }}
+                </p>
+              </div>
+              <div>
+                <p class="detail-label">Despacho actual</p>
+                <p class="detail-value">
+                  {{ proceso.despacho || '-' }}
+                </p>
+              </div>
+              <div>
+                <p class="detail-label">Despacho de origen</p>
+                <p class="detail-value">
+                  {{ proceso.despachoOrigen || '-' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. MEDIDAS CAUTELARES -->
+        <div
+          class="detail-section"
+          *ngIf="proceso.medidasCautelares"
+          [class.detail-section--collapsed]="!sectionOpen.medidas"
+        >
+          <div
+            class="detail-section__header"
+            (click)="toggleSection('medidas')"
+          >
+            <h4>Medidas cautelares</h4>
+            <span class="detail-section__chevron">
+              {{ sectionOpen.medidas ? '▾' : '▸' }}
+            </span>
           </div>
 
-          <div *ngIf="proceso.Estado">
-            <p class="detail-label">Estado</p>
-            <p class="detail-value">{{ proceso.Estado }}</p>
+          <div class="detail-section__body" *ngIf="sectionOpen.medidas">
+            <div class="detail-grid">
+              <div>
+                <p class="detail-label">Id medida</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.id || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Fecha</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.fecha || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Tipo medida</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.tipoMedida || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Estado medida</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.medidaEfectiva || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Sujeto</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.sujetoNombre || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Tipo bien</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.tipoBien || '-' }}
+                </p>
+              </div>
+
+              <div class="detail-grid--full">
+                <p class="detail-label">Dirección / detalle</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.direccion || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Área</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.area || '-' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="detail-label">Avalúo judicial</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.avaluoJudicial || '-' }}
+                </p>
+              </div>
+
+              <div class="detail-grid--full">
+                <p class="detail-label">Observaciones</p>
+                <p class="detail-value">
+                  {{ proceso.medidasCautelares.observaciones || '-' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ABOGADOS -->
+        <div
+          class="detail-section"
+          [class.detail-section--collapsed]="!sectionOpen.abogados"
+        >
+          <div
+            class="detail-section__header"
+            (click)="toggleSection('abogados')"
+          >
+            <h4>Abogados</h4>
+            <span class="detail-section__chevron">
+              {{ sectionOpen.abogados ? '▾' : '▸' }}
+            </span>
           </div>
 
-          <div *ngIf="proceso.Regional">
-            <p class="detail-label">Regional</p>
-            <p class="detail-value">{{ proceso.Regional }}</p>
+          <div class="detail-section__body" *ngIf="sectionOpen.abogados">
+            <div class="detail-grid">
+              <div>
+                <p class="detail-label">Abogado principal</p>
+                <p class="detail-value">
+                  {{ proceso.abogadoPrincipal || 'Sin asignar' }}
+                </p>
+              </div>
+
+              <div *ngIf="proceso.abogadosInternos.length">
+                <p class="detail-label">Abogados internos</p>
+                <p class="detail-value">
+                  <span
+                    *ngFor="let ab of proceso.abogadosInternos; let i = index"
+                  >
+                    {{ ab.Nombre || ab.name || 'Abogado interno' }}<span
+                      *ngIf="i < proceso.abogadosInternos.length - 1"
+                      >, </span
+                    >
+                  </span>
+                </p>
+              </div>
+
+              <div *ngIf="!proceso.abogadosInternos.length">
+                <p class="detail-label">Abogados internos</p>
+                <p class="detail-value">-</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      <!-- /card detalle -->
     </section>
   </div>
 </div>

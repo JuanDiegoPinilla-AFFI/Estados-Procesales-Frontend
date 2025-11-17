@@ -31,7 +31,7 @@ export interface UserData {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://redelex-ayhxghaje6c3gkaz.eastus-01.azurewebsites.net/api/auth';
+  private apiUrl = 'http://localhost:4000/api/auth';
 
   constructor(private http: HttpClient) {}
 

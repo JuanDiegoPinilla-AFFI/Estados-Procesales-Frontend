@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RedelexService } from '../../services/redelex';
+import { RedelexService, ProcesoDetalleDto } from '../../services/redelex';
 import { AffiAlert } from '../../../shared/affi-alert';
 
 @Component({
@@ -13,7 +13,7 @@ import { AffiAlert } from '../../../shared/affi-alert';
 })
 export class ConsultarProcesoComponent {
   procesoId!: number;
-  proceso: any = null;
+  proceso: ProcesoDetalleDto | null = null;
 
   identificacion: string = '';
   procesosPorCedula: number[] = [];
@@ -26,7 +26,30 @@ export class ConsultarProcesoComponent {
   currentPage = 1;
   itemsPerPage = 20;
 
+  // 👇 Estado de secciones desplegables
+  sectionOpen = {
+    proceso: true,
+    demandante: true,
+    demandado: true,
+    medidas: true,
+    abogados: true,
+  };
+
   constructor(private redelexService: RedelexService) {}
+
+  private resetSections() {
+    this.sectionOpen = {
+      proceso: true,
+      demandante: true,
+      demandado: true,
+      medidas: true,
+      abogados: true,
+    };
+  }
+
+  toggleSection(section: 'proceso' | 'demandante' | 'demandado' | 'medidas' | 'abogados') {
+    this.sectionOpen[section] = !this.sectionOpen[section];
+  }
 
   consultarPorId() {
     if (!this.procesoId) {
@@ -39,26 +62,31 @@ export class ConsultarProcesoComponent {
     }
 
     this.loading = true;
+
     this.redelexService.getProceso(this.procesoId).subscribe({
       next: (res) => {
-        this.proceso = res.proceso;
         this.loading = false;
 
-        if (!this.proceso) {
+        if (!res || !res.success || !res.data) {
+          this.proceso = null;
           AffiAlert.fire({
             icon: 'warning',
             title: 'Proceso no encontrado',
             text: 'No se encontró información para el ID de proceso ingresado.'
           });
-        } else {
-          AffiAlert.fire({
-            icon: 'success',
-            title: 'Proceso cargado',
-            text: `Se cargó la información del proceso ${this.procesoId}.`,
-            timer: 1400,
-            showConfirmButton: false
-          });
+          return;
         }
+
+        this.proceso = res.data;
+        this.resetSections(); // 👈 cada vez que cargas proceso, abre todas las secciones
+
+        AffiAlert.fire({
+          icon: 'success',
+          title: 'Proceso cargado',
+          text: `Se cargó la información del proceso ${this.procesoId}.`,
+          timer: 1400,
+          showConfirmButton: false
+        });
       },
       error: () => {
         this.loading = false;
@@ -95,6 +123,18 @@ export class ConsultarProcesoComponent {
     this.redelexService.getProcesosByIdentificacion(cedula).subscribe({
       next: (res) => {
         this.loading = false;
+
+        if (!res || !res.success) {
+          this.procesosPorCedula = [];
+          this.procesosFiltrados = [];
+          AffiAlert.fire({
+            icon: 'error',
+            title: 'Error al consultar',
+            text: 'No se pudieron obtener los procesos para esa identificación.'
+          });
+          return;
+        }
+
         this.procesosPorCedula = res.procesos || [];
         this.procesosFiltrados = [...this.procesosPorCedula];
 
@@ -130,15 +170,15 @@ export class ConsultarProcesoComponent {
 
   filtrarProcesos() {
     const filtro = this.filtroProcesoId.trim();
-    
+
     if (!filtro) {
       this.procesosFiltrados = [...this.procesosPorCedula];
     } else {
-      this.procesosFiltrados = this.procesosPorCedula.filter(id => 
+      this.procesosFiltrados = this.procesosPorCedula.filter((id) =>
         id.toString().includes(filtro)
       );
     }
-    
+
     this.currentPage = 1;
   }
 
@@ -149,6 +189,7 @@ export class ConsultarProcesoComponent {
   }
 
   get totalPages(): number {
+    if (!this.procesosFiltrados.length) return 0;
     return Math.ceil(this.procesosFiltrados.length / this.itemsPerPage);
   }
 

@@ -341,3 +341,15 @@
     margin-bottom: 0.5rem;
   }
 }
+
+.detail-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.detail-section__chevron {
+  font-size: 1.1rem;
+}
