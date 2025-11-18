@@ -9,6 +9,14 @@ import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { AFFI_LOGO_BASE64 } from '../../../shared/assets/affi-logo-base64';
 
+interface ProcesoPorCedula {
+  procesoId: number;
+  demandadoNombre: string;
+  demandadoIdentificacion: string;
+  demandanteNombre: string;
+  demandanteIdentificacion: string;
+}
+
 @Component({
   selector: 'app-consultar-proceso',
   standalone: true,
@@ -16,13 +24,14 @@ import { AFFI_LOGO_BASE64 } from '../../../shared/assets/affi-logo-base64';
   templateUrl: './consultar-proceso.html',
   styleUrl: './consultar-proceso.scss'
 })
+
 export class ConsultarProcesoComponent {
   procesoId!: number;
   proceso: ProcesoDetalleDto | null = null;
 
   identificacion: string = '';
-  procesosPorCedula: number[] = [];
-  procesosFiltrados: number[] = [];
+  procesosPorCedula: ProcesoPorCedula[] = [];
+  procesosFiltrados: ProcesoPorCedula[] = [];
   filtroProcesoId: string = '';
 
   loading = false;
@@ -134,6 +143,7 @@ export class ConsultarProcesoComponent {
           return;
         }
 
+        // ✅ Ahora los datos vienen completos del backend
         this.procesosPorCedula = res.procesos || [];
         this.procesosFiltrados = [...this.procesosPorCedula];
 
@@ -168,24 +178,38 @@ export class ConsultarProcesoComponent {
   }
 
   filtrarProcesos() {
-    const filtro = this.filtroProcesoId.trim();
+    const f = this.filtroProcesoId.trim().toLowerCase();
 
-    if (!filtro) {
+    if (!f) {
+      // reset
       this.procesosFiltrados = [...this.procesosPorCedula];
     } else {
-      this.procesosFiltrados = this.procesosPorCedula.filter((id) =>
-        id.toString().includes(filtro)
-      );
+      this.procesosFiltrados = this.procesosPorCedula.filter((p) => {
+        const idProceso = p.procesoId?.toString() ?? '';
+        const demandadoNombre = p.demandadoNombre?.toLowerCase() ?? '';
+        const demandadoId = p.demandadoIdentificacion?.toLowerCase() ?? '';
+        const demandanteNombre = p.demandanteNombre?.toLowerCase() ?? '';
+        const demandanteId = p.demandanteIdentificacion?.toLowerCase() ?? '';
+
+        return (
+          idProceso.includes(f) ||
+          demandadoNombre.includes(f) ||
+          demandadoId.includes(f) ||
+          demandanteNombre.includes(f) ||
+          demandanteId.includes(f)
+        );
+      });
     }
 
     this.currentPage = 1;
   }
 
-  get procesosPaginados(): number[] {
+  get procesosPaginados(): ProcesoPorCedula[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
     return this.procesosFiltrados.slice(start, end);
   }
+
 
   get totalPages(): number {
     return Math.ceil(this.procesosFiltrados.length / this.itemsPerPage);
@@ -247,11 +271,18 @@ export class ConsultarProcesoComponent {
     );
 
     // --- Demandante ---
-    rows.push({
-      Seccion: 'Datos del demandante',
-      Campo: 'Nombre (Inmobiliaria)',
-      Valor: p.demandanteNombre || '',
-    });
+    rows.push(
+      {
+        Seccion: 'Datos del demandante',
+        Campo: 'Nombre (Inmobiliaria)',
+        Valor: p.demandanteNombre || '',
+      },
+      {
+        Seccion: 'Datos del demandado',
+        Campo: 'Identificación',
+        Valor: p.demandanteIdentificacion || '',
+      },
+    );
 
     // --- Demandado ---
     rows.push(
@@ -457,7 +488,7 @@ export class ConsultarProcesoComponent {
           'Demandante',
           p.demandanteNombre || '',
           'Identificación',
-          '',
+          p.demandanteIdentificacion || '',
           'Código alterno (Cuenta Quasar)',
           p.codigoAlterno || '',
         ],

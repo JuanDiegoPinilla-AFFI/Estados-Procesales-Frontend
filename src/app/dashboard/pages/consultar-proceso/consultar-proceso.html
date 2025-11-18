@@ -63,14 +63,14 @@
           <!-- FILTRO DE BÚSQUEDA -->
           <div class="filter-section">
             <label class="field field--inline">
-              <span class="field__label">Filtrar por ID</span>
-              <input
-                class="field__input"
-                type="text"
-                placeholder="Buscar ID..."
-                [(ngModel)]="filtroProcesoId"
-                (ngModelChange)="filtrarProcesos()"
-              />
+              <span class="field__label">Filtrar por ID, nombre o identificación</span>
+                <input
+                  class="field__input"
+                  type="text"
+                  placeholder="Ej: 398059, 63560272, LEIDY..."
+                  [(ngModel)]="filtroProcesoId"
+                  (ngModelChange)="filtrarProcesos()"
+                />
             </label>
           </div>
 
@@ -83,13 +83,15 @@
           <!-- LISTA PAGINADA -->
           @if (procesosFiltrados.length > 0) {
             <ul class="process-list">
-              @for (id of procesosPaginados; track id) {
+              @for (p of procesosPaginados; track p.procesoId) {
                 <li
-                  (click)="seleccionarProceso(id)"
+                  (click)="seleccionarProceso(p.procesoId)"
                   class="process-list__item"
                 >
                   <div>
-                    <span class="process-id">Proceso {{ id }}</span>
+                    <span class="process-id"><strong>Proceso</strong> {{ p.procesoId }}</span><br>
+                    <span class="process-id"><strong>Sujeto</strong> {{ p.demandadoNombre }}</span><br>
+                    <span class="process-id"><strong>Identificación</strong> {{ p.demandadoIdentificacion }}</span>
                   </div>
                   <span class="process-list__chevron">›</span>
                 </li>
@@ -296,7 +298,7 @@
                   </div>
                   <div>
                     <p class="detail-label">Identificación</p>
-                    <p class="detail-value">-</p>
+                    <p class="detail-value">{{ proceso.demandanteIdentificacion || '-' }}</p>
                   </div>
                 </div>
               </div>

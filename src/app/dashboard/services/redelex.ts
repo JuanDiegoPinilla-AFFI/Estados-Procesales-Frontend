@@ -3,6 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.prod';
 
+export interface ProcesoResumenDto {
+  procesoId: number;
+  demandadoNombre: string;
+  demandadoIdentificacion: string;
+  demandanteNombre: string;
+  demandanteIdentificacion: string;
+}
+
+export interface ProcesosPorIdentificacionResponse {
+  success: boolean;
+  identificacion: string;
+  procesos: ProcesoResumenDto[];
+}
+
 export interface ProcesoDetalleDto {
   idProceso: number;
   numeroRadicacion: string | null;
@@ -15,6 +29,7 @@ export interface ProcesoDetalleDto {
   tema: string | null;
 
   demandanteNombre: string | null;
+  demandanteIdentificacion: string | null;
   demandadoNombre: string | null;
   demandadoIdentificacion: string | null;
 
@@ -89,11 +104,9 @@ export class RedelexService {
    * GET /api/redelex/procesos-por-identificacion/:identificacion
    * Respuesta: { success: boolean; identificacion: string; procesos: number[] }
    */
-  getProcesosByIdentificacion(
-    identificacion: string
-  ): Observable<{ success: boolean; identificacion: string; procesos: number[] }> {
-    return this.http.get<{ success: boolean; identificacion: string; procesos: number[] }>(
-      `${this.apiUrl}/procesos-por-identificacion/${encodeURIComponent(identificacion)}`
+  getProcesosByIdentificacion(identificacion: string): Observable<ProcesosPorIdentificacionResponse> {
+    return this.http.get<ProcesosPorIdentificacionResponse>(
+      `${this.apiUrl}/procesos-por-identificacion/${identificacion}`
     );
   }
 }
