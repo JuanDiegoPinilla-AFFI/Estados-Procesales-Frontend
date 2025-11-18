@@ -29,7 +29,7 @@ export class ConsultarProcesoComponent {
 
   // Paginación
   currentPage = 1;
-  itemsPerPage = 20;
+  itemsPerPage = 10;
 
   // Secciones colapsables
   sectionOpen = {
