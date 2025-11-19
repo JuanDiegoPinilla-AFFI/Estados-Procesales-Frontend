@@ -1,8 +1,102 @@
+// =============================================
+// Design System - Variables CSS (Affi Latam)
+// =============================================
+:root {
+  // Colores primarios (Affi)
+  --color-primary: #260086;
+  --color-primary-light: #3d14a3;
+  --color-primary-dark: #1a005c;
+  --color-primary-gradient: linear-gradient(90deg, #6e43db, #260086);
+  
+  // Colores secundarios
+  --color-secondary: #00b4d8;
+  --color-accent: #ff6b6b;
+  --color-success: #10b981;
+  --color-error: #f97373;
+  
+  // Grises
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  // Backgrounds
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f5fb;
+  --bg-tertiary: #eef2ff;
+  
+  // Espaciado
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  // Tipografía
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  
+  // Font weights
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  // Bordes
+  --border-radius-sm: 0.375rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  --border-radius-xl: 1rem;
+  --border-radius-2xl: 1.375rem;
+  --border-radius-full: 9999px;
+  
+  // Sombras
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --shadow-primary: 0 10px 20px rgba(79, 70, 229, 0.25);
+  --shadow-primary-hover: 0 14px 28px rgba(79, 70, 229, 0.32);
+  
+  // Transiciones
+  --transition-fast: 0.12s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+// =============================================
+// Reset Global
+// =============================================
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: #f4f5fb;
+  background: var(--bg-secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 main {
@@ -13,74 +107,162 @@ main {
   overflow-x: hidden;
 }
 
-/* =======================
-   SweetAlert AFFI styles
-   ======================= */
-
+// =============================================
+// SweetAlert AFFI Styles
+// =============================================
 .affi-swal-popup {
-  border-radius: 22px;
-  padding: 22px 24px 20px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+  border-radius: var(--border-radius-2xl) !important;
+  padding: 22px 24px 20px !important;
+  font-family: var(--font-family) !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18) !important;
 }
 
 .affi-swal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 6px;
+  font-size: 18px !important;
+  font-weight: var(--font-semibold) !important;
+  color: var(--color-gray-900) !important;
+  margin-bottom: 6px !important;
 }
 
 .affi-swal-text {
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 14px !important;
+  color: var(--color-gray-500) !important;
 }
 
-/* Iconos más suaves y alineados a la marca */
+// Iconos
 .affi-swal-popup .swal2-icon {
-  margin-top: 6px;
-  margin-bottom: 10px;
+  margin-top: 6px !important;
+  margin-bottom: 10px !important;
 }
 
 .affi-swal-popup .swal2-icon.swal2-error {
-  border-color: #f97373;
-  color: #f97373;
+  border-color: var(--color-error) !important;
+  color: var(--color-error) !important;
 }
 
 .affi-swal-popup .swal2-icon.swal2-success {
-  border-color: #260086;
-  color: #260086;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
 }
 
-/* Botones */
+.affi-swal-popup .swal2-icon.swal2-warning {
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
+}
+
+.affi-swal-popup .swal2-icon.swal2-info {
+  border-color: var(--color-secondary) !important;
+  color: var(--color-secondary) !important;
+}
+
+// Botones
 .affi-swal-btn {
-  border-radius: 999px;
-  padding: 8px 20px;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  min-width: 90px;
-  transition: background-color 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease;
+  border-radius: var(--border-radius-full) !important;
+  padding: 8px 20px !important;
+  font-size: 13px !important;
+  font-weight: var(--font-medium) !important;
+  border: none !important;
+  cursor: pointer !important;
+  min-width: 90px !important;
+  transition: background-color var(--transition-fast), 
+              transform 0.06s ease, 
+              box-shadow var(--transition-fast) !important;
 }
 
 .affi-swal-btn--primary {
-  background: linear-gradient(90deg, #6e43db, #260086);
-  color: #ffffff;
-  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
-}
+  background: var(--color-primary-gradient) !important;
+  color: #ffffff !important;
+  box-shadow: var(--shadow-primary) !important;
 
-.affi-swal-btn--primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.32);
+  &:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-primary-hover) !important;
+  }
+
+  &:active {
+    transform: translateY(0) !important;
+  }
 }
 
 .affi-swal-btn--ghost {
-  background: #eef2ff;
-  color: #260086;
-  margin-left: 8px;
+  background: var(--bg-tertiary) !important;
+  color: var(--color-primary) !important;
+  margin-left: 8px !important;
+
+  &:hover {
+    background: #e0e7ff !important;
+  }
+
+  &:active {
+    transform: scale(0.98) !important;
+  }
 }
 
-.affi-swal-btn--ghost:hover {
-  background: #e0e7ff;
+// =============================================
+// Scrollbar Personalizado
+// =============================================
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+
+  &:hover {
+    background: var(--color-gray-400);
+  }
+}
+
+// =============================================
+// Utilidades Globales
+// =============================================
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.bg-primary {
+  background: var(--color-primary) !important;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// =============================================
+// Animaciones Globales
+// =============================================
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-base);
+}
+
+.slide-in {
+  animation: slideIn var(--transition-base);
 }
