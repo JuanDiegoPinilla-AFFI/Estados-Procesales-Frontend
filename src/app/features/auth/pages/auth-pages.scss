@@ -1,13 +1,16 @@
+// src/app/features/auth/pages/auth-pages.scss
+// Estilos globales para todas las páginas de autenticación
+
 .affi-auth-page {
   height: calc(100vh - 50px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
-  background: #ffffff url('/FondoHome.png') center/cover no-repeat;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  position: relative;            // 👈 importante para posicionar el footer
-  overflow: hidden;              // 👈 evita scroll
+  padding: var(--spacing-lg);
+  background: var(--bg-primary) url('/FondoHome.png') center/cover no-repeat;
+  font-family: var(--font-family);
+  position: relative;
+  overflow: hidden;
 }
 
 .affi-auth-card {
@@ -15,10 +18,27 @@
   max-width: 420px;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(18px);
-  border-radius: 22px;
+  border-radius: var(--border-radius-2xl);
   box-shadow: 0 26px 60px rgba(15, 23, 42, 0.16);
   padding: 2.2rem 2.1rem 1.8rem;
   text-align: center;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.8rem 1.6rem;
+    border-radius: var(--border-radius-xl);
+  }
 }
 
 .affi-auth-card__header {
@@ -26,29 +46,42 @@
   flex-direction: column;
   align-items: center;
   gap: 0.7rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg);
 
   h1 {
     margin: 0;
     font-size: 1.4rem;
-    font-weight: 600;
-    color: #111827;
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
   }
 
   p {
     margin: 0;
     font-size: 0.9rem;
-    color: #6b7280;
+    color: var(--color-gray-500);
   }
 }
 
 .affi-logo {
   width: 68px;
   height: auto;
+  animation: logoFloat 0.5s ease-out;
+
+  @keyframes logoFloat {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
-/* FORM */
-
+/* =============================================
+   FORMULARIOS
+   ============================================= */
 .affi-auth-form {
   display: flex;
   flex-direction: column;
@@ -66,104 +99,175 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #6b7280;
+  color: var(--color-gray-500);
+  font-weight: var(--font-medium);
 }
 
 .field__input {
-  border-radius: 0.7rem;
-  border: 1px solid #d1d5db;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-gray-300);
   padding: 0.6rem 0.8rem;
   font-size: 0.9rem;
+  font-family: var(--font-family);
   outline: none;
-  background: #ffffff;
-}
+  background: var(--bg-primary);
+  transition: all var(--transition-base);
 
-.field__input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--color-gray-400);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem; // Evita zoom en iOS
+  }
 }
 
 .field__error {
   font-size: 0.75rem;
-  color: #b91c1c;
+  color: var(--color-error);
+  margin-top: 0.15rem;
 }
 
-/* BOTÓN */
-
+/* =============================================
+   BOTONES
+   ============================================= */
 .btn {
   border: none;
-  border-radius: 999px;
+  border-radius: var(--border-radius-full);
   padding: 0.6rem 1rem;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: var(--font-medium);
+  font-family: var(--font-family);
   cursor: pointer;
   margin-top: 0.8rem;
+  transition: all var(--transition-base);
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .btn--primary {
   width: 100%;
-  background: #4338ca;
-  color: #f9fafb;
+  background: var(--color-primary-gradient);
+  color: var(--bg-primary);
+  box-shadow: var(--shadow-primary);
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--shadow-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 }
 
-.btn--primary:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
+.btn--secondary {
+  background: var(--bg-tertiary);
+  color: var(--color-primary);
+
+  &:hover {
+    background: #e0e7ff;
+  }
 }
 
-.btn--primary:not(:disabled):hover {
-  background: #4338ca;
-}
-
-/* FOOTER */
-
+/* =============================================
+   FOOTER DEL CARD
+   ============================================= */
 .affi-auth-footer {
   margin-top: 1.3rem;
   font-size: 0.85rem;
-  color: #4b5563;
+  color: var(--color-gray-600);
 
   a {
-    color: #260086;
+    color: var(--color-primary);
     text-decoration: none;
-    font-weight: 500;
-  }
+    font-weight: var(--font-medium);
+    transition: color var(--transition-fast);
 
-  a:hover {
-    text-decoration: underline;
+    &:hover {
+      color: var(--color-primary-dark);
+      text-decoration: underline;
+    }
   }
 }
 
+/* =============================================
+   FOOTER DE LA PÁGINA
+   ============================================= */
 .affi-auth-footer-page {
   position: absolute;
   bottom: 22px;
   width: 100%;
   text-align: center;
   font-size: 0.8rem;
-  color: #6b7280;
-
+  color: var(--color-gray-500);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
 
   a {
-    color: #4f46e5;
-    font-weight: 500;
+    color: var(--color-primary);
+    font-weight: var(--font-medium);
     text-decoration: none;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-primary-dark);
+      text-decoration: underline;
+    }
   }
 
-  a:hover {
-    text-decoration: underline;
-  }
-}
-
-@media (max-width: 640px) {
-  .affi-auth-footer-page {
+  @media (max-width: 640px) {
     bottom: 12px;
     font-size: 0.75rem;
   }
 }
 
+/* =============================================
+   MENSAJE DE AYUDA
+   ============================================= */
+.helper-text {
+  font-size: 0.8rem;
+  color: var(--color-gray-500);
+  margin-top: 0.5rem;
+  text-align: center;
+}
 
+/* =============================================
+   LOADING STATE
+   ============================================= */
+.btn--loading {
+  position: relative;
+  color: transparent !important;
 
+  &::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
 
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

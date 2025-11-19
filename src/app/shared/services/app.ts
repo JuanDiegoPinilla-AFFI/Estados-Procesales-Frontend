@@ -15,7 +15,7 @@ export class AppComponent {}
 
 async function bootstrap() {
   try {
-    console.log('🚀 Iniciando Redelex Panel...');
+    console.log('🚀 Iniciando Estados Procesales...');
     
     const appRef = await bootstrapApplication(AppComponent, appConfig);
     const pluginRegistry = appRef.injector.get(PluginRegistryService);

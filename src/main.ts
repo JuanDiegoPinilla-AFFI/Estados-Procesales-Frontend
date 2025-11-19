@@ -49,7 +49,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
 async function bootstrap() {
   try {
-    console.log('🚀 Iniciando Redelex Panel...');
+    console.log('🚀 Iniciando Estados Procesales...');
     
     const appRef = await bootstrapApplication(AppComponent, appConfig);
     const pluginRegistry = appRef.injector.get(PluginRegistryService);
