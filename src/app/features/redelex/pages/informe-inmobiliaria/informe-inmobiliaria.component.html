@@ -13,7 +13,7 @@
         <button class="btn btn--primary export-btn-icon" (click)="openExportModal()">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg> Exportar Excel
+          </svg> Exportar
         </button>
       </div>
     </div>
@@ -24,32 +24,51 @@
     <div class="filter-section" *ngIf="mostrarFiltros">
       <div class="filters-grid">
         
-        <!-- Búsqueda General -->
+        <!-- 1. Búsqueda Rápida -->
         <label class="field full-width">
           <span class="field__label">Búsqueda Rápida</span>
           <input class="field__input" type="text" [(ngModel)]="filtros.busquedaGeneral" (input)="applyFilters()" placeholder="Buscar por radicado, nombre, cédula...">
         </label>
 
-        <!-- Filtros Texto -->
+        <!-- 2. FILTRO INMOBILIARIA -->
+        <div class="field full-width custom-select-container">
+          <span class="field__label">Inmobiliaria</span>
+          <div class="custom-select" (click)="toggleDropdown('demandante', $event)" [class.open]="activeDropdown === 'demandante'">
+            <span class="selected-value" [class.placeholder]="!filtros.demandante">
+              {{ filtros.demandante ? filtros.demandante.nombre : 'Todas las Inmobiliarias' }}
+            </span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="dropdown-menu" *ngIf="activeDropdown === 'demandante'">
+            <div class="search-box" (click)="$event.stopPropagation()">
+              <input type="text" placeholder="Buscar Inmobiliaria..." [(ngModel)]="searchDemandante" autofocus>
+            </div>
+            <div class="options-list">
+              <div class="option" (click)="selectDemandante(null)" [class.selected]="!filtros.demandante">Todas las Inmobiliarias</div>
+              <div class="option" *ngFor="let d of filteredDemandanteList" (click)="selectDemandante(d)" [class.selected]="filtros.demandante === d">
+                {{ d.nombre }} <small style="color:#9ca3af; margin-left:5px;">({{ d.identificacion }})</small>
+              </div>
+              <div class="option no-data" *ngIf="filteredDemandanteList.length === 0">Sin resultados</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Filtros Específicos -->
         <label class="field">
-          <span class="field__label">Identificación</span>
+          <span class="field__label">ID Demandado</span>
           <input class="field__input" type="text" [(ngModel)]="filtros.identificacion" (input)="applyFilters()" placeholder="Ej: 805000...">
         </label>
 
         <label class="field">
-          <span class="field__label">Nombres</span>
+          <span class="field__label">Nombre Demandado</span>
           <input class="field__input" type="text" [(ngModel)]="filtros.nombre" (input)="applyFilters()" placeholder="Ej: Continental...">
         </label>
 
-        <!-- === SELECTS PERSONALIZADOS (FILTROS) === -->
-        
         <!-- Clase Proceso -->
         <div class="field custom-select-container">
           <span class="field__label">Clase Proceso</span>
           <div class="custom-select" (click)="toggleDropdown('clase', $event)" [class.open]="activeDropdown === 'clase'">
-            <span class="selected-value" [class.placeholder]="!filtros.claseProceso">
-              {{ filtros.claseProceso || 'Todas' }}
-            </span>
+            <span class="selected-value" [class.placeholder]="!filtros.claseProceso">{{ filtros.claseProceso || 'Todas' }}</span>
             <span class="arrow">▼</span>
           </div>
           <div class="dropdown-menu" *ngIf="activeDropdown === 'clase'">
@@ -68,9 +87,7 @@
         <div class="field custom-select-container">
           <span class="field__label">Etapa Procesal</span>
           <div class="custom-select" (click)="toggleDropdown('etapa', $event)" [class.open]="activeDropdown === 'etapa'">
-            <span class="selected-value" [class.placeholder]="!filtros.etapa">
-              {{ filtros.etapa || 'Todas' }}
-            </span>
+            <span class="selected-value" [class.placeholder]="!filtros.etapa">{{ filtros.etapa || 'Todas' }}</span>
             <span class="arrow">▼</span>
           </div>
           <div class="dropdown-menu" *ngIf="activeDropdown === 'etapa'">
@@ -89,9 +106,7 @@
         <div class="field custom-select-container">
           <span class="field__label">Despacho</span>
           <div class="custom-select" (click)="toggleDropdown('despacho', $event)" [class.open]="activeDropdown === 'despacho'">
-            <span class="selected-value" [class.placeholder]="!filtros.despacho">
-              {{ filtros.despacho || 'Todos' }}
-            </span>
+            <span class="selected-value" [class.placeholder]="!filtros.despacho">{{ filtros.despacho || 'Todos' }}</span>
             <span class="arrow">▼</span>
           </div>
           <div class="dropdown-menu" *ngIf="activeDropdown === 'despacho'">
@@ -113,10 +128,9 @@
       <div class="divider"></div>
     </div>
 
-    <!-- LOADING -->
+    <!-- Resto del HTML (Loading, Tabla, Paginación, Modal) se mantiene igual -->
     <div *ngIf="loading" class="helper"><div class="spinner"></div><p>Cargando datos...</p></div>
 
-    <!-- TABLA -->
     <div class="table-container" *ngIf="!loading && !error">
       <div class="table-scroll">
         <table class="excel-table">
@@ -162,26 +176,15 @@
         </table>
       </div>
 
-      <!-- PAGINACIÓN CORREGIDA -->
       <div class="pagination" *ngIf="filteredData.length > 0">
-        
-        <!-- Botón Anterior -->
-        <button class="pagination__btn" [disabled]="currentPage === 1" (click)="prevPage()">
-          ← Anterior
-        </button>
-
-        <!-- Info Central con Dropdown PageSize -->
+        <button class="pagination__btn" [disabled]="currentPage === 1" (click)="prevPage()">← Anterior</button>
         <div class="pagination__info">
           <span>Página {{ currentPage }} de {{ totalPages }}</span>
-          
-          <!-- Selector Page Size (Estilizado como dropdown nativo mejorado) -->
           <div class="page-size-selector custom-select-container">
             <div class="custom-select" (click)="toggleDropdown('pageSize', $event)" [class.open]="activeDropdown === 'pageSize'">
               <span class="selected-value">{{ itemsPerPage }} / pág</span>
               <span class="arrow">▼</span>
             </div>
-            
-            <!-- Se abre hacia arriba -->
             <div class="dropdown-menu dropdown-menu--up" *ngIf="activeDropdown === 'pageSize'">
               <div class="options-list">
                 <div class="option" *ngFor="let size of pageSizeOptions" (click)="selectPageSize(size)" [class.selected]="itemsPerPage === size">
@@ -191,17 +194,13 @@
             </div>
           </div>
         </div>
-
-        <!-- Botón Siguiente -->
-        <button class="pagination__btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
-          Siguiente →
-        </button>
+        <button class="pagination__btn" [disabled]="currentPage === totalPages" (click)="nextPage()">Siguiente →</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL EXPORT -->
+<!-- MODAL EXPORT (Igual) -->
 <div class="modal-overlay" *ngIf="showExportModal">
   <div class="modal-card">
     <div class="modal-header">
@@ -209,7 +208,7 @@
       <button class="close-btn" (click)="closeExportModal()">×</button>
     </div>
     <div class="modal-body">
-      <p class="helper">Selecciona columnas:</p>
+      <p class="helper" style="padding:0; text-align:left;">Selecciona las columnas que deseas incluir:</p>
       <div class="columns-actions">
         <button class="btn-link" (click)="selectAllColumns(true)">Marcar todas</button>
         <button class="btn-link" (click)="selectAllColumns(false)">Desmarcar todas</button>
@@ -220,9 +219,16 @@
         </label>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn--secondary" (click)="closeExportModal()">Cancelar</button>
-      <button class="btn btn--primary" (click)="exportToExcel()">Descargar Excel</button>
+    <div class="modal-footer" style="justify-content: space-between;">
+      <button type="button" class="btn btn--secondary" (click)="closeExportModal()">Cancelar</button>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn--primary" style="background-color: #217346; border-color: #217346;" (click)="exportToExcel()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Excel
+        </button>
+        <button type="button" class="btn btn--primary" style="background-color: #c0392b; border-color: #c0392b;" (click)="exportToPdf()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> PDF
+        </button>
+      </div>
     </div>
   </div>
 </div>
