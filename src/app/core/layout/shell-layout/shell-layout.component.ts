@@ -1,9 +1,8 @@
-// src/app/core/layout/shell-layout/shell-layout.component.ts
-
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { filter } from 'rxjs/operators'; // Importante para filtrar eventos de navegación
 import { PluginRegistryService } from '../../services/plugin-registry.service';
 import { MenuSection } from '../../models/plugin.interface';
 import { FormsModule } from '@angular/forms';
@@ -31,6 +30,9 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
   
   menuSections: MenuSection[] = [];
   
+  // Variable para el breadcrumb dinámico
+  breadcrumbs: { label: string, active?: boolean }[] = [];
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -44,6 +46,15 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
     this.handleResize();
     
     window.addEventListener('resize', this.handleResize.bind(this));
+
+    // SUSCRIPCIÓN A CAMBIOS DE RUTA
+    // Actualiza el breadcrumb cada vez que navegas
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.updateBreadcrumbs();
+    });
   }
 
   ngOnDestroy() {
@@ -57,7 +68,51 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(sections => {
         this.menuSections = sections.filter(s => s.items.length > 0);
+        // Actualizar breadcrumbs una vez cargado el menú por si recargas la página
+        this.updateBreadcrumbs();
       });
+  }
+
+  // --- LÓGICA DE BREADCRUMBS CORREGIDA ---
+  private updateBreadcrumbs() {
+    this.breadcrumbs = [];
+
+    // Recorremos las secciones y sus ítems para ver cuál coincide con la URL actual
+    for (const section of this.menuSections) {
+      if (!section.items) continue;
+
+      for (const item of section.items) {
+        // Validación de seguridad: si no tiene ruta, saltamos
+        if (!item.route) continue;
+
+        // CORRECCIÓN AQUÍ: Normalizamos 'route' para que siempre sea un array compatible con createUrlTree
+        const routeCommands = Array.isArray(item.route) ? item.route : [item.route];
+
+        // createUrlTree maneja correctamente rutas relativas y parámetros
+        // Casteamos a 'any[]' para silenciar el error de tipado estricto si la interfaz dice string
+        const itemUrlTree = this.router.createUrlTree(routeCommands as any[]);
+        
+        // 'subset' permite que /redelex/consultar/123 coincida con /redelex/consultar
+        if (this.router.isActive(itemUrlTree, { 
+          paths: 'subset', 
+          queryParams: 'ignored', 
+          fragment: 'ignored', 
+          matrixParams: 'ignored' 
+        })) {
+          
+          this.breadcrumbs = [
+            { label: section.title },          // Ej: Consultas
+            { label: item.label, active: true } // Ej: Consultar Procesos
+          ];
+          return; // Encontrado, terminamos
+        }
+      }
+    }
+
+    // Fallback por defecto si no está en el menú
+    if (this.breadcrumbs.length === 0) {
+       this.breadcrumbs = [{ label: 'Inicio', active: true }];
+    }
   }
 
   private loadUserData() {
