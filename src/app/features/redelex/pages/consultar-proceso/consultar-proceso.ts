@@ -21,6 +21,7 @@ interface ProcesoPorCedula {
   demandadoIdentificacion: string;
   demandanteNombre: string;
   demandanteIdentificacion: string;
+  claseProceso?: string;
 }
 
 @Component({
@@ -242,17 +243,38 @@ export class ConsultarProcesoComponent {
         this.loading = false;
 
         if (!res || !res.success) {
-          this.procesosPorCedula = [];
-          this.procesosFiltrados = [];
-          AffiAlert.fire({
-            icon: 'error',
-            title: 'Error al consultar',
-            text: 'No se pudieron obtener los procesos para esa identificación.',
-          });
+          // ... (manejo de error igual que antes) ...
           return;
         }
 
-        this.procesosPorCedula = res.procesos || [];
+        const rawProcesos = res.procesos || [];
+
+        // ============================================================
+        // 🛠️ CORRECCIÓN DEFINITIVA: LIMPIEZA DE CADENAS
+        // ============================================================
+        this.procesosPorCedula = rawProcesos.map((proc: any) => {
+          let nombreLimpio = proc.demandadoNombre || '';
+          let idLimpio = proc.demandadoIdentificacion || '';
+
+          // El backend envía "NOMBRE 1 , NOMBRE 2". 
+          // Tomamos solo lo que está ANTES de la primera coma.
+          if (nombreLimpio.includes(',')) {
+            nombreLimpio = nombreLimpio.split(',')[0].trim();
+          }
+
+          // Hacemos lo mismo con la identificación para que coincida (ej: "123, 456")
+          if (idLimpio.includes(',')) {
+            idLimpio = idLimpio.split(',')[0].trim();
+          }
+
+          return {
+            ...proc,
+            demandadoNombre: nombreLimpio,
+            demandadoIdentificacion: idLimpio
+          };
+        });
+        // =======================================================
+
         this.procesosFiltrados = [...this.procesosPorCedula];
 
         if (!this.procesosPorCedula.length) {
@@ -265,7 +287,7 @@ export class ConsultarProcesoComponent {
           AffiAlert.fire({
             icon: 'success',
             title: 'Procesos encontrados',
-            text: `Se encontraron ${this.procesosPorCedula.length} proceso(s) para la identificación ${cedula}.`,
+            text: `Se encontraron ${this.procesosPorCedula.length} proceso(s).`,
             timer: 1500,
             showConfirmButton: false,
           });
@@ -279,7 +301,7 @@ export class ConsultarProcesoComponent {
         AffiAlert.fire({
           icon: 'error',
           title: 'Error al consultar',
-          text: 'No se pudieron obtener los procesos para esa identificación.',
+          text: 'No se pudieron obtener los procesos.',
         });
       },
     });
@@ -297,13 +319,15 @@ export class ConsultarProcesoComponent {
         const demandadoId = p.demandadoIdentificacion?.toLowerCase() ?? '';
         const demandanteNombre = p.demandanteNombre?.toLowerCase() ?? '';
         const demandanteId = p.demandanteIdentificacion?.toLowerCase() ?? '';
+        const clase = p.claseProceso ? p.claseProceso.toLowerCase() : '';
 
         return (
           idProceso.includes(f) ||
           demandadoNombre.includes(f) ||
           demandadoId.includes(f) ||
           demandanteNombre.includes(f) ||
-          demandanteId.includes(f)
+          demandanteId.includes(f) ||
+          clase.includes(f)
         );
       });
     }

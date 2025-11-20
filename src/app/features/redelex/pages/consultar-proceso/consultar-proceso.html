@@ -79,30 +79,43 @@
               No se encontraron procesos que coincidan con "{{ filtroProcesoId }}"
             </p>
           }
-
+          <br>
           <!-- LISTA PAGINADA -->
           @if (procesosFiltrados.length > 0) {
             <ul class="process-list">
               @for (p of procesosPaginados; track p.procesoId) {
-                <li
+                <li 
                   (click)="seleccionarProceso(p.procesoId)"
-                  class="process-list__item"
+                  class="process-item"
+                  [class.process-item--selected]="proceso && proceso.idProceso === p.procesoId"
                 >
-                  <div class="process-item__content">
-                    <div class="process-item__row">
-                      <span class="process-item__label">Proceso</span>
-                      <span class="process-id-badge">{{ p.procesoId }}</span>
+                  <div class="process-info">
+                    <div class="process-header">
+                      <span class="badge-id">#{{ p.procesoId }}</span>
+                      <h4 class="process-name" title="{{ p.demandadoNombre }}">
+                        {{ p.demandadoNombre }}
+                      </h4>
                     </div>
-                    <div class="process-item__row">
-                      <span class="process-item__label">Sujeto</span>
-                      <span class="process-item__value">{{ p.demandadoNombre }}</span>
-                    </div>
-                    <div class="process-item__row">
-                      <span class="process-item__label">ID</span>
-                      <span class="process-item__value">{{ p.demandadoIdentificacion }}</span>
+
+                    <div class="process-meta">
+                      @if (p.claseProceso) {
+                        <span class="badge-type">
+                          {{ p.claseProceso | titlecase }}
+                        </span>
+                      }
+
+                      <div class="meta-group">
+                        <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                          <path d="M20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20M4,6V18H20V6H4M6,9H18V11H6V9M6,13H16V15H6V13Z" />
+                        </svg>
+                        <span class="meta-text">{{ p.demandadoIdentificacion }}</span>
+                      </div>
                     </div>
                   </div>
-                  <span class="process-list__chevron">›</span>
+
+                  <div class="process-action">
+                    <span class="chevron">›</span>
+                  </div>
                 </li>
               }
             </ul>

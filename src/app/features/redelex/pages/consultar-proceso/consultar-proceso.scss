@@ -66,6 +66,50 @@
   }
 }
 
+/* =============================================
+   ENCABEZADO Y CONTADOR (Corrección)
+   ============================================= */
+
+.card__header {
+  display: flex;
+  justify-content: space-between; // Esto empuja el contador a la derecha
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-gray-100); // Línea sutil separadora
+}
+
+.card__header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-gray-900);
+  font-weight: 600;
+}
+
+.count-badge {
+  // Diseño de "píldora" sobrio
+  background: var(--color-gray-100); // Fondo gris muy claro
+  color: var(--color-gray-600);      // Texto gris medio
+  
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px; // Bordes totalmente redondos
+  
+  // Para asegurar que no se rompa en líneas
+  white-space: nowrap;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+// Ajuste para móviles (opcional, por si el título es muy largo)
+@media (max-width: 576px) {
+  .card__header {
+    align-items: flex-start;
+  }
+}
+
 .card--search {
   position: sticky;
   top: var(--spacing-md);
@@ -214,142 +258,200 @@
 }
 
 /* =============================================
-   LISTA DE PROCESOS
+   LISTA DE PROCESOS - DISEÑO SOBRIO Y COMPACTO (AFFI)
    ============================================= */
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
 
-.card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  gap: 1rem;
-
-  h3 {
-    margin: 0;
-  }
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.count-badge {
-  background: var(--bg-tertiary);
-  color: var(--color-primary);
-  padding: 0.3rem 0.75rem;
-  border-radius: var(--border-radius-full);
-  font-size: 0.8rem;
-  font-weight: var(--font-semibold);
-  white-space: nowrap;
-}
-
-.filter-section {
-  margin-bottom: 1rem;
-}
-
+// Contenedor principal de la lista
 .process-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  // Eliminamos el gap grande, usaremos bordes separadores
+  background: white;
+  border-radius: var(--border-radius-lg); // Solo el contenedor principal tiene bordes redondeados
+  border: 1px solid var(--color-gray-200);
+  overflow: hidden; // Para que los hijos no se salgan del borde redondeado
 }
 
-.process-list__item {
-  display: grid;
-  grid-template-columns: 1fr auto;
+// Ítem individual de la lista
+.process-item {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: var(--border-radius-md);
+  
+  // Diseño plano y compacto
+  padding: 0.75rem 1rem; // Mucho menos padding que antes
+  border-bottom: 1px solid var(--color-gray-100); // Separador sutil
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all var(--transition-fast);
-  background: var(--bg-secondary);
-  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+  position: relative;
 
+  // Quitar borde del último elemento
+  &:last-child {
+    border-bottom: none;
+  }
+
+  // ESTADO HOVER SOBRIO
   &:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--color-primary);
-    transform: translateX(2px);
-    box-shadow: var(--shadow-sm);
+    background: #f8f9fa; // Un gris extremadamente claro, casi imperceptible pero presente
+    
+    // El nombre se oscurece un poco más o toma el color de marca
+    .process-name {
+      color: var(--color-primary); 
+    }
+
+    .chevron {
+      color: var(--color-primary);
+      transform: translateX(2px);
+    }
   }
 
-  &:active {
-    transform: translateX(0);
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-    font-size: 0.9rem;
+  // ESTADO SELECCIONADO
+  &--selected {
+    background: rgba(var(--color-primary-rgb), 0.05); // Asumiendo que tienes la versión RGB, sino usa un color muy claro
+    box-shadow: inset 3px 0 0 var(--color-primary); // Indicador lateral sutil
   }
 }
 
-.process-item__content {
+/* --- CONTENIDO IZQUIERDO --- */
+.process-info {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem; // Espacio mínimo entre nombre y metadatos
+  flex: 1;
+  min-width: 0;
+  margin-right: 0.75rem;
 }
 
-.process-item__row {
+/* --- LÍNEA 1: ID + NOMBRE --- */
+.process-header {
   display: flex;
-  align-items: center;
+  align-items: baseline; // Alinear texto base
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.process-item__label {
-  font-size: 0.75rem;
-  font-weight: var(--font-medium);
+// ID muy sutil, estilo "etiqueta técnica"
+.badge-id {
+  font-size: 0.65rem; // Muy pequeño
+  font-family: monospace; // Fuente técnica
   color: var(--color-gray-500);
-  text-transform: uppercase;
+  background: var(--color-gray-100);
+  padding: 1px 4px;
+  border-radius: 3px;
   letter-spacing: 0.02em;
-  min-width: 90px;
+  white-space: nowrap;
+  align-self: center;
 }
 
-.process-item__value {
-  font-size: 0.9rem;
-  color: var(--color-gray-900);
-  font-weight: var(--font-medium);
+// Nombre profesional y compacto
+.process-name {
+  margin: 0;
+  font-size: 0.9rem; // Tamaño reducido considerablemente
+  font-weight: 600;
+  color: var(--color-gray-800); // No negro puro, un gris oscuro profesional
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease;
 }
 
-.process-id-badge {
-  display: inline-flex;
-  align-items: center;
-  background: var(--color-primary);
-  color: white;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--border-radius-full);
-  font-size: 0.8rem;
-  font-weight: var(--font-semibold);
-}
-
-.process-list__chevron {
-  font-size: 1.2rem;
-  color: var(--color-gray-400);
-  transition: all var(--transition-fast);
+/* --- LÍNEA 2: METADATOS --- */
+.process-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius-md);
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem; // Fuente pequeña para datos secundarios
+  color: var(--color-gray-500);
+}
 
-  .process-list__item:hover & {
-    transform: translateX(3px);
-    color: var(--color-primary);
-    background: var(--bg-tertiary);
+.meta-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.meta-icon {
+  width: 14px; // Icono más pequeño
+  height: 14px;
+  fill: var(--color-gray-400);
+  margin-top: -1px; // Ajuste óptico
+}
+
+.meta-text {
+  font-family: var(--font-family); // Usar fuente normal, no monospace
+  font-weight: 500;
+  color: var(--color-gray-600);
+}
+
+.meta-separator {
+  color: var(--color-gray-300);
+  font-size: 0.6rem; // Separador discreto
+}
+
+// Badge de tipo: Sutil, sin fondo de color fuerte
+.badge-type {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  
+  // Opción A: Solo texto de color (Más sobrio)
+  // color: var(--color-primary); 
+  
+  // Opción B: Fondo tintado muy suave (Profesional)
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent); // Si tu CSS lo soporta, es ideal. Sino usa un rgba fijo muy claro ej: rgba(40, 0, 150, 0.08)
+  padding: 1px 6px;
+  border-radius: 4px; // Rectángulo suavizado, no píldora redonda
+  white-space: nowrap;
+}
+
+/* --- ACCIÓN (FLECHA) --- */
+.chevron {
+  font-size: 1.2rem; // Más pequeño
+  color: var(--color-gray-300); // Muy discreto en reposo
+  transition: all 0.15s ease;
+}
+
+/* =============================================
+   RESPONSIVE (Móvil)
+   ============================================= */
+@media (max-width: 576px) {
+  .process-item {
+    padding: 0.75rem; // Padding consistente en móvil
+    align-items: flex-start; // Alinear arriba si el nombre ocupa 2 líneas
   }
 
-  @media (max-width: 768px) {
-    font-size: 1.3rem;
+  .process-header {
+    gap: 0.35rem;
+  }
+
+  .process-name {
+    font-size: 0.85rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  .badge-id {
+    margin-top: 2px; // Ajuste óptico con texto de 2 líneas
+  }
+
+  .process-meta {
+    margin-top: 0.15rem;
+    gap: 0.25rem;
+  }
+  
+  .chevron {
+      margin-top: 0.2rem; // Alinear con la primera línea de texto
   }
 }
 
