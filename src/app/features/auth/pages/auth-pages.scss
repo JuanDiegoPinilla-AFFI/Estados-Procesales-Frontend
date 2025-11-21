@@ -154,7 +154,7 @@
 
 .btn--primary {
   width: 100%;
-  background: var(--color-primary-gradient);
+  background: var(--color-primary);
   color: var(--bg-primary);
   box-shadow: var(--shadow-primary);
 
@@ -164,7 +164,7 @@
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.3;
     cursor: not-allowed;
     box-shadow: none;
   }
