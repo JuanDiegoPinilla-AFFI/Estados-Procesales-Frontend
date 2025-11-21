@@ -17,7 +17,7 @@ export const REDELEX_PLUGIN_CONFIG: PluginConfig = {
       id: 'redelex-consultar',
       label: 'Consultar Procesos',
       icon: 'file-text',
-      route: '/dashboard/redelex/consultar',
+      route: '/panel/consultas/consultar-proceso',
       roles: ['user', 'admin'],
       enabled: true,
       order: 1
@@ -25,8 +25,8 @@ export const REDELEX_PLUGIN_CONFIG: PluginConfig = {
     {
       id: 'redelex-informe',
       label: 'Reporte Inmobiliaria',
-      icon: 'file-text', // O el ícono que prefieras
-      route: '/dashboard/redelex/informe-inmobiliaria',
+      icon: 'file-text',
+      route: '/panel/consultas/reporte-inmobiliaria',
       roles: ['user', 'admin'],
       enabled: true,
       // badge: 'Nuevo',

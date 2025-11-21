@@ -20,10 +20,10 @@ export class RegisterComponent {
     private authService: AuthService,
     private router: Router
   ) {
-    // 🔒 Si ya hay sesión, mando al dashboard
+    // 🔒 Si ya hay sesión, mando al panel
     const token = this.authService.getToken();
     if (token) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/panel']);
       return;
     }
 
@@ -57,7 +57,7 @@ export class RegisterComponent {
           timer: 1500,
           showConfirmButton: false
         }).then(() => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/panel']);
         });
       },
       error: err => {
