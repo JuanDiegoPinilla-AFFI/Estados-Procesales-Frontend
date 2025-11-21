@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="splash" *ngIf="visible">
-      <img src="/Affi_logo.png" alt="logo" class="splash-logo" />
+      <img src="/Affi.png" alt="logo" class="splash-logo" />
     </div>
   `,
   styleUrls: ['./splash.component.scss']
