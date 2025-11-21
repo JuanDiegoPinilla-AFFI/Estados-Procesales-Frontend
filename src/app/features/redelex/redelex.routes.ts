@@ -16,7 +16,7 @@ export const REDELEX_ROUTES: Routes = [
   // --- NUEVA RUTA AGREGADA (Informe Inmobiliar) ---
   {
     path: 'reporte-inmobiliaria',
-    loadComponent: () => import('./pages/informe-inmobiliaria/informe-inmobiliaria.component')
+    loadComponent: () => import('./pages/informe-inmobiliaria/informe-inmobiliaria')
       .then(m => m.InformeInmobiliariaComponent),
     data: {
       title: 'Reporte Inmobiliaria' // Opcional: para mantener consistencia con tus títulos

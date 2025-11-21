@@ -5,7 +5,6 @@
   </div>
 
   <div class="layout">
-    <!-- COLUMNA IZQUIERDA: BÚSQUEDA -->
     <section class="card card--search">
       <h3>Búsqueda por identificación</h3>
 
@@ -48,11 +47,9 @@
       }
     </section>
 
-    <!-- COLUMNA DERECHA: LISTA + DETALLE -->
     <section class="right-column">
-      <!-- LISTA DE PROCESOS POR CÉDULA -->
       @if (procesosPorCedula.length > 0) {
-        <div class="card">
+        <div class="card" id="seccion-lista-procesos">
           <div class="card__header">
             <h3>Procesos asociados a <strong>{{ identificacion }}</strong></h3>
             <div class="count-badge">
@@ -60,7 +57,6 @@
             </div>
           </div>
 
-          <!-- FILTRO DE BÚSQUEDA -->
           <div class="filter-section">
             <label class="field field--inline">
               <span class="field__label">Filtrar por ID, nombre o identificación</span>
@@ -80,7 +76,6 @@
             </p>
           }
           <br>
-          <!-- LISTA PAGINADA -->
           @if (procesosFiltrados.length > 0) {
             <ul class="process-list">
               @for (p of procesosPaginados; track p.procesoId) {
@@ -121,7 +116,6 @@
             </ul>
           }
 
-          <!-- PAGINACIÓN -->
           @if (totalPages > 1) {
             <div class="pagination">
               <button
@@ -148,17 +142,14 @@
         </div>
       }
 
-      <!-- MENSAJE SI NO HAY PROCESOS -->
-      @if (procesosPorCedula.length === 0 && identificacion.trim() && !loading) {
+      @if (hasSearched && procesosPorCedula.length === 0 && identificacion.trim() && !loading) {
         <div class="card card--empty">
           <p>No se encontraron procesos para esta identificación.</p>
         </div>
       }
 
-      <!-- DETALLE DEL PROCESO -->
       @if (proceso) {
-        <div class="card card--detail">
-          <!-- HEADER CON ICONOS -->
+        <div class="card card--detail" id="seccion-detalle-proceso">
           <div class="detail-header">
             <h3>Proceso {{ (proceso.claseProceso || '-') | titlecase }}
             </h3>
@@ -185,7 +176,6 @@
             </div>
           </div>
 
-          <!-- 1. DATOS DE LOS SUJETOS -->
           @if (sujetoDemandante.length > 0 || sujetoDemandado.length > 0 || sujetosSolidarios.length > 0) {
             <div 
               class="detail-section" 
@@ -208,7 +198,6 @@
               @if (sectionOpen.demandante) {
                 <div class="detail-section__body">
                   
-                  <!-- DEMANDANTES -->
                   @if (sujetoDemandante.length > 0) {
                     <div class="subject-group">
                       <div class="subject-group__header">
@@ -243,7 +232,6 @@
                     </div>
                   }
 
-                  <!-- DEMANDADOS -->
                   @if (sujetoDemandado.length > 0) {
                     <div class="subject-group">
                       <div class="subject-group__header">
@@ -278,7 +266,6 @@
                     </div>
                   }
 
-                  <!-- SOLIDARIOS -->
                   @if (sujetosSolidarios.length > 0) {
                     <div class="subject-group">
                       <div class="subject-group__header">
@@ -312,7 +299,6 @@
                       </div>
                     </div>
                   }
-                  <!-- OTROS SUJETOS -->
                   @if (otrosSujetos.length > 0) {
                     @for (s of otrosSujetos; track s; let i = $index) {
                     <div class="subject-group">
@@ -352,7 +338,6 @@
             </div>
           }
 
-          <!-- 2. DATOS DEL PROCESO -->
           <div
             class="detail-section"
             [class.detail-section--collapsed]="!sectionOpen.proceso"
@@ -450,7 +435,6 @@
             }
           </div>
 
-          <!-- 3. MEDIDAS CAUTELARES -->
           @if (medidas && medidas.length > 0) {
             <div
               class="detail-section"
@@ -509,7 +493,6 @@
             </div>
           }
 
-          <!-- 4. ABOGADOS -->
           <div
             class="detail-section"
             [class.detail-section--collapsed]="!sectionOpen.abogados"
@@ -531,7 +514,6 @@
             @if (sectionOpen.abogados) {
               <div class="detail-section__body">
                 
-                <!-- Abogado Principal -->
                 @if (abogadoPrincipal) {
                   <div class="abogado-principal">
                     <div class="detail-grid">
@@ -543,7 +525,6 @@
                   </div>
                 }
 
-                <!-- Abogados Internos -->
                 @if (abogadosInternos.length > 0) {
                   <div class="abogados-internos">
                     <div class="detail-grid">
@@ -559,7 +540,6 @@
                   </div>
                 }
 
-                <!-- Otros Abogados -->
                 @if (otrosAbogados.length > 0) {
                   <div class="otros-abogados">
                     <div class="detail-grid">

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-reset-password',
@@ -22,7 +23,8 @@ export class ResetPasswordComponent {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private titleService: Title
   ) {
     this.form = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -33,6 +35,9 @@ export class ResetPasswordComponent {
       this.token = params.get('token') || '';
       this.email = params.get('email') || '';
     });
+  }
+  ngOnInit(): void {
+    this.titleService.setTitle('Affi - Nueva Contraseña');
   }
 
   submit() {

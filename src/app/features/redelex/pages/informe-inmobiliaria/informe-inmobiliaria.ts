@@ -3,6 +3,7 @@ import { CommonModule, DatePipe, registerLocaleData } from '@angular/common';
 import localeEsCo from '@angular/common/locales/es-CO';
 import { FormsModule } from '@angular/forms';
 import { RedelexService, InformeInmobiliaria } from '../../services/redelex.service';
+import { Title } from '@angular/platform-browser';
 import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -20,13 +21,20 @@ interface DemandanteOption {
   standalone: true,
   imports: [CommonModule, FormsModule],
   providers: [DatePipe],
-  templateUrl: './informe-inmobiliaria.component.html',
-  styleUrls: ['./informe-inmobiliaria.component.scss']
+  templateUrl: './informe-inmobiliaria.html',
+  styleUrls: ['./informe-inmobiliaria.scss']
 })
+
 export class InformeInmobiliariaComponent implements OnInit {
   private redelexService = inject(RedelexService);
   private elementRef = inject(ElementRef);
   private datePipe = inject(DatePipe);
+  private titleService = inject(Title);
+
+  ngOnInit(): void {
+    this.titleService.setTitle('Affi - Informe Inmobiliaria');
+    this.loadInforme();
+  }
   
   readonly INFORME_ID = 5626;
   loading = true;
@@ -95,10 +103,6 @@ export class InformeInmobiliariaComponent implements OnInit {
     return this.filteredData.slice(startIndex, startIndex + this.itemsPerPage);
   }
   get totalPages(): number { return Math.ceil(this.filteredData.length / this.itemsPerPage); }
-
-  ngOnInit(): void {
-    this.loadInforme();
-  }
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event) {

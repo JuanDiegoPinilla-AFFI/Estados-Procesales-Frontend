@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +19,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private titleService: Title
   ) {
     // 🔒 Si ya hay sesión, mando al panel
     const token = this.authService.getToken();
@@ -31,6 +33,10 @@ export class LoginComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
+  }
+
+  ngOnInit(): void {
+    this.titleService.setTitle('Affi - Iniciar Sesión');
   }
 
   submit() {

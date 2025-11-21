@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser'; // Importar Title
 import {
   RedelexService,
   ProcesoDetalleDto,
@@ -31,8 +32,8 @@ interface ProcesoPorCedula {
   templateUrl: './consultar-proceso.html',
   styleUrl: './consultar-proceso.scss',
 })
-export class ConsultarProcesoComponent {
-  procesoId!: number;
+export class ConsultarProcesoComponent implements OnInit {
+  procesoId!: number | null; // Permitir null para limpieza
   proceso: ProcesoDetalleDto | null = null;
 
   abogadoPrincipal: AbogadoDto | null = null;
@@ -48,6 +49,9 @@ export class ConsultarProcesoComponent {
   procesosPorCedula: ProcesoPorCedula[] = [];
   procesosFiltrados: ProcesoPorCedula[] = [];
   filtroProcesoId: string = '';
+  
+  // Punto 11: Controla si ya se ejecutó una búsqueda para mostrar mensajes
+  hasSearched: boolean = false; 
 
   medidas: MedidasDto[] = [];
 
@@ -68,20 +72,37 @@ export class ConsultarProcesoComponent {
     abogados: true,
   };
 
-  formatObservaciones(obs: string | null | undefined): string {
-  if (!obs || !obs.trim()) {
-    return '-';
+  constructor(
+    private redelexService: RedelexService,
+    private titleService: Title // Inyectar servicio de Título
+  ) {}
+
+  ngOnInit(): void {
+    // Punto 5: Nombre de la pestaña
+    this.titleService.setTitle('Affi - Consulta de Procesos');
   }
 
-  return obs
-    .replace(/\r\n/g, '<br>')
-    .replace(/\n/g, '<br>');
-}
-
-  constructor(private redelexService: RedelexService) {}
+  formatObservaciones(obs: string | null | undefined): string {
+    if (!obs || !obs.trim()) {
+      return '-';
+    }
+    return obs.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+  }
 
   toggleSection(section: keyof typeof this.sectionOpen) {
     this.sectionOpen[section] = !this.sectionOpen[section];
+  }
+
+  // ==========================================
+  // FUNCION PARA SCROLL AUTOMÁTICO (Punto 14)
+  // ==========================================
+  private scrollToElement(elementId: string) {
+    setTimeout(() => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100); // Pequeño delay para asegurar que el DOM renderizó
   }
 
   consultarPorId() {
@@ -93,6 +114,12 @@ export class ConsultarProcesoComponent {
       });
       return;
     }
+
+    // Punto 15: Limpiar estado de búsqueda por cédula
+    this.identificacion = '';
+    this.procesosPorCedula = [];
+    this.procesosFiltrados = [];
+    this.hasSearched = false;
 
     this.loading = true;
     this.limpiarDatos();
@@ -113,6 +140,9 @@ export class ConsultarProcesoComponent {
 
         this.proceso = res.data;
         this.procesarDatosProceso();
+        
+        // Punto 14: Scroll al detalle
+        this.scrollToElement('seccion-detalle-proceso');
 
         AffiAlert.fire({
           icon: 'success',
@@ -148,14 +178,10 @@ export class ConsultarProcesoComponent {
 
   private procesarDatosProceso() {
     if (!this.proceso) return;
-
     const raw = this.proceso as any;
 
-    // ============ PROCESAR ABOGADOS ============
+    // PROCESAR ABOGADOS
     const abogados: AbogadoDto[] = (raw.abogados ?? []) as AbogadoDto[];
-
-    console.log('Abogados recibidos:', abogados);
-
     this.abogadoPrincipal = abogados.find((a) => 
       a.ActuaComo?.toUpperCase().includes('PRINCIPAL')
     ) ?? null;
@@ -169,23 +195,17 @@ export class ConsultarProcesoComponent {
       return !actuaComo.includes('PRINCIPAL') && !actuaComo.includes('INTERNO');
     });
 
-    // ============ PROCESAR SUJETOS ============
+    // PROCESAR SUJETOS
     const sujetos: SujetosDto[] = (raw.sujetos ?? []) as SujetosDto[];
-
-    console.log('Sujetos recibidos:', sujetos);
-
     this.sujetoDemandante = sujetos.filter((s) => 
       s.Tipo?.toUpperCase().includes('DEMANDANTE')
     );
-
     this.sujetoDemandado = sujetos.filter((s) => 
       s.Tipo?.toUpperCase().includes('DEMANDADO')
     );
-
     this.sujetosSolidarios = sujetos.filter((s) => 
       s.Tipo?.toUpperCase().includes('SOLIDARIO')
     );
-
     this.otrosSujetos = sujetos.filter((s) => {
       const tipo = s.Tipo?.toUpperCase() ?? '';
       return !tipo.includes('DEMANDANTE') && 
@@ -193,8 +213,8 @@ export class ConsultarProcesoComponent {
              !tipo.includes('SOLIDARIO');
     });
 
+    // PROCESAR MEDIDAS
     const medidasRaw = raw.medidasCautelares;
-
     const medidasArray: any[] = Array.isArray(medidasRaw)
       ? medidasRaw
       : medidasRaw
@@ -215,7 +235,6 @@ export class ConsultarProcesoComponent {
       observaciones: m.observaciones ?? null,
     }));
 
-    // Mantener el DTO alineado con lo que usas en el componente/export
     (this.proceso as any).medidasCautelares = this.medidas;
   }
 
@@ -231,38 +250,36 @@ export class ConsultarProcesoComponent {
       return;
     }
 
+    // Punto 15: Limpiar búsqueda por ID manual
+    this.procesoId = null; 
+    this.limpiarDatos(); // Limpia el detalle del proceso visible
+    
     this.loading = true;
     this.procesosPorCedula = [];
     this.procesosFiltrados = [];
-    this.limpiarDatos();
     this.filtroProcesoId = '';
     this.currentPage = 1;
+    this.hasSearched = false; // Reset flag
 
     this.redelexService.getProcesosByIdentificacion(cedula).subscribe({
       next: (res) => {
         this.loading = false;
+        this.hasSearched = true; // Activar flag para mostrar resultados/mensajes
 
         if (!res || !res.success) {
-          // ... (manejo de error igual que antes) ...
           return;
         }
 
         const rawProcesos = res.procesos || [];
 
-        // ============================================================
-        // 🛠️ CORRECCIÓN DEFINITIVA: LIMPIEZA DE CADENAS
-        // ============================================================
         this.procesosPorCedula = rawProcesos.map((proc: any) => {
           let nombreLimpio = proc.demandadoNombre || '';
           let idLimpio = proc.demandadoIdentificacion || '';
 
-          // El backend envía "NOMBRE 1 , NOMBRE 2". 
-          // Tomamos solo lo que está ANTES de la primera coma.
           if (nombreLimpio.includes(',')) {
             nombreLimpio = nombreLimpio.split(',')[0].trim();
           }
 
-          // Hacemos lo mismo con la identificación para que coincida (ej: "123, 456")
           if (idLimpio.includes(',')) {
             idLimpio = idLimpio.split(',')[0].trim();
           }
@@ -273,9 +290,11 @@ export class ConsultarProcesoComponent {
             demandadoIdentificacion: idLimpio
           };
         });
-        // =======================================================
 
         this.procesosFiltrados = [...this.procesosPorCedula];
+
+        // Punto 14: Scroll a la lista de resultados
+        this.scrollToElement('seccion-lista-procesos');
 
         if (!this.procesosPorCedula.length) {
           AffiAlert.fire({
@@ -295,6 +314,7 @@ export class ConsultarProcesoComponent {
       },
       error: () => {
         this.loading = false;
+        this.hasSearched = true;
         this.procesosPorCedula = [];
         this.procesosFiltrados = [];
         this.limpiarDatos();
@@ -331,7 +351,6 @@ export class ConsultarProcesoComponent {
         );
       });
     }
-
     this.currentPage = 1;
   }
 
@@ -358,12 +377,13 @@ export class ConsultarProcesoComponent {
     this.consultarPorId();
   }
 
-  // ========================
-  //   ARMAR DATOS EXPORT
-  // ========================
-
+  // ... (Mantener funciones de Exportación a Excel y PDF tal cual estaban) ...
+  // NOTA: Asegúrate de no borrar los métodos buildExportRows, exportarExcel y exportarPdf
+  // que ya tenías en el código original.
+  
   private buildExportRows() {
-    if (!this.proceso) return [];
+      // ... (código original)
+      if (!this.proceso) return [];
     const p = this.proceso;
 
     const rows: { Seccion: string; Campo: string; Valor: string | number }[] = [];
@@ -480,12 +500,9 @@ export class ConsultarProcesoComponent {
     return rows;
   }
 
-  // ========================
-  //   EXPORTAR EXCEL
-  // ========================
-
   async exportarExcel() {
-    if (!this.proceso) {
+      // ... (código original)
+      if (!this.proceso) {
       AffiAlert.fire({
         icon: 'info',
         title: 'Sin datos',
@@ -537,12 +554,8 @@ export class ConsultarProcesoComponent {
     saveAs(blob, fileName);
   }
 
-  // ========================
-  //   EXPORTAR PDF
-  // ========================
-
   exportarPdf() {
-    if (!this.proceso) {
+      if (!this.proceso) {
       AffiAlert.fire({
         icon: 'info',
         title: 'Sin datos',

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-register',
@@ -18,7 +19,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private titleService: Title 
   ) {
     // 🔒 Si ya hay sesión, mando al panel
     const token = this.authService.getToken();
@@ -32,6 +34,10 @@ export class RegisterComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
+  }
+
+  ngOnInit(): void {
+    this.titleService.setTitle('Affi - Registrarse');
   }
 
   submit() {

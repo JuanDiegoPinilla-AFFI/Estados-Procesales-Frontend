@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-forgot-password',
@@ -18,11 +19,16 @@ export class ForgotPasswordComponent {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private titleService: Title
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
+  }
+
+  ngOnInit(): void {
+    this.titleService.setTitle('Affi - Restablecer Contraseña');
   }
 
   submit() {
