@@ -103,11 +103,11 @@ export class ConsultarProcesoComponent implements OnInit {
       return;
     }
 
-    // Punto 15: Limpiar estado de búsqueda por cédula
-    this.identificacion = '';
-    this.procesosPorCedula = [];
-    this.procesosFiltrados = [];
-    this.hasSearched = false;
+    // Limpiar estado de búsqueda por cédula
+    // this.identificacion = '';
+    // this.procesosPorCedula = [];
+    // this.procesosFiltrados = [];
+    // this.hasSearched = false;
 
     this.loading = true;
     this.limpiarDatos();
