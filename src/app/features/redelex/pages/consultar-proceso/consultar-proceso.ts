@@ -93,18 +93,6 @@ export class ConsultarProcesoComponent implements OnInit {
     this.sectionOpen[section] = !this.sectionOpen[section];
   }
 
-  // ==========================================
-  // FUNCION PARA SCROLL AUTOMÁTICO (Punto 14)
-  // ==========================================
-  private scrollToElement(elementId: string) {
-    setTimeout(() => {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100); // Pequeño delay para asegurar que el DOM renderizó
-  }
-
   consultarPorId() {
     if (!this.procesoId) {
       AffiAlert.fire({
@@ -141,9 +129,6 @@ export class ConsultarProcesoComponent implements OnInit {
         this.proceso = res.data;
         this.procesarDatosProceso();
         
-        // Punto 14: Scroll al detalle
-        this.scrollToElement('seccion-detalle-proceso');
-
         AffiAlert.fire({
           icon: 'success',
           title: 'Proceso cargado',
@@ -292,9 +277,6 @@ export class ConsultarProcesoComponent implements OnInit {
         });
 
         this.procesosFiltrados = [...this.procesosPorCedula];
-
-        // Punto 14: Scroll a la lista de resultados
-        this.scrollToElement('seccion-lista-procesos');
 
         if (!this.procesosPorCedula.length) {
           AffiAlert.fire({
