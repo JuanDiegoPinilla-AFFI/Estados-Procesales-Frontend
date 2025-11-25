@@ -78,12 +78,12 @@ export class AuthService {
   // -----------------------------
   // USER DATA (Solo info pública)
   // -----------------------------
-  saveUserData(userData: any): void { // Ajustado tipo a any para flexibilidad o usa tu interfaz
+  saveUserData(userData: any): void { 
     const normalizedData = {
       id: userData.id || userData._id,
-      nombre: userData.name || userData.nombre || '',
+      name: userData.name || userData.nombre || '', // Preferimos 'name'
       email: userData.email || '',
-      rol: userData.role || userData.rol || 'Usuario'
+      role: userData.role || userData.rol || 'user' // <--- CAMBIO CLAVE: Guardar como 'role'
     };
     localStorage.setItem('redelex_user', JSON.stringify(normalizedData));
   }
