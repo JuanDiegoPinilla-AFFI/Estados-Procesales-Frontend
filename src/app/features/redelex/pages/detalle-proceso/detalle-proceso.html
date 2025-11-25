@@ -1,0 +1,107 @@
+<div class="page-container">
+  <div class="mb-6">
+    <a routerLink="../" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Volver al listado
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando expediente digital...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <h3>No pudimos cargar el proceso</h3>
+    <p>{{ error }}</p>
+    <button class="btn btn--secondary" routerLink="../">Regresar</button>
+  </div>
+
+  <div *ngIf="!loading && !error && detalle" class="fade-in">
+    
+    <header class="process-header">
+      <div class="header-top">
+        <span class="badge badge--primary">{{ detalle.claseProceso || 'Proceso' }}</span>
+        <span class="badge" [ngClass]="detalle.estado === 'ACTIVO' ? 'badge--success' : 'badge--neutral'">
+          {{ detalle.estado || 'Sin Estado' }}
+        </span>
+      </div>
+      
+      <h1 class="radicado-title">
+        Radicado: {{ detalle.numeroRadicacion || 'Sin Número' }}
+      </h1>
+      
+      <div class="header-meta">
+        <div class="meta-item">
+          <span class="label">ID Interno:</span>
+          <span class="value">#{{ detalle.idProceso }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Despacho:</span>
+          <span class="value">{{ detalle.despacho }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Ciudad:</span>
+          <span class="value">{{ detalle.regional || 'N/A' }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="details-grid">
+      
+      <div class="details-col">
+        <section class="info-card">
+          <h3>Partes Procesales</h3>
+          
+          <div class="parties-list">
+            <div class="party-item" *ngFor="let sujeto of detalle.sujetos">
+              <div class="party-role">{{ sujeto.TipoSujeto }}</div>
+              <div class="party-name">{{ sujeto.Nombre || sujeto.RazonSocial }}</div>
+              <div class="party-id">{{ sujeto.Identificacion }}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-card mt-4" *ngIf="detalle.medidasCautelares?.length > 0">
+          <h3>Medidas Cautelares</h3>
+          <ul class="measures-list">
+            <li *ngFor="let medida of detalle.medidasCautelares">
+              <strong>{{ medida.tipoMedida }}</strong> sobre {{ medida.tipoBien }}
+              <br>
+              <span class="text-sm text-gray">{{ medida.medidaEfectiva }}</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="details-col">
+        <section class="info-card">
+          <h3>Últimas Actuaciones</h3>
+          
+          <div class="timeline">
+            <div *ngIf="!detalle.actuaciones?.length && !detalle.ultimaActuacionFecha" class="empty-timeline">
+              No hay actuaciones registradas.
+            </div>
+
+            <div class="timeline-item" *ngIf="detalle.ultimaActuacionFecha">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">
+                  {{ detalle.ultimaActuacionFecha | date:'mediumDate' }}
+                </div>
+                <div class="timeline-title">
+                  {{ detalle.ultimaActuacionTipo }}
+                </div>
+                <div class="timeline-desc">
+                  {{ detalle.ultimaActuacionObservacion }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</div>

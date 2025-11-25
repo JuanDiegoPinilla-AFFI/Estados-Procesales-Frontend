@@ -1,0 +1,239 @@
+// Variables locales
+$primary-color: #4F46E5;
+$bg-card: #ffffff;
+$border-color: #E2E8F0;
+$text-main: #1E293B;
+$text-secondary: #64748B;
+
+.page-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $text-secondary;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $primary-color;
+  }
+}
+
+// ESTADOS DE CARGA Y ERROR
+.loading-state, .error-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid $primary-color;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// HEADER DEL PROCESO
+.process-header {
+  background: $bg-card;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+  border: 1px solid $border-color;
+
+  .header-top {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .radicado-title {
+    font-size: 1.5rem;
+    color: $text-main;
+    margin: 0 0 1.5rem 0;
+    font-weight: 700;
+    word-break: break-all;
+  }
+
+  .header-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid $border-color;
+  }
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: $text-secondary;
+    letter-spacing: 0.05em;
+  }
+
+  .value {
+    font-weight: 600;
+    color: $text-main;
+  }
+}
+
+// BADGES
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  
+  &--primary {
+    background: #EEF2FF;
+    color: $primary-color;
+  }
+  
+  &--success {
+    background: #DCFCE7;
+    color: #166534;
+  }
+  
+  &--neutral {
+    background: #F1F5F9;
+    color: $text-secondary;
+  }
+}
+
+// GRID DE DETALLES
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-card {
+  background: $bg-card;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid $border-color;
+
+  h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    color: $text-main;
+    border-bottom: 2px solid $primary-color;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+  }
+}
+
+// LISTA DE PARTES
+.party-item {
+  padding: 1rem;
+  background: #F8FAFC;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid $primary-color;
+
+  .party-role {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: $text-secondary;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+
+  .party-name {
+    font-weight: 600;
+    color: $text-main;
+  }
+
+  .party-id {
+    font-size: 0.85rem;
+    color: $text-secondary;
+  }
+}
+
+// TIMELINE
+.timeline {
+  position: relative;
+  padding-left: 1.5rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: $border-color;
+  }
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+
+  .timeline-marker {
+    position: absolute;
+    left: -1.95rem;
+    top: 0.25rem;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 3px solid $primary-color;
+    border-radius: 50%;
+    z-index: 1;
+  }
+
+  .timeline-date {
+    font-size: 0.8rem;
+    color: $text-secondary;
+    margin-bottom: 0.25rem;
+  }
+
+  .timeline-title {
+    font-weight: 600;
+    color: $text-main;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-desc {
+    font-size: 0.9rem;
+    color: #475569;
+    background: #F8FAFC;
+    padding: 0.8rem;
+    border-radius: 0.5rem;
+  }
+}
+
+.mt-4 { margin-top: 1.5rem; }
+.fade-in { animation: fadeIn 0.3s ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

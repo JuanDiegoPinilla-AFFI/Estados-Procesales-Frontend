@@ -1,0 +1,90 @@
+<div class="page-container">
+  
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Mis Procesos Jurídicos</h1>
+      <div class="subtitle-badge" *ngIf="identificacionUsuario">
+        <span class="icon">🏢</span>
+        <span>NIT Asociado: <strong>{{ identificacionUsuario }}</strong></span>
+      </div>
+    </div>
+    
+    <button class="btn-refresh" (click)="cargarMisProcesos()" title="Actualizar lista">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      Actualizar
+    </button>
+  </header>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Buscando procesos activos...</p>
+  </div>
+
+  <div *ngIf="!loading && error" class="error-state">
+    <div class="error-icon">❌</div>
+    <h3>Error de consulta</h3>
+    <p>{{ error }}</p>
+    <button class="btn btn--secondary" (click)="cargarMisProcesos()">Intentar nuevamente</button>
+  </div>
+
+  <div *ngIf="!loading && !error" class="fade-in">
+    
+    <div class="empty-state" *ngIf="procesos.length === 0">
+      <div class="empty-icon">📂</div>
+      <h3>No se encontraron procesos</h3>
+      <p>Actualmente no tiene procesos jurídicos activos registrados bajo su NIT.</p>
+    </div>
+
+    <div class="results-card" *ngIf="procesos.length > 0">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="100">Radicado / ID</th>
+              <th>Partes Procesales</th>
+              <th>Clase</th>
+              <th width="120" class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of procesos" class="table-row" [routerLink]="['/redelex/proceso', p.procesoId]">
+              <td class="cell-id">
+                <span class="id-badge">#{{ p.procesoId }}</span>
+                </td>
+              
+              <td>
+                <div class="parties-cell">
+                  <div class="party-row">
+                    <span class="party-label">Demandado:</span>
+                    <span class="party-name">{{ p.demandadoNombre }}</span>
+                    <span class="party-nit">({{ p.demandadoIdentificacion }})</span>
+                  </div>
+                  <div class="party-divider">vs</div>
+                  <div class="party-row">
+                    <span class="party-label">Demandante:</span>
+                    <span class="party-name">{{ p.demandanteNombre }}</span>
+                    <span class="party-nit">({{ p.demandanteIdentificacion }})</span>
+                  </div>
+                </div>
+              </td>
+              
+              <td>
+                <span class="tag-class">{{ p.claseProceso }}</span>
+              </td>
+              
+              <td class="text-right">
+                <a [routerLink]="['/redelex/proceso', p.procesoId]" class="btn-icon" title="Ver Detalle" (click)="$event.stopPropagation()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="table-footer">
+        Mostrando {{ procesos.length }} procesos asociados a su cuenta.
+      </div>
+    </div>
+  </div>
+</div>

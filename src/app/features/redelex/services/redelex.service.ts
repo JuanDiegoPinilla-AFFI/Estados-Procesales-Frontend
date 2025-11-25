@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment.prod';
+import { environment } from '../../../../environments/environment';
 
 export interface ProcesoResumenDto {
   procesoId: number;
@@ -116,6 +116,17 @@ export class RedelexService {
   private apiUrl = `${environment.apiUrl}api/redelex`;
 
   constructor(private http: HttpClient) {}
+
+  // --- NUEVO MÉTODO ---
+  getMisProcesos(): Observable<any> {
+    // Llama al endpoint "inteligente" que usa el NIT del token
+    return this.http.get(`${this.apiUrl}mis-procesos`);
+  }
+
+  getProcesoDetalleById(id: number): Observable<any> {
+    // Llama al endpoint GET /api/redelex/proceso/:id
+    return this.http.get(`${this.apiUrl}proceso/${id}`);
+  }
 
   /**
    * Detalle del proceso por ID
