@@ -50,11 +50,6 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.form.value).subscribe({
       next: res => {
-        // 🔒 CORRECCIÓN 2: ELIMINAMOS saveToken. La cookie viaja sola.
-        // this.authService.saveToken(res.token); <--- ELIMINADO
-
-        // Guarda solo los datos visuales del usuario (nombre, rol)
-        // Nota: Asegúrate que tu back devuelva 'user' o ajusta según respuesta
         if (res.user) {
            this.authService.saveUserData(res.user);
         }
@@ -66,15 +61,30 @@ export class LoginComponent implements OnInit {
           timer: 1300,
           showConfirmButton: false
         }).then(() => {
-          this.router.navigate(['/panel']); // Ajusta si tu ruta principal es diferente
+          this.router.navigate(['/panel']);
         });
       },
       error: err => {
-        AffiAlert.fire({
-          icon: 'error',
-          title: 'Error al iniciar sesión',
-          text: err.error?.message || 'Correo o contraseña incorrectos.'
-        });
+        // Capturamos el mensaje que viene del Backend
+        const mensajeBackend = err.error?.message || '';
+
+        // 🟡 CASO 1: USUARIO INACTIVO
+        // Buscamos palabras clave como "desactivada" o "inactivo"
+        if (mensajeBackend.toLowerCase().includes('desactivada') || mensajeBackend.toLowerCase().includes('inactivo')) {
+          AffiAlert.fire({
+            icon: 'warning', // Icono amarillo
+            title: 'Usuario Inactivo',
+            text: mensajeBackend || 'Su cuenta se encuentra desactivada.'
+          });
+        } 
+        // 🔴 CASO 2: ERROR GENÉRICO (Contraseña mal, etc.)
+        else {
+          AffiAlert.fire({
+            icon: 'error',
+            title: 'Error al iniciar sesión',
+            text: 'Correo o contraseña incorrectos.'
+          });
+        }
       }
     });
   }

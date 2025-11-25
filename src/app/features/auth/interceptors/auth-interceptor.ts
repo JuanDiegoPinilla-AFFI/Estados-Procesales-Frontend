@@ -15,12 +15,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {
+
+      // --- NUEVA CONDICIÓN DE EXCEPCIÓN ---
+      // Si el error viene del Login, lo ignoramos aquí para que el componente Login
+      // pueda mostrar su propio mensaje específico (ej: "Cuenta desactivada").
+      if (req.url.includes('/auth/login')) {
+        return throwError(() => error);
+      }
+      // ------------------------------------
       
-      // Si es 401 (Token vencido o Usuario inactivo)
+      // Si es 401 y NO es login (es decir, estaba navegando y se venció la sesión)
       if (error.status === 401) {
         
-        // A. (Opcional) Mostrar alerta bonita de "Sesión Caducada"
-        // Si no pones esto, el usuario solo aparecerá en el login de la nada.
         AffiAlert.fire({
           icon: 'warning',
           title: 'Sesión Finalizada',
@@ -29,16 +35,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           timerProgressBar: true
         });
 
-        // B. Limpieza y Redirección
         authService.logoutClientSide();
         router.navigate(['/auth/login']);
 
-        // C. LA MAGIA: Retornamos EMPTY
-        // Esto hace que el .subscribe({ error: ... }) del componente NUNCA se ejecute
         return EMPTY; 
       }
 
-      // Si es otro error (404, 500), sí dejamos que pase al componente
       return throwError(() => error);
     })
   );
