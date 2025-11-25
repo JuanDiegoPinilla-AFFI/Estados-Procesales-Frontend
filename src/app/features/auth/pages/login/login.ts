@@ -50,6 +50,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.form.value).subscribe({
       next: res => {
+        // Guardamos los datos del usuario
         if (res.user) {
            this.authService.saveUserData(res.user);
         }
@@ -61,28 +62,37 @@ export class LoginComponent implements OnInit {
           timer: 1300,
           showConfirmButton: false
         }).then(() => {
-          this.router.navigate(['/panel']);
+          // --- AQUÍ ESTÁ EL CAMBIO ---
+          // Antes ibas a '/panel', ahora redirigimos según el rol
+          const user = this.authService.getUserData();
+          
+          if (user?.role === 'admin') {
+            // Si es Admin (Affi) -> Consultar Proceso
+            this.router.navigate(['/redelex/consultar-proceso']);
+          } else {
+            // Si es Inmobiliaria (User) -> Mis Procesos
+            this.router.navigate(['/redelex/mis-procesos']);
+          }
         });
       },
       error: err => {
         const mensajeBackend = err.error?.message || '';
 
-        // Buscamos palabras clave: "desactivada", "inactivo" O "advertencia"
         if (
           mensajeBackend.toLowerCase().includes('desactivada') || 
           mensajeBackend.toLowerCase().includes('inactivo') ||
-          mensajeBackend.toLowerCase().includes('advertencia') // <--- NUEVO
+          mensajeBackend.toLowerCase().includes('advertencia')
         ) {
           AffiAlert.fire({
-            icon: 'warning', // Amarillo
+            icon: 'warning',
             title: 'Atención',
             text: mensajeBackend
           });
         } else {
           AffiAlert.fire({
-            icon: 'error', // Rojo
+            icon: 'error',
             title: 'Error al iniciar sesión',
-            text: 'Credenciales inválidas.'
+            text: 'Correo o contraseña incorrectos.'
           });
         }
       }
