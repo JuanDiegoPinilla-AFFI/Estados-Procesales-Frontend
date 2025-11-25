@@ -177,11 +177,11 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    // 3. LOGOUT REAL
-    // Delegamos al servicio para que llame al backend y limpie todo
-    this.authService.logout();
+    localStorage.removeItem('redelex_user');
+    localStorage.removeItem('redelex_token'); // Por si quedó basura vieja
+
+    this.authService.logout(); 
     
-    // Redirección manual por si acaso el servicio no lo hace
     this.router.navigate(['/auth/login']);
   }
 }
