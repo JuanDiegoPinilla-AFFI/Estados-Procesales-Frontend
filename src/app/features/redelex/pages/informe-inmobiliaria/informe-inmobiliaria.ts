@@ -146,8 +146,33 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.loading = true;
     this.redelexService.getInformeInmobiliaria(this.INFORME_ID).subscribe({
       next: (response) => {
-        this.rawData = response.data;
-        this.filteredData = response.data;
+        // --- INICIO CORRECCIÓN DE LIMPIEZA ---
+        const datosLimpios = (response.data || []).map(item => {
+          // Copiamos el objeto para no mutar referencias
+          const newItem = { ...item };
+
+          // 1. Limpiar Nombre Demandado (Tomar solo el primero antes de la coma)
+          if (newItem.demandadoNombre && newItem.demandadoNombre.includes(',')) {
+            newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
+          }
+
+          // 2. Limpiar Identificación Demandado
+          if (newItem.demandadoIdentificacion && newItem.demandadoIdentificacion.includes(',')) {
+            newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
+          }
+
+          // 3. Limpiar Nombre Demandante (Opcional, por si acaso)
+          if (newItem.demandanteNombre && newItem.demandanteNombre.includes(',')) {
+            newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
+          }
+
+          return newItem;
+        });
+        
+        this.rawData = datosLimpios;
+        this.filteredData = datosLimpios;
+        // -------------------------------------
+
         this.extraerListasUnicas();
         this.loading = false;
       },

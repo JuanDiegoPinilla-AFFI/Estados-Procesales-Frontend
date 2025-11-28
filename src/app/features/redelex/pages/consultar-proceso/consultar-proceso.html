@@ -456,37 +456,79 @@
 
               @if (sectionOpen.medidas) {
                 <div class="detail-section__body">
-                  @for (m of medidas; track m) {
-                    <div class="medida-card">
-                      <div class="detail-grid">
-                        <div>
-                          <p class="detail-label">Tipo bien</p>
-                          <p class="detail-value">{{ m.tipoBien || '-' }}</p>
+                  @for (m of medidas; track m; let i = $index) {
+                    
+                    <div class="medida-card-accordion" [class.is-open]="openMedidas.has(i)">
+                      
+                      <div class="medida-header" (click)="toggleMedida(i)">
+                        <div class="medida-title">
+
+                          @switch (getMedidaIconType(m.tipoBien)) {
+
+                            @case ('money') {
+                              <svg class="medida-icon-svg icon-money" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                              </svg>
+                            }
+
+                            @case ('house') {
+                              <svg class="medida-icon-svg icon-house" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                              </svg>
+                            }
+
+                            @case ('legal') {
+                               <svg class="medida-icon-svg icon-legal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                                <path d="M7 21h10"/>
+                                <path d="M12 3v18"/>
+                                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+                              </svg>
+                            }
+
+                            @default {
+                              <svg class="medida-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                              </svg>
+                            }
+
+                          }
+                          <strong>{{ m.tipoBien || 'Bien sin nombre' }}</strong>
+                          <span class="medida-status-badge">{{ m.medidaEfectiva || 'Pendiente' }}</span>
                         </div>
-                        <div>
-                          <p class="detail-label">Sujeto</p>
-                          <p class="detail-value">{{ m.sujeto || '-' }}</p>
-                        </div>
-                        <div>
-                          <p class="detail-label">Tipo medida</p>
-                          <p class="detail-value">{{ m.tipoMedida || '-' }}</p>
-                        </div>
-                        <div>
-                          <p class="detail-label">Estado medida</p>
-                          <p class="detail-value">{{ m.medidaEfectiva || '-' }}</p>
-                        </div>
-                        <div>
-                          <p class="detail-label">Avalúo judicial</p>
-                          <p class="detail-value">{{ m.avaluoJudicial || '-' }}</p>
-                        </div>
-                        <div class="detail-grid--full">
-                          <p class="detail-label">Observaciones</p>
-                          <p class="detail-value"
-                            [innerHTML]="formatObservaciones(m.observaciones || '')">
-                          </p>
-                        </div>
+                        <span class="chevron">{{ openMedidas.has(i) ? '▾' : '▸' }}</span>
                       </div>
-                    </div><br>
+
+                      @if (openMedidas.has(i)) {
+                        <div class="medida-body fade-in">
+                          <div class="detail-grid">
+                            <div>
+                              <p class="detail-label">Sujeto</p>
+                              <p class="detail-value">{{ m.sujeto || '-' }}</p>
+                            </div>
+                            <div>
+                              <p class="detail-label">Tipo medida</p>
+                              <p class="detail-value">{{ m.tipoMedida || '-' }}</p>
+                            </div>
+                            <div>
+                              <p class="detail-label">Avalúo judicial</p>
+                              <p class="detail-value">{{ m.avaluoJudicial || '-' }}</p>
+                            </div>
+                            <div class="detail-grid--full">
+                              <p class="detail-label">Observaciones</p>
+                              <p class="detail-value"
+                                [innerHTML]="formatObservaciones(m.observaciones || '')">
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
                   }
                 </div>
               }

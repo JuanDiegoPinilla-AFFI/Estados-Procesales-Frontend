@@ -977,3 +977,72 @@
   color: #991b1b;
 }
 
+// Acordeón de Medidas Cautelares
+.medida-card-accordion {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+
+  &.is-open {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.medida-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  background: #f8fafc; // Gris muy claro
+  
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.medida-title {
+  display: flex;
+  align-items: center;
+  // Cambiamos gap ligeramente para que el SVG no quede tan pegado
+  gap: 0.5rem; 
+  font-size: 0.95rem;
+  color: var(--color-gray-800);
+  flex: 1;
+}
+
+// Clase nueva para el SVG
+.medida-icon-svg {
+  width: 1.25rem;  // Tamaño similar al emoji anterior (aprox 20px)
+  height: 1.25rem;
+  color: var(--color-primary); // Usamos el color primario para que resalte, o usa var(--color-gray-500) para gris
+  flex-shrink: 0; // Evita que el icono se aplaste si el texto es muy largo
+}
+
+// ... resto de estilos
+
+.medida-icon {
+  font-size: 1.1rem;
+}
+
+.medida-status-badge {
+  font-size: 0.7rem;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-left: auto; // Empuja a la derecha si quieres, o quítalo para que vaya seguido
+  margin-right: 1rem;
+}
+
+.medida-body {
+  padding: 1.25rem;
+  border-top: 1px solid var(--color-gray-100);
+  background: white;
+}

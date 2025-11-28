@@ -49,6 +49,8 @@ export class ConsultarProcesoComponent implements OnInit {
   procesosPorCedula: ProcesoPorCedula[] = [];
   procesosFiltrados: ProcesoPorCedula[] = [];
   filtroProcesoId: string = '';
+
+  openMedidas = new Set<number>();
   
   // Punto 11: Controla si ya se ejecutó una búsqueda para mostrar mensajes
   hasSearched: boolean = false; 
@@ -71,6 +73,40 @@ export class ConsultarProcesoComponent implements OnInit {
     medidas: true,
     abogados: true,
   };
+
+  // Método para alternar una medida específica
+  toggleMedida(index: number) {
+    if (this.openMedidas.has(index)) {
+      this.openMedidas.delete(index);
+    } else {
+      this.openMedidas.add(index);
+    }
+  }
+
+  /**
+   * Determina el tipo de icono a mostrar según el nombre del bien.
+   * Retorna un string identificador: 'money', 'house', 'legal', o 'default'.
+   */
+  getMedidaIconType(tipoBien: string | null): string {
+    if (!tipoBien) return 'default';
+
+    // Normalizamos a mayúsculas para comparar sin problemas
+    const tipo = tipoBien.trim().toUpperCase();
+
+    // Lógica de mapeo (usa .includes para ser flexible)
+    if (tipo.includes('SALARIO') || tipo.includes('DINERO') || tipo.includes('CUENTA')) {
+      return 'money'; // 💲
+    }
+    if (tipo.includes('INMUEBLE') || tipo.includes('CASA') || tipo.includes('APARTAMENTO') || tipo.includes('FINCA')) {
+      return 'house'; // 🏠
+    }
+    if (tipo.includes('TITULO JUDICIAL') || tipo.includes('JURIDICO') || tipo.includes('SENTENCIA')) {
+      return 'legal'; // ⚖️ (Usaremos un martillo o balanza)
+    }
+
+    // Si no coincide con ninguno, usa el icono por defecto (la cajita)
+    return 'default';
+  }
 
   constructor(
     private redelexService: RedelexService,
@@ -159,6 +195,7 @@ export class ConsultarProcesoComponent implements OnInit {
     this.sujetosSolidarios = [];
     this.otrosSujetos = [];
     this.medidas = [];
+    this.openMedidas.clear();
   }
 
   private procesarDatosProceso() {

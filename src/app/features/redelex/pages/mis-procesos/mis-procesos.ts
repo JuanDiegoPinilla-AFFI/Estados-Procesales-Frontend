@@ -60,14 +60,40 @@ export class MisProcesosComponent implements OnInit {
     this.titleService.setTitle('Affi - Mis Procesos');
     this.cargarMisProcesos();
   }
-
-  // --- CARGA DE DATOS ---
+// --- CARGA DE DATOS ---
   cargarMisProcesos() {
     this.loading = true;
     this.redelexService.getMisProcesos().subscribe({
       next: (res) => {
-        this.rawData = res.procesos || [];
+        const rawProcesos = res.procesos || [];
         this.identificacionUsuario = res.identificacion;
+
+        // --- INICIO CORRECCIÓN DE LIMPIEZA ---
+        const datosLimpios = rawProcesos.map((item: any) => {
+          // Copiamos el objeto para no mutar referencias
+          const newItem = { ...item };
+
+          // 1. Limpiar Nombre Demandado (Tomar solo el primero antes de la coma)
+          if (newItem.demandadoNombre && newItem.demandadoNombre.includes(',')) {
+            newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
+          }
+
+          // 2. Limpiar Identificación Demandado
+          if (newItem.demandadoIdentificacion && newItem.demandadoIdentificacion.includes(',')) {
+            newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
+          }
+
+          // 3. Limpiar Nombre Demandante (Opcional)
+          if (newItem.demandanteNombre && newItem.demandanteNombre.includes(',')) {
+            newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
+          }
+
+          return newItem;
+        });
+        
+        this.rawData = datosLimpios;
+        // -------------------------------------
+
         this.extraerListasUnicas();
         this.applyFilters();
         this.loading = false;
