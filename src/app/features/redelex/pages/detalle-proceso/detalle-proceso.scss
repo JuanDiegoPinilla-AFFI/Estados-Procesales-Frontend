@@ -237,3 +237,105 @@ $text-secondary: #64748B;
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+// --- ESTILOS NUEVOS PARA GRUPOS DE PARTES ---
+
+.party-group {
+  margin-bottom: 1.5rem;
+}
+
+.group-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #64748B;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+
+  &.text-green { color: #16a34a; }
+  &.text-red { color: #dc2626; }
+}
+
+.party-item {
+  padding: 0.8rem;
+  background: #F8FAFC;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-left: 4px solid #CBD5E1; // Borde gris por defecto
+
+  &--demandante {
+    border-left-color: #22c55e; // Verde
+    background: #f0fdf4;
+  }
+
+  &--demandado {
+    border-left-color: #ef4444; // Rojo
+    background: #fef2f2;
+  }
+}
+
+.party-role-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+// --- ESTILOS NUEVOS PARA MEDIDAS CAUTELARES ---
+
+.medida-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.medida-header {
+  background: #f1f5f9;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.medida-type {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.medida-status {
+  font-size: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.medida-body {
+  padding: 1rem;
+  font-size: 0.9rem;
+  
+  p {
+    margin: 0 0 0.5rem 0;
+    color: #334155;
+    
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+.medida-obs {
+  margin-top: 0.5rem !important;
+  background: #fffbeb;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  color: #92400e !important;
+  font-size: 0.85rem;
+  border: 1px solid #fcd34d;
+}

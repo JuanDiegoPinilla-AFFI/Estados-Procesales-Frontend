@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router'; // Importamos RouterLink para el botón volver
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RedelexService } from '../../services/redelex.service';
 import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-detalle-proceso',
   standalone: true,
-  imports: [CommonModule, RouterLink], // Importante para poder usar routerLink en el HTML
-  templateUrl: './detalle-proceso.html', // Usaremos archivo HTML separado para orden
+  imports: [CommonModule, RouterLink],
+  templateUrl: './detalle-proceso.html',
   styleUrls: ['./detalle-proceso.scss']
 })
 export class DetalleProcesoComponent implements OnInit {
@@ -17,16 +17,20 @@ export class DetalleProcesoComponent implements OnInit {
   loading = true;
   error = '';
 
+  // Grupos de sujetos
+  sujetoDemandante: any[] = [];
+  sujetoDemandado: any[] = [];
+  sujetosSolidarios: any[] = [];
+  otrosSujetos: any[] = [];
+
   constructor(
     private route: ActivatedRoute,
-    private redelexService: RedelexService, // Usamos el servicio existente
+    private redelexService: RedelexService,
     private titleService: Title
   ) {}
 
   ngOnInit() {
-    // 1. Capturamos el ID de la URL (ej: /proceso/123 -> id = 123)
     const idParam = this.route.snapshot.paramMap.get('id');
-    
     if (idParam) {
       this.procesoId = +idParam;
       this.titleService.setTitle(`Affi - Proceso #${this.procesoId}`);
@@ -39,17 +43,14 @@ export class DetalleProcesoComponent implements OnInit {
 
   cargarDetalle(id: number) {
     this.loading = true;
-    // 2. Llamamos al endpoint que ya existe en tu servicio (getProcesoDetalleById)
-    // Este endpoint ya lo tenías creado de antes.
     this.redelexService.getProcesoDetalleById(id).subscribe({
       next: (res) => {
-        // Tu backend devuelve { success: true, data: { ... } }
-        this.detalle = res.data || res; 
+        this.detalle = res.data || res;
+        this.procesarSujetos();
         this.loading = false;
       },
       error: (err) => {
         console.error(err);
-        // Si el backend responde 403 Forbidden, es porque la inmobiliaria no es dueña
         if (err.status === 403) {
           this.error = 'No tienes permisos para ver este proceso.';
         } else {
@@ -57,6 +58,32 @@ export class DetalleProcesoComponent implements OnInit {
         }
         this.loading = false;
       }
+    });
+  }
+
+procesarSujetos() {
+    if (!this.detalle || !this.detalle.sujetos) return;
+
+    const sujetos = this.detalle.sujetos;
+
+    // CORRECCIÓN: Usamos 'Tipo' en lugar de 'TipoSujeto'
+    this.sujetoDemandante = sujetos.filter((s: any) => 
+      s.Tipo?.toUpperCase().includes('DEMANDANTE')
+    );
+    
+    this.sujetoDemandado = sujetos.filter((s: any) => 
+      s.Tipo?.toUpperCase().includes('DEMANDADO')
+    );
+    
+    this.sujetosSolidarios = sujetos.filter((s: any) => 
+      s.Tipo?.toUpperCase().includes('SOLIDARIO')
+    );
+    
+    this.otrosSujetos = sujetos.filter((s: any) => {
+      const tipo = s.Tipo?.toUpperCase() ?? '';
+      return !tipo.includes('DEMANDANTE') && 
+             !tipo.includes('DEMANDADO') && 
+             !tipo.includes('SOLIDARIO');
     });
   }
 }

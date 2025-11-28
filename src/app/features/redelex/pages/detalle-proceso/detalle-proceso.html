@@ -51,34 +51,69 @@
     <div class="details-grid">
       
       <div class="details-col">
+        
         <section class="info-card">
           <h3>Partes Procesales</h3>
           
           <div class="parties-list">
-            <div class="party-item" *ngFor="let sujeto of detalle.sujetos">
-              <div class="party-role">{{ sujeto.TipoSujeto }}</div>
-              <div class="party-name">{{ sujeto.Nombre || sujeto.RazonSocial }}</div>
-              <div class="party-id">{{ sujeto.Identificacion }}</div>
+            
+            <div class="party-group" *ngIf="sujetoDemandante.length > 0">
+              <h4 class="group-title text-green">Demandante(s)</h4>
+              <div class="party-item party-item--demandante" *ngFor="let s of sujetoDemandante">
+                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
+                <div class="party-id">{{ s.Identificacion }}</div>
+              </div>
             </div>
+
+            <div class="party-group" *ngIf="sujetoDemandado.length > 0">
+              <h4 class="group-title text-red">Demandado(s)</h4>
+              <div class="party-item party-item--demandado" *ngFor="let s of sujetoDemandado">
+                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
+                <div class="party-id">{{ s.Identificacion }}</div>
+              </div>
+            </div>
+
+            <div class="party-group" *ngIf="sujetosSolidarios.length > 0">
+              <h4 class="group-title">Deudores Solidarios</h4>
+              <div class="party-item" *ngFor="let s of sujetosSolidarios">
+                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
+                <div class="party-id">{{ s.Identificacion }}</div>
+              </div>
+            </div>
+
+            <div class="party-group" *ngIf="otrosSujetos.length > 0">
+              <h4 class="group-title">Otros Sujetos</h4>
+              <div class="party-item" *ngFor="let s of otrosSujetos">
+                <div class="party-role-badge">{{ s.Tipo }}</div>
+                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
+                <div class="party-id">{{ s.Identificacion || s.NumeroIdentificacion }}</div>
+              </div>
+            </div>
+
           </div>
         </section>
 
         <section class="info-card mt-4" *ngIf="detalle.medidasCautelares?.length > 0">
           <h3>Medidas Cautelares</h3>
-          <ul class="measures-list">
-            <li *ngFor="let medida of detalle.medidasCautelares">
-              <strong>{{ medida.tipoMedida }}</strong> sobre {{ medida.tipoBien }}
-              <br>
-              <span class="text-sm text-gray">{{ medida.medidaEfectiva }}</span>
-            </li>
-          </ul>
+          
+          <div class="medidas-list">
+            <div class="medida-card" *ngFor="let medida of detalle.medidasCautelares">
+              <div class="medida-header">
+                <span class="medida-type">{{ medida.tipoBien || 'Medida Cautelar' }}</span>
+                <span class="medida-status">{{ medida.medidaEfectiva === 'S' ? 'Efectiva' : 'Pendiente' }}</span>
+              </div>
+              <div class="medida-body">
+                <p><strong>Medida:</strong> {{ medida.tipoMedida }}</p>
+                <p *ngIf="medida.avaluoJudicial"><strong>Avalúo:</strong> {{ medida.avaluoJudicial | currency }}</p>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
 
       <div class="details-col">
         <section class="info-card">
           <h3>Últimas Actuaciones</h3>
-          
           <div class="timeline">
             <div *ngIf="!detalle.actuaciones?.length && !detalle.ultimaActuacionFecha" class="empty-timeline">
               No hay actuaciones registradas.
