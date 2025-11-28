@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RedelexService } from '../../services/redelex.service';
 import { Title } from '@angular/platform-browser';
+// IMPORTAR EL PIPE
+import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe';
 
 @Component({
   selector: 'app-detalle-proceso',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  // AGREGAR EL PIPE A LOS IMPORTS
+  imports: [CommonModule, RouterLink, ClaseProcesoPipe],
   templateUrl: './detalle-proceso.html',
   styleUrls: ['./detalle-proceso.scss']
 })
@@ -61,12 +64,11 @@ export class DetalleProcesoComponent implements OnInit {
     });
   }
 
-procesarSujetos() {
+  procesarSujetos() {
     if (!this.detalle || !this.detalle.sujetos) return;
 
     const sujetos = this.detalle.sujetos;
 
-    // CORRECCIÓN: Usamos 'Tipo' en lugar de 'TipoSujeto'
     this.sujetoDemandante = sujetos.filter((s: any) => 
       s.Tipo?.toUpperCase().includes('DEMANDANTE')
     );

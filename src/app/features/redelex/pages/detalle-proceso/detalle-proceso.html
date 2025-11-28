@@ -22,7 +22,8 @@
     
     <header class="process-header">
       <div class="header-top">
-        <span class="badge badge--primary">{{ detalle.claseProceso || 'Proceso' }}</span>
+        <span class="badge badge--primary">{{ detalle.claseProceso | claseProceso }}</span>
+        
         <span class="badge" [ngClass]="detalle.estado === 'ACTIVO' ? 'badge--success' : 'badge--neutral'">
           {{ detalle.estado || 'Sin Estado' }}
         </span>

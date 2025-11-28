@@ -20,17 +20,14 @@
   </div>
 
   <div class="card">
-    <!-- FILTROS -->
     <div class="filter-section" *ngIf="mostrarFiltros">
       <div class="filters-grid">
         
-        <!-- 1. Búsqueda Rápida -->
         <label class="field full-width">
           <span class="field__label">Búsqueda Rápida</span>
           <input class="field__input" type="text" [(ngModel)]="filtros.busquedaGeneral" (input)="applyFilters()" placeholder="Buscar por radicado, nombre, cédula...">
         </label>
 
-        <!-- 2. FILTRO INMOBILIARIA -->
         <div class="field full-width custom-select-container">
           <span class="field__label">Inmobiliaria</span>
           <div class="custom-select" (click)="toggleDropdown('demandante', $event)" [class.open]="activeDropdown === 'demandante'">
@@ -53,7 +50,6 @@
           </div>
         </div>
 
-        <!-- 3. Filtros Específicos -->
         <label class="field">
           <span class="field__label">ID Demandado</span>
           <input class="field__input" type="text" [(ngModel)]="filtros.identificacion" (input)="applyFilters()" placeholder="Ej: 805000...">
@@ -64,7 +60,6 @@
           <input class="field__input" type="text" [(ngModel)]="filtros.nombre" (input)="applyFilters()" placeholder="Ej: Continental...">
         </label>
 
-        <!-- Clase Proceso -->
         <div class="field custom-select-container">
           <span class="field__label">Clase Proceso</span>
           <div class="custom-select" (click)="toggleDropdown('clase', $event)" [class.open]="activeDropdown === 'clase'">
@@ -83,7 +78,6 @@
           </div>
         </div>
 
-        <!-- Etapa Procesal -->
         <div class="field custom-select-container">
           <span class="field__label">Etapa Procesal</span>
           <div class="custom-select" (click)="toggleDropdown('etapa', $event)" [class.open]="activeDropdown === 'etapa'">
@@ -102,7 +96,6 @@
           </div>
         </div>
 
-        <!-- Despacho -->
         <div class="field custom-select-container">
           <span class="field__label">Despacho</span>
           <div class="custom-select" (click)="toggleDropdown('despacho', $event)" [class.open]="activeDropdown === 'despacho'">
@@ -128,7 +121,6 @@
       <div class="divider"></div>
     </div>
 
-    <!-- Resto del HTML (Loading, Tabla, Paginación, Modal) se mantiene igual -->
     <div *ngIf="loading" class="helper"><div class="spinner"></div><p>Cargando datos...</p></div>
 
     <div class="table-container" *ngIf="!loading && !error">
@@ -153,7 +145,7 @@
           <tbody>
             <tr *ngFor="let item of paginatedData">
               <td class="cell-id">{{ item.idProceso }}</td>
-              <td>{{ item.claseProceso || '-' }}</td>
+              <td>{{ item.claseProceso | claseProceso }}</td>
               <td class="cell-radicado" title="{{ item.numeroRadicacion }}">{{ item.numeroRadicacion || 'N/A' }}</td>
               <td class="cell-nombre">{{ item.demandadoNombre }}</td>
               <td>{{ item.demandadoIdentificacion }}</td>
@@ -200,7 +192,6 @@
   </div>
 </div>
 
-<!-- MODAL EXPORT (Igual) -->
 <div class="modal-overlay" *ngIf="showExportModal">
   <div class="modal-card">
     <div class="modal-header">

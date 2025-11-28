@@ -48,6 +48,7 @@
     </section>
 
     <section class="right-column">
+      
       @if (procesosPorCedula.length > 0) {
         <div class="card" id="seccion-lista-procesos">
           <div class="card__header">
@@ -95,7 +96,7 @@
                     <div class="process-meta">
                       @if (p.claseProceso) {
                         <span class="badge-type">
-                          {{ p.claseProceso | titlecase }}
+                          {{ p.claseProceso | claseProceso | titlecase }}
                         </span>
                       }
 
@@ -118,25 +119,9 @@
 
           @if (totalPages > 1) {
             <div class="pagination">
-              <button
-                class="pagination__btn"
-                [disabled]="currentPage === 1"
-                (click)="cambiarPagina('prev')"
-              >
-                ← Anterior
-              </button>
-
-              <span class="pagination__info">
-                Página {{ currentPage }} de {{ totalPages }}
-              </span>
-
-              <button
-                class="pagination__btn"
-                [disabled]="currentPage === totalPages"
-                (click)="cambiarPagina('next')"
-              >
-                Siguiente →
-              </button>
+              <button class="pagination__btn" [disabled]="currentPage === 1" (click)="cambiarPagina('prev')">← Anterior</button>
+              <span class="pagination__info">Página {{ currentPage }} de {{ totalPages }}</span>
+              <button class="pagination__btn" [disabled]="currentPage === totalPages" (click)="cambiarPagina('next')">Siguiente →</button>
             </div>
           }
         </div>
@@ -150,62 +135,35 @@
 
       @if (proceso) {
         <div class="card card--detail" id="seccion-detalle-proceso">
+          
           <div class="detail-header">
-            <h3>Proceso {{ (proceso.claseProceso || '-') | titlecase }}
-            </h3>
+            <h3>PROCESO {{ (proceso.claseProceso | claseProceso) | titlecase | uppercase }}</h3>
             <div class="export-actions">
-              <button 
-                class="export-btn export-btn--excel" 
-                (click)="exportarExcel()"
-                data-tooltip="Exportar a Excel"
-                aria-label="Exportar a Excel">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12.9,14.5L15.8,19H14L12,15.6L10,19H8.2L11.1,14.5L8.2,10H10L12,13.4L14,10H15.8L12.9,14.5Z"/>
-                </svg>
+              <button class="export-btn export-btn--excel" (click)="exportarExcel()" data-tooltip="Exportar a Excel">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12.9,14.5L15.8,19H14L12,15.6L10,19H8.2L11.1,14.5L8.2,10H10L12,13.4L14,10H15.8L12.9,14.5Z"/></svg>
               </button>
-
-              <button 
-                class="export-btn export-btn--pdf" 
-                (click)="exportarPdf()"
-                data-tooltip="Exportar a PDF"
-                aria-label="Exportar a PDF">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10.1,11.4C10.08,11.44 9.81,13.16 8,16.09C8,16.09 4.5,17.91 5.33,19.27C6,20.35 7.65,19.23 9.07,16.59C9.07,16.59 10.89,15.95 13.31,15.77C13.31,15.77 17.17,17.5 17.7,15.66C18.22,13.8 14.64,14.22 14,14.41C14,14.41 12,13.06 11.5,11.2C11.5,11.2 12.64,7.25 10.89,7.3C9.14,7.35 9.8,10.43 10.1,11.4M10.91,12.44C10.94,12.45 11.38,13.65 12.8,14.9C12.8,14.9 10.47,15.36 9.41,15.8C9.41,15.8 10.41,14.07 10.91,12.44M14.84,15.16C15.42,15 17.17,15.31 17.1,15.64C17.04,15.97 14.84,15.16 14.84,15.16M7.77,17C7.24,18.24 6.33,19 6.1,19C5.87,19 6.8,17.4 7.77,17M10.91,10.07C10.91,10 10.55,7.87 10.91,7.92C11.45,8 10.91,10 10.91,10.07Z"/>
-                </svg>
+              <button class="export-btn export-btn--pdf" (click)="exportarPdf()" data-tooltip="Exportar a PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10.1,11.4C10.08,11.44 9.81,13.16 8,16.09C8,16.09 4.5,17.91 5.33,19.27C6,20.35 7.65,19.23 9.07,16.59C9.07,16.59 10.89,15.95 13.31,15.77C13.31,15.77 17.17,17.5 17.7,15.66C18.22,13.8 14.64,14.22 14,14.41C14,14.41 12,13.06 11.5,11.2C11.5,11.2 12.64,7.25 10.89,7.3C9.14,7.35 9.8,10.43 10.1,11.4M10.91,12.44C10.94,12.45 11.38,13.65 12.8,14.9C12.8,14.9 10.47,15.36 9.41,15.8C9.41,15.8 10.41,14.07 10.91,12.44M14.84,15.16C15.42,15 17.17,15.31 17.1,15.64C17.04,15.97 14.84,15.16 14.84,15.16M7.77,17C7.24,18.24 6.33,19 6.1,19C5.87,19 6.8,17.4 7.77,17M10.91,10.07C10.91,10 10.55,7.87 10.91,7.92C11.45,8 10.91,10 10.91,10.07Z"/></svg>
               </button>
             </div>
           </div>
 
           @if (sujetoDemandante.length > 0 || sujetoDemandado.length > 0 || sujetosSolidarios.length > 0) {
-            <div 
-              class="detail-section" 
-              [class.detail-section--collapsed]="!sectionOpen.demandante"
-            >
+            <div class="detail-section" [class.detail-section--collapsed]="!sectionOpen.demandante">
               <div class="detail-section__header" (click)="toggleSection('demandante')">
                 <h4>
-                  <span class="section-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"/>
-                    </svg>
-                  </span>
+                  <span class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"/></svg></span>
                   Datos de los Sujetos
                 </h4>
-                <span class="detail-section__chevron">
-                  {{ sectionOpen.demandante ? '▾' : '▸' }}
-                </span>
+                <span class="detail-section__chevron">{{ sectionOpen.demandante ? '▾' : '▸' }}</span>
               </div>
 
               @if (sectionOpen.demandante) {
                 <div class="detail-section__body">
-                  
                   @if (sujetoDemandante.length > 0) {
                     <div class="subject-group">
                       <div class="subject-group__header">
-                        <span class="subject-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
-                          </svg>
-                        </span>
+                        <span class="subject-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg></span>
                         <h5>Demandante(s)</h5>
                         <span class="subject-badge">{{ sujetoDemandante.length }}</span>
                       </div>
@@ -213,33 +171,20 @@
                         @for (s of sujetoDemandante; track $index) {
                           <div class="subject-card">
                             <div class="detail-grid">
-                              <div>
-                                <p class="detail-label">Nombre</p>
-                                <p class="detail-value">{{ s.Nombre || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Tipo Identificación</p>
-                                <p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Número Identificación</p>
-                                <p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p>
-                              </div>
+                              <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p></div>
+                              <div><p class="detail-label">Tipo Identificación</p><p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p></div>
+                              <div><p class="detail-label">Número Identificación</p><p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p></div>
                             </div>
                           </div>
                         }
                       </div>
                     </div>
                   }
-
+                  
                   @if (sujetoDemandado.length > 0) {
                     <div class="subject-group">
                       <div class="subject-group__header">
-                        <span class="subject-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,17V16H9V14H11V13H9V11H11V10H9V8H11C11,6.89 11.89,6 13,6H15V8H13V10H15V11H13V13H15V14H13V16H15V17H13C11.89,17 11,16.11 11,15M11,15H13V15H11V15Z"/>
-                          </svg>
-                        </span>
+                        <span class="subject-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,17V16H9V14H11V13H9V11H11V10H9V8H11C11,6.89 11.89,6 13,6H15V8H13V10H15V11H13V13H15V14H13V16H15V17H13C11.89,17 11,16.11 11,15M11,15H13V15H11V15Z"/></svg></span>
                         <h5>Demandado(s)</h5>
                         <span class="subject-badge">{{ sujetoDemandado.length }}</span>
                       </div>
@@ -247,18 +192,9 @@
                         @for (s of sujetoDemandado; track $index) {
                           <div class="subject-card">
                             <div class="detail-grid">
-                              <div>
-                                <p class="detail-label">Nombre</p>
-                                <p class="detail-value">{{ s.Nombre || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Tipo Identificación</p>
-                                <p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Identificación</p>
-                                <p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p>
-                              </div>
+                              <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p></div>
+                              <div><p class="detail-label">Tipo Identificación</p><p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p></div>
+                              <div><p class="detail-label">Identificación</p><p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p></div>
                             </div>
                           </div>
                         }
@@ -269,11 +205,7 @@
                   @if (sujetosSolidarios.length > 0) {
                     <div class="subject-group">
                       <div class="subject-group__header">
-                        <span class="subject-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
-                          </svg>
-                        </span>
+                        <span class="subject-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/></svg></span>
                         <h5>Deudor(es) Solidario(s)</h5>
                         <span class="subject-badge">{{ sujetosSolidarios.length }}</span>
                       </div>
@@ -281,56 +213,32 @@
                         @for (s of sujetosSolidarios; track $index) {
                           <div class="subject-card">
                             <div class="detail-grid">
-                              <div>
-                                <p class="detail-label">Nombre</p>
-                                <p class="detail-value">{{ s.Nombre || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Tipo Identificación</p>
-                                <p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Identificación</p>
-                                <p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p>
-                              </div>
+                              <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p></div>
+                              <div><p class="detail-label">Tipo Identificación</p><p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p></div>
+                              <div><p class="detail-label">Identificación</p><p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p></div>
                             </div>
                           </div>
                         }
                       </div>
                     </div>
                   }
+
                   @if (otrosSujetos.length > 0) {
                     @for (s of otrosSujetos; track s; let i = $index) {
-                    <div class="subject-group">
-                      <div class="subject-group__header">
-                        <span class="subject-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
-                          </svg>
-                        </span>
-                        <h5>{{ (s.Tipo || '-') | titlecase  }}</h5>
-                        <span class="subject-badge">1</span>
-                      </div>
-
-                      @if (sectionOpen.otrosSujetos) {
-                        <div class="subject-card">
-                            <div class="detail-grid">
-                              <div>
-                                <p class="detail-label">Nombre</p>
-                                <p class="detail-value">{{ s.Nombre || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Tipo identificación</p>
-                                <p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p>
-                              </div>
-                              <div>
-                                <p class="detail-label">Identificación</p>
-                                <p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p>
-                              </div>
-                            </div>
+                      <div class="subject-group">
+                        <div class="subject-group__header">
+                          <span class="subject-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/></svg></span>
+                          <h5>{{ (s.Tipo || '-') | titlecase }}</h5>
+                          <span class="subject-badge">1</span>
                         </div>
-                      }
-                    </div>
+                        <div class="subject-card">
+                          <div class="detail-grid">
+                            <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p></div>
+                            <div><p class="detail-label">Tipo identificación</p><p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p></div>
+                            <div><p class="detail-label">Identificación</p><p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p></div>
+                          </div>
+                        </div>
+                      </div>
                     }
                   }
                 </div>
@@ -338,97 +246,42 @@
             </div>
           }
 
-          <div
-            class="detail-section"
-            [class.detail-section--collapsed]="!sectionOpen.proceso"
-          >
+          <div class="detail-section" [class.detail-section--collapsed]="!sectionOpen.proceso">
             <div class="detail-section__header" (click)="toggleSection('proceso')">
               <h4>
-                <span class="section-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                  </svg>
-                </span>
+                <span class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg></span>
                 Datos del proceso
               </h4>
-              <span class="detail-section__chevron">
-                {{ sectionOpen.proceso ? '▾' : '▸' }}
-              </span>
+              <span class="detail-section__chevron">{{ sectionOpen.proceso ? '▾' : '▸' }}</span>
             </div>
 
             @if (sectionOpen.proceso) {
               <div class="detail-section__body">
                 <div class="proceso-card">
                   <div class="detail-grid">
-                    <div>
-                      <p class="detail-label">Etapa Procesal</p>
-                      <p class="detail-value">{{ proceso.etapaProcesal || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Despacho actual</p>
-                      <p class="detail-value">{{ proceso.despacho || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Despacho de origen</p>
-                      <p class="detail-value">{{ proceso.despachoOrigen || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Tema (estado del inmueble)</p>
-                      <p class="detail-value">{{ proceso.tema || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Ubicación contrato</p>
-                      <p class="detail-value">{{ proceso.ubicacionContrato || '-' }}</p>
-                    </div>
+                    <div><p class="detail-label">Etapa Procesal</p><p class="detail-value">{{ proceso.etapaProcesal || '-' }}</p></div>
+                    <div><p class="detail-label">Despacho actual</p><p class="detail-value">{{ proceso.despacho || '-' }}</p></div>
+                    <div><p class="detail-label">Despacho de origen</p><p class="detail-value">{{ proceso.despachoOrigen || '-' }}</p></div>
+                    <div><p class="detail-label">Tema</p><p class="detail-value">{{ proceso.tema || '-' }}</p></div>
+                    <div><p class="detail-label">Ubicación contrato</p><p class="detail-value">{{ proceso.ubicacionContrato || '-' }}</p></div>
                   </div>
                 </div>
                 <br>
                 <div class="proceso-card">
                   <div class="detail-grid">
-                    <div>
-                      <p class="detail-label">Fecha creación expediente</p>
-                      <p class="detail-value">{{ proceso.fechaCreacion || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Fecha entrega abogado</p>
-                      <p class="detail-value">{{ proceso.fechaEntregaAbogado || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Fecha admisión demanda</p>
-                      <p class="detail-value">{{ proceso.fechaAdmisionDemanda || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Fecha recepción proceso</p>
-                      <p class="detail-value">{{ proceso.fechaRecepcionProceso || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Sentencia 1ra instancia</p>
-                      <p class="detail-value">
-                        {{ proceso.sentenciaPrimeraInstanciaResultado || '-' }}
-                        @if (proceso.sentenciaPrimeraInstanciaFecha) {
-                          <span>({{ proceso.sentenciaPrimeraInstanciaFecha }})</span>
-                        }
-                      </p>
-                    </div>
+                    <div><p class="detail-label">Creación expediente</p><p class="detail-value">{{ proceso.fechaCreacion || '-' }}</p></div>
+                    <div><p class="detail-label">Entrega abogado</p><p class="detail-value">{{ proceso.fechaEntregaAbogado || '-' }}</p></div>
+                    <div><p class="detail-label">Admisión demanda</p><p class="detail-value">{{ proceso.fechaAdmisionDemanda || '-' }}</p></div>
+                    <div><p class="detail-label">Recepción proceso</p><p class="detail-value">{{ proceso.fechaRecepcionProceso || '-' }}</p></div>
+                    <div><p class="detail-label">Sentencia 1ra</p><p class="detail-value">{{ proceso.sentenciaPrimeraInstanciaResultado || '-' }} @if(proceso.sentenciaPrimeraInstanciaFecha){<span>({{ proceso.sentenciaPrimeraInstanciaFecha }})</span>}</p></div>
                   </div>
                 </div>
                 <br>
                 <div class="proceso-card">
                   <div class="detail-grid">
-                    <div>
-                      <p class="detail-label">Tipo</p>
-                      <p class="detail-value">{{ proceso.ultimaActuacionTipo || '-' }}</p>
-                    </div>
-                    <div>
-                      <p class="detail-label">Fecha</p>
-                      <p class="detail-value">{{ proceso.ultimaActuacionFecha || '-' }}</p>
-                    </div>
-                    <div class="detail-grid--full">
-                      <p class="detail-label">Observación</p>
-                      <p class="detail-value">
-                        {{ proceso.ultimaActuacionObservacion || '-' }}
-                      </p>
-                    </div>
+                    <div><p class="detail-label">Última Actuación</p><p class="detail-value">{{ proceso.ultimaActuacionTipo || '-' }}</p></div>
+                    <div><p class="detail-label">Fecha</p><p class="detail-value">{{ proceso.ultimaActuacionFecha || '-' }}</p></div>
+                    <div class="detail-grid--full"><p class="detail-label">Observación</p><p class="detail-value">{{ proceso.ultimaActuacionObservacion || '-' }}</p></div>
                   </div>
                 </div>
               </div>
@@ -436,67 +289,34 @@
           </div>
 
           @if (medidas && medidas.length > 0) {
-            <div
-              class="detail-section"
-              [class.detail-section--collapsed]="!sectionOpen.medidas"
-            >
+            <div class="detail-section" [class.detail-section--collapsed]="!sectionOpen.medidas">
               <div class="detail-section__header" (click)="toggleSection('medidas')">
                 <h4>
-                  <span class="section-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,16 6,15.47C6,13.82 8.71,12.47 12,12.47C15.29,12.47 18,13.79 18,15.47C17.76,16 17.47,16.5 17.13,17Z"/>
-                    </svg>
-                  </span>
+                  <span class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,16 6,15.47C6,13.82 8.71,12.47 12,12.47C15.29,12.47 18,13.79 18,15.47C17.76,16 17.47,16.5 17.13,17Z"/></svg></span>
                   Medidas cautelares
                 </h4>
-                <span class="detail-section__chevron">
-                  {{ sectionOpen.medidas ? '▾' : '▸' }}
-                </span>
+                <span class="detail-section__chevron">{{ sectionOpen.medidas ? '▾' : '▸' }}</span>
               </div>
 
               @if (sectionOpen.medidas) {
                 <div class="detail-section__body">
                   @for (m of medidas; track m; let i = $index) {
-                    
                     <div class="medida-card-accordion" [class.is-open]="openMedidas.has(i)">
-                      
                       <div class="medida-header" (click)="toggleMedida(i)">
                         <div class="medida-title">
-
                           @switch (getMedidaIconType(m.tipoBien)) {
-
                             @case ('money') {
-                              <svg class="medida-icon-svg icon-money" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="1" x2="12" y2="23"></line>
-                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                              </svg>
+                              <svg class="medida-icon-svg icon-money" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                             }
-
                             @case ('house') {
-                              <svg class="medida-icon-svg icon-house" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                              </svg>
+                              <svg class="medida-icon-svg icon-house" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                             }
-
                             @case ('legal') {
-                               <svg class="medida-icon-svg icon-legal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
-                                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
-                                <path d="M7 21h10"/>
-                                <path d="M12 3v18"/>
-                                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
-                              </svg>
+                               <svg class="medida-icon-svg icon-legal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
                             }
-
                             @default {
-                              <svg class="medida-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                              </svg>
+                              <svg class="medida-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                             }
-
                           }
                           <strong>{{ m.tipoBien || 'Bien sin nombre' }}</strong>
                           <span class="medida-status-badge">{{ m.medidaEfectiva || 'Pendiente' }}</span>
@@ -507,24 +327,10 @@
                       @if (openMedidas.has(i)) {
                         <div class="medida-body fade-in">
                           <div class="detail-grid">
-                            <div>
-                              <p class="detail-label">Sujeto</p>
-                              <p class="detail-value">{{ m.sujeto || '-' }}</p>
-                            </div>
-                            <div>
-                              <p class="detail-label">Tipo medida</p>
-                              <p class="detail-value">{{ m.tipoMedida || '-' }}</p>
-                            </div>
-                            <div>
-                              <p class="detail-label">Avalúo judicial</p>
-                              <p class="detail-value">{{ m.avaluoJudicial || '-' }}</p>
-                            </div>
-                            <div class="detail-grid--full">
-                              <p class="detail-label">Observaciones</p>
-                              <p class="detail-value"
-                                [innerHTML]="formatObservaciones(m.observaciones || '')">
-                              </p>
-                            </div>
+                            <div><p class="detail-label">Sujeto</p><p class="detail-value">{{ m.sujeto || '-' }}</p></div>
+                            <div><p class="detail-label">Tipo medida</p><p class="detail-value">{{ m.tipoMedida || '-' }}</p></div>
+                            <div><p class="detail-label">Avalúo judicial</p><p class="detail-value">{{ m.avaluoJudicial || '-' }}</p></div>
+                            <div class="detail-grid--full"><p class="detail-label">Observaciones</p><p class="detail-value" [innerHTML]="formatObservaciones(m.observaciones || '')"></p></div>
                           </div>
                         </div>
                       }
@@ -535,38 +341,24 @@
             </div>
           }
 
-          <div
-            class="detail-section"
-            [class.detail-section--collapsed]="!sectionOpen.abogados"
-          >
+          <div class="detail-section" [class.detail-section--collapsed]="!sectionOpen.abogados">
             <div class="detail-section__header" (click)="toggleSection('abogados')">
               <h4>
-                <span class="section-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
-                  </svg>
-                </span>
+                <span class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/></svg></span>
                 Abogados
               </h4>
-              <span class="detail-section__chevron">
-                {{ sectionOpen.abogados ? '▾' : '▸' }}
-              </span>
+              <span class="detail-section__chevron">{{ sectionOpen.abogados ? '▾' : '▸' }}</span>
             </div>
 
             @if (sectionOpen.abogados) {
               <div class="detail-section__body">
-                
                 @if (abogadoPrincipal) {
                   <div class="abogado-principal">
                     <div class="detail-grid">
-                      <div>
-                        <p class="detail-label">Abogado principal</p>
-                        <p class="detail-value">{{ abogadoPrincipal.Nombre }}</p>
-                      </div>
+                      <div><p class="detail-label">Abogado principal</p><p class="detail-value">{{ abogadoPrincipal.Nombre }}</p></div>
                     </div>
                   </div>
                 }
-
                 @if (abogadosInternos.length > 0) {
                   <div class="abogados-internos">
                     <div class="detail-grid">
@@ -581,24 +373,18 @@
                     </div>
                   </div>
                 }
-
                 @if (otrosAbogados.length > 0) {
                   <div class="otros-abogados">
                     <div class="detail-grid">
                       @for (ab of otrosAbogados; track ab) {
-                        <div>
-                          <p class="detail-label">{{ ab.ActuaComo || 'Otro abogado' }}</p>
-                          <p class="detail-value">{{ ab.Nombre || '-' }}</p>
-                        </div>
+                        <div><p class="detail-label">{{ ab.ActuaComo || 'Otro abogado' }}</p><p class="detail-value">{{ ab.Nombre || '-' }}</p></div>
                       }
                     </div>
                   </div>
                 }
-
                 @if (!abogadoPrincipal && abogadosInternos.length === 0 && otrosAbogados.length === 0) {
                   <p class="helper">No hay abogados asignados a este proceso.</p>
                 }
-
               </div>
             }
           </div>

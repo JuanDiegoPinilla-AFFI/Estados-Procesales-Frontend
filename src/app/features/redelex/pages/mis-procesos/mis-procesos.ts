@@ -8,14 +8,15 @@ import { Title } from '@angular/platform-browser';
 import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe'; // Asegura la ruta correcta
 
 registerLocaleData(localeEsCo, 'es-CO');
 
 @Component({
   selector: 'app-mis-procesos',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
-  providers: [DatePipe],
+  imports: [CommonModule, RouterLink, FormsModule, ClaseProcesoPipe],
+  providers: [DatePipe, ClaseProcesoPipe], // Proveedor para uso interno
   templateUrl: './mis-procesos.html',
   styleUrls: ['./mis-procesos.scss']
 })
@@ -24,6 +25,7 @@ export class MisProcesosComponent implements OnInit {
   private titleService = inject(Title);
   private datePipe = inject(DatePipe);
   private elementRef = inject(ElementRef);
+  private clasePipe = inject(ClaseProcesoPipe); // Inyección para usar en lógica TS
 
   rawData: any[] = [];
   filteredData: any[] = [];
@@ -43,7 +45,6 @@ export class MisProcesosComponent implements OnInit {
   };
   listaClaseProceso: string[] = [];
   activeDropdown: string | null = null;
-  searchClase = '';
 
   // Exportación
   showExportModal = false;
@@ -60,7 +61,8 @@ export class MisProcesosComponent implements OnInit {
     this.titleService.setTitle('Affi - Mis Procesos');
     this.cargarMisProcesos();
   }
-// --- CARGA DE DATOS ---
+
+  // --- CARGA DE DATOS ---
   cargarMisProcesos() {
     this.loading = true;
     this.redelexService.getMisProcesos().subscribe({
@@ -68,32 +70,23 @@ export class MisProcesosComponent implements OnInit {
         const rawProcesos = res.procesos || [];
         this.identificacionUsuario = res.identificacion;
 
-        // --- INICIO CORRECCIÓN DE LIMPIEZA ---
+        // Limpieza de nombres concatenados
         const datosLimpios = rawProcesos.map((item: any) => {
-          // Copiamos el objeto para no mutar referencias
           const newItem = { ...item };
 
-          // 1. Limpiar Nombre Demandado (Tomar solo el primero antes de la coma)
           if (newItem.demandadoNombre && newItem.demandadoNombre.includes(',')) {
             newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
           }
-
-          // 2. Limpiar Identificación Demandado
           if (newItem.demandadoIdentificacion && newItem.demandadoIdentificacion.includes(',')) {
             newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
           }
-
-          // 3. Limpiar Nombre Demandante (Opcional)
           if (newItem.demandanteNombre && newItem.demandanteNombre.includes(',')) {
             newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
           }
-
           return newItem;
         });
         
         this.rawData = datosLimpios;
-        // -------------------------------------
-
         this.extraerListasUnicas();
         this.applyFilters();
         this.loading = false;
@@ -109,7 +102,10 @@ export class MisProcesosComponent implements OnInit {
   extraerListasUnicas() {
     const clasesSet = new Set<string>();
     this.rawData.forEach(item => {
-      if (item.claseProceso) clasesSet.add(item.claseProceso);
+      if (item.claseProceso) {
+        // CORRECCIÓN: Guardamos el nombre transformado (RESTITUCIÓN) en la lista
+        clasesSet.add(this.clasePipe.transform(item.claseProceso));
+      }
     });
     this.listaClaseProceso = Array.from(clasesSet).sort();
   }
@@ -121,15 +117,27 @@ export class MisProcesosComponent implements OnInit {
       // Filtro General
       if (this.filtros.busquedaGeneral) {
         const term = this.filtros.busquedaGeneral.toLowerCase();
+        // También buscamos por el nombre de clase transformado
+        const claseTransformada = this.clasePipe.transform(item.claseProceso).toLowerCase();
+        
         const match = 
           item.procesoId?.toString().includes(term) ||
           item.demandadoNombre?.toLowerCase().includes(term) ||
           item.demandadoIdentificacion?.includes(term) ||
-          item.demandanteNombre?.toLowerCase().includes(term);
+          item.demandanteNombre?.toLowerCase().includes(term) ||
+          claseTransformada.includes(term); // Búsqueda por clase
+          
         if (!match) return false;
       }
-      // Filtro Clase
-      if (this.filtros.claseProceso && item.claseProceso !== this.filtros.claseProceso) return false;
+
+      // Filtro Clase (CORRECCIÓN CRÍTICA)
+      if (this.filtros.claseProceso) {
+        // Transformamos el valor de la fila para compararlo con el valor del dropdown
+        const valorFilaTransformado = this.clasePipe.transform(item.claseProceso);
+        if (valorFilaTransformado !== this.filtros.claseProceso) {
+          return false;
+        }
+      }
 
       return true;
     });
@@ -214,7 +222,14 @@ export class MisProcesosComponent implements OnInit {
       const row = sheet.getRow(5 + idx);
       activeCols.forEach((col, colIdx) => {
         const cell = row.getCell(colIdx + 1);
-        cell.value = item[col.key] || '';
+        let val = item[col.key] || '';
+        
+        // CORRECCIÓN: Exportar nombre transformado en Excel
+        if (col.key === 'claseProceso') {
+          val = this.clasePipe.transform(val);
+        }
+
+        cell.value = val;
         cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
       });
     });
@@ -234,7 +249,14 @@ export class MisProcesosComponent implements OnInit {
     doc.text(`NIT Asociado: ${this.identificacionUsuario}`, 14, 26);
     doc.text(`Fecha: ${this.datePipe.transform(new Date(), 'medium')}`, 14, 32);
 
-    const bodyData = this.filteredData.map(item => activeCols.map(col => item[col.key] || ''));
+    const bodyData = this.filteredData.map(item => activeCols.map(col => {
+      let val = item[col.key] || '';
+      // CORRECCIÓN: Exportar nombre transformado en PDF
+      if (col.key === 'claseProceso') {
+        val = this.clasePipe.transform(val);
+      }
+      return val;
+    }));
 
     autoTable(doc, {
       startY: 40,
@@ -242,7 +264,7 @@ export class MisProcesosComponent implements OnInit {
       body: bodyData,
       theme: 'grid',
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [79, 70, 229] } // Color primario
+      headStyles: { fillColor: [79, 70, 229] }
     });
 
     doc.save(`Mis_Procesos_${new Date().getTime()}.pdf`);

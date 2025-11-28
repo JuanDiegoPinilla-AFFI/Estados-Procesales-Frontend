@@ -7,10 +7,11 @@ import { Title } from '@angular/platform-browser';
 import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe'; // Asegura ruta
+import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 
 registerLocaleData(localeEsCo, 'es-CO');
 
-// Interfaz auxiliar para el selector de Demandantes
 interface DemandanteOption {
   nombre: string;
   identificacion: string;
@@ -19,8 +20,8 @@ interface DemandanteOption {
 @Component({
   selector: 'app-informe-inmobiliaria',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  providers: [DatePipe],
+  imports: [CommonModule, FormsModule, ClaseProcesoPipe],
+  providers: [DatePipe, ClaseProcesoPipe],
   templateUrl: './informe-inmobiliaria.html',
   styleUrls: ['./informe-inmobiliaria.scss']
 })
@@ -30,6 +31,7 @@ export class InformeInmobiliariaComponent implements OnInit {
   private elementRef = inject(ElementRef);
   private datePipe = inject(DatePipe);
   private titleService = inject(Title);
+  private clasePipe = inject(ClaseProcesoPipe); // Inyección
 
   ngOnInit(): void {
     this.titleService.setTitle('Affi - Informe Inmobiliaria');
@@ -62,13 +64,11 @@ export class InformeInmobiliariaComponent implements OnInit {
     { key: 'ciudadInmueble', label: 'Ciudad', selected: true },
   ];
 
-  // Listas para filtros
   listaEtapas: string[] = [];
   listaClaseProceso: string[] = [];
   listaDespachos: string[] = [];
   listaDemandantes: DemandanteOption[] = [];
 
-  // Modelo de Filtros
   filtros = {
     busquedaGeneral: '', 
     claseProceso: '',
@@ -86,7 +86,6 @@ export class InformeInmobiliariaComponent implements OnInit {
   searchDemandante = '';
   mostrarFiltros = true;
 
-  // Getters filtrados
   get filteredClaseList() { return this.listaClaseProceso.filter(c => c.toLowerCase().includes(this.searchClase.toLowerCase())); }
   get filteredEtapaList() { return this.listaEtapas.filter(e => e.toLowerCase().includes(this.searchEtapa.toLowerCase())); }
   get filteredDespachoList() { return this.listaDespachos.filter(d => d.toLowerCase().includes(this.searchDespacho.toLowerCase())); }
@@ -146,33 +145,22 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.loading = true;
     this.redelexService.getInformeInmobiliaria(this.INFORME_ID).subscribe({
       next: (response) => {
-        // --- INICIO CORRECCIÓN DE LIMPIEZA ---
         const datosLimpios = (response.data || []).map(item => {
-          // Copiamos el objeto para no mutar referencias
           const newItem = { ...item };
-
-          // 1. Limpiar Nombre Demandado (Tomar solo el primero antes de la coma)
           if (newItem.demandadoNombre && newItem.demandadoNombre.includes(',')) {
             newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
           }
-
-          // 2. Limpiar Identificación Demandado
           if (newItem.demandadoIdentificacion && newItem.demandadoIdentificacion.includes(',')) {
             newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
           }
-
-          // 3. Limpiar Nombre Demandante (Opcional, por si acaso)
           if (newItem.demandanteNombre && newItem.demandanteNombre.includes(',')) {
             newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
           }
-
           return newItem;
         });
         
         this.rawData = datosLimpios;
         this.filteredData = datosLimpios;
-        // -------------------------------------
-
         this.extraerListasUnicas();
         this.loading = false;
       },
@@ -193,7 +181,11 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.rawData.forEach(item => {
       if (item.etapaProcesal) etapasSet.add(item.etapaProcesal);
       if (item.despacho) despachosSet.add(item.despacho);
-      if (item.claseProceso) clasesSet.add(item.claseProceso);
+      
+      // CORRECCIÓN: Guardar nombre transformado
+      if (item.claseProceso) {
+        clasesSet.add(this.clasePipe.transform(item.claseProceso));
+      }
 
       if (item.demandanteIdentificacion && item.demandanteNombre) {
         if (!demandantesMap.has(item.demandanteIdentificacion)) {
@@ -216,6 +208,9 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.filteredData = this.rawData.filter(item => {
       if (this.filtros.busquedaGeneral) {
         const term = this.filtros.busquedaGeneral.toLowerCase();
+        // Incluimos clase transformada en búsqueda general
+        const claseTransformada = this.clasePipe.transform(item.claseProceso).toLowerCase();
+
         const generalMatch = 
           item.demandadoNombre?.toLowerCase().includes(term) ||
           item.demandanteNombre?.toLowerCase().includes(term) ||
@@ -225,7 +220,7 @@ export class InformeInmobiliariaComponent implements OnInit {
           item.despacho?.toLowerCase().includes(term) ||
           item.ciudadInmueble?.toLowerCase().includes(term) ||
           item.etapaProcesal?.toLowerCase().includes(term) ||
-          item.claseProceso?.toLowerCase().includes(term);
+          claseTransformada.includes(term);
         if (!generalMatch) return false;
       }
 
@@ -234,7 +229,12 @@ export class InformeInmobiliariaComponent implements OnInit {
       
       if (this.filtros.etapa && item.etapaProcesal !== this.filtros.etapa) return false;
       if (this.filtros.despacho && item.despacho !== this.filtros.despacho) return false;
-      if (this.filtros.claseProceso && item.claseProceso !== this.filtros.claseProceso) return false;
+      
+      // Filtro Clase (CORRECCIÓN CRÍTICA)
+      if (this.filtros.claseProceso) {
+        const valTransformado = this.clasePipe.transform(item.claseProceso);
+        if (valTransformado !== this.filtros.claseProceso) return false;
+      }
 
       if (this.filtros.demandante && item.demandanteIdentificacion !== this.filtros.demandante.identificacion) {
         return false;
@@ -272,16 +272,15 @@ export class InformeInmobiliariaComponent implements OnInit {
 
   getSummaryCounts() {
     return {
-      demanda: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('DEMANDA')).length,
+      demanda: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase() === 'DEMANDA').length,
+      admisionDemanda: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('ADMISION DEMANDA')).length,
       notificacion: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('NOTIFICACION')).length,
-      sentencia: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('SENTENCIA') || i.etapaProcesal?.toUpperCase().includes('FALLO')).length,
-      lanzamiento: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('LANZAMIENTO') || i.etapaProcesal?.toUpperCase().includes('ENTREGA')).length
+      sentencia: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('SENTENCIA')).length,
+      lanzamiento: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('LANZAMIENTO')).length,
+      excepciones: this.filteredData.filter(i => i.etapaProcesal?.toUpperCase().includes('EXCEPCIONES')).length
     };
   }
 
-  // --- DATOS DINÁMICOS PARA REPORTES (CORREGIDO) ---
-  
-  // Ahora retorna el string completo del título basándose en la CLASE
   private getReportFullTitle(): string {
     const clase = this.filtros.claseProceso ? this.filtros.claseProceso.toUpperCase() : 'TODOS LOS PROCESOS';
     return `INFORME ESTADO PROCESAL - ${clase}`;
@@ -304,73 +303,89 @@ export class InformeInmobiliariaComponent implements OnInit {
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Informe Estado Procesal');
 
-      try {
-        const logoResponse = await fetch('Affi_logo.png'); 
-        if (logoResponse.ok) {
-          const logoBlob = await logoResponse.arrayBuffer();
-          const imageId = workbook.addImage({ buffer: logoBlob, extension: 'png' });
-          sheet.addImage(imageId, { tl: { col: 0.2, row: 0.2 }, ext: { width: 100, height: 50 } });
-        }
-      } catch (e) { console.warn('Logo no cargado:', e); }
+      // 1. AGREGAR LOGO (Usando la constante Base64)
+      // Nota: ExcelJS requiere el base64 sin el prefijo 'data:image/png;base64,' a veces, 
+      // pero generalmente lo maneja bien. Si falla, haz un split.
+      const imageId = workbook.addImage({
+        base64: AFFI_LOGO_BASE64,
+        extension: 'png',
+      });
 
-      // TÍTULO DINÁMICO (USANDO CLASE PROCESO)
-      sheet.mergeCells('C2:G2');
+      // Ajustamos el logo para que ocupe aprox las celdas A1:B4 manteniendo proporción cuadrada
+      sheet.addImage(imageId, {
+        tl: { col: 0.2, row: 0.1 },
+        ext: { width: 115, height: 115 } 
+      });
+
+      // 2. TÍTULOS E INFORMACIÓN
+      sheet.mergeCells('C2:H2');
       const titleCell = sheet.getCell('C2');
-      titleCell.value = this.getReportFullTitle(); // <-- Uso de la nueva función
-      titleCell.font = { bold: true, size: 14, name: 'Arial' };
+      titleCell.value = this.getReportFullTitle();
+      titleCell.font = { bold: true, size: 14, name: 'Arial', color: { argb: 'FF333333' } };
       titleCell.alignment = { horizontal: 'center' };
 
-      sheet.mergeCells('C3:G3');
+      sheet.mergeCells('C3:H3');
       const dateCell = sheet.getCell('C3');
       const fechaHoy = this.datePipe.transform(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", undefined, 'es-CO');
       dateCell.value = fechaHoy;
-      dateCell.font = { bold: true, size: 11, name: 'Arial' };
+      dateCell.font = { bold: false, size: 11, name: 'Arial', color: { argb: 'FF555555' } };
       dateCell.alignment = { horizontal: 'center' };
 
-      // INFO DINÁMICA
       const infoStartRow = 6;
       sheet.getCell(`A${infoStartRow}`).value = `Nombre Inmobiliaria: ${this.getReportInmobiliariaName()}`;
-      sheet.getCell(`A${infoStartRow}`).font = { bold: true };
+      sheet.getCell(`A${infoStartRow}`).font = { bold: true, size: 10 };
       
       sheet.getCell(`A${infoStartRow + 2}`).value = `NIT Inmobiliaria: ${this.getReportInmobiliariaNit()}`;
-      sheet.getCell(`A${infoStartRow + 2}`).font = { bold: true };
+      sheet.getCell(`A${infoStartRow + 2}`).font = { bold: true, size: 10 };
 
       sheet.getCell(`A${infoStartRow + 4}`).value = `Cantidad de procesos: ${this.filteredData.length}`;
-      sheet.getCell(`A${infoStartRow + 4}`).font = { bold: true };
+      sheet.getCell(`A${infoStartRow + 4}`).font = { bold: true, size: 10 };
 
-      // RESUMEN
+      // 3. CAJAS DE RESUMEN
       const summary = this.getSummaryCounts();
-      const sumStartCol = 4; 
+      const sumStartCol = 4; // Columna D
       const sumStartRow = 6;
-      const headersSum = ['Demanda', 'Notificación', 'Sentencia', 'Lanzamiento'];
-      const colorsSum = ['FFFFC000', 'FFFFE699', 'FF92D050', 'FFB4C6E7'];
+      
+      const headersSum = ['Demanda', 'Admisión Demanda', 'Notificación', 'Sentencia', 'Lanzamiento', 'Excepciones'];
+      // Colores ARGB (Alpha, Red, Green, Blue) - Quitamos el # y agregamos FF al inicio
+      const colorsSum = ['FFFFC000', 'FFDA9694', 'FFFCD5B4', 'FF92D050', 'FFB7DEE8', 'FFBFBFBF'];
       const descSum = [
-        'Hemos iniciado el proceso judicial de restitución.',
-        'Etapa en la que se notifica al arrendatario.',
-        'El juez decidió sobre la demanda.',
-        'Se está gestionando el desalojo de los inquilinos.'
+        'Hemos iniciado el proceso judicial de restitución', 
+        'El juez acepta tramitar la demanda', 
+        'Etapa en la que se notifica al arrendatario', 
+        'El juez decidió sobre la demanda', 
+        'Se está gestionando el desalojo de los inquilinos', 
+        'Demandado presentó objeciones a la demanda'
       ];
-      const valuesSum = [summary.demanda, summary.notificacion, summary.sentencia, summary.lanzamiento];
+      const valuesSum = [summary.demanda, summary.admisionDemanda, summary.notificacion, summary.sentencia, summary.lanzamiento, summary.excepciones];
+
+      // Borde suave para las cajas
+      const boxBorder = { top: {style:'thin', color: {argb:'FF999999'}}, left: {style:'thin', color: {argb:'FF999999'}}, bottom: {style:'thin', color: {argb:'FF999999'}}, right: {style:'thin', color: {argb:'FF999999'}} };
 
       headersSum.forEach((header, i) => {
-        const col = sheet.getColumn(sumStartCol + i);
-        col.width = 20;
-        const cellTitle = sheet.getCell(sumStartRow, sumStartCol + i);
+        const colIndex = sumStartCol + i;
+        const col = sheet.getColumn(colIndex); 
+        col.width = 22; // Un poco más ancho
+
+        // Título Caja
+        const cellTitle = sheet.getCell(sumStartRow, colIndex);
         cellTitle.value = header;
         cellTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colorsSum[i] } };
         cellTitle.font = { bold: true, size: 10 };
         cellTitle.alignment = { horizontal: 'center', vertical: 'middle' };
         cellTitle.border = { top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
 
-        sheet.mergeCells(sumStartRow + 1, sumStartCol + i, sumStartRow + 2, sumStartCol + i);
-        const cellDesc = sheet.getCell(sumStartRow + 1, sumStartCol + i);
+        // Descripción Caja
+        sheet.mergeCells(sumStartRow + 1, colIndex, sumStartRow + 2, colIndex);
+        const cellDesc = sheet.getCell(sumStartRow + 1, colIndex);
         cellDesc.value = descSum[i];
         cellDesc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colorsSum[i] } };
         cellDesc.font = { size: 8 };
         cellDesc.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
         cellDesc.border = { left: {style:'thin'}, right: {style:'thin'} };
 
-        const cellVal = sheet.getCell(sumStartRow + 3, sumStartCol + i);
+        // Valor Caja
+        const cellVal = sheet.getCell(sumStartRow + 3, colIndex);
         cellVal.value = valuesSum[i];
         cellVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colorsSum[i] } };
         cellVal.font = { bold: true, size: 12 };
@@ -378,28 +393,68 @@ export class InformeInmobiliariaComponent implements OnInit {
         cellVal.border = { bottom: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
       });
 
-      // TABLA DATOS
+      // 4. TABLA DE DATOS (ESTILO PROFESIONAL)
       const tableStartRow = 12;
       const headerRow = sheet.getRow(tableStartRow);
+      
+      // Estilo de borde sutil para toda la tabla
+      const tableBorderStr = 'thin';
+      const tableBorderColor = { argb: 'FFD3D3D3' }; // Gris suave
+
       activeColumns.forEach((col, idx) => {
         const cell = headerRow.getCell(idx + 1);
         cell.value = col.label;
-        cell.font = { bold: true, size: 10 };
+        
+        // ESTILO ENCABEZADO: Fondo oscuro, texto blanco
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34495E' } }; // Gris Pizarra
+        cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' }, name: 'Arial' };
         cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-        cell.border = { top: {style:'medium'}, left: {style:'medium'}, bottom: {style:'medium'}, right: {style:'medium'} };
-        sheet.getColumn(idx + 1).width = col.key === 'demandadoNombre' ? 30 : 20;
+        cell.border = { 
+          top: { style: tableBorderStr, color: tableBorderColor }, 
+          left: { style: tableBorderStr, color: tableBorderColor }, 
+          bottom: { style: tableBorderStr, color: tableBorderColor }, 
+          right: { style: tableBorderStr, color: tableBorderColor } 
+        };
+        
+        // Ajuste de anchos
+        sheet.getColumn(idx + 1).width = col.key === 'demandadoNombre' ? 35 : 22;
       });
 
+      // RENDERIZADO DE FILAS
       this.filteredData.forEach((item, index) => {
-        const currentRow = sheet.getRow(tableStartRow + 1 + index);
+        const currentRowIndex = tableStartRow + 1 + index;
+        const currentRow = sheet.getRow(currentRowIndex);
+        
+        // Color de fondo para filas alternadas (Zebra Striping)
+        // FFF8F8F8 es un gris casi blanco, muy sutil
+        const rowFill = index % 2 !== 0 ? { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } } : null;
+
         activeColumns.forEach((col, colIndex) => {
           const cell = currentRow.getCell(colIndex + 1);
           let val = item[col.key as keyof InformeInmobiliaria];
+          
           if (col.key.includes('Fecha')) val = this.datePipe.transform(val as string, 'yyyy-MM-dd') || val;
+          if (col.key === 'claseProceso') val = this.clasePipe.transform(val as string);
+
           cell.value = val || '';
-          cell.font = { size: 9, name: 'Arial' };
-          cell.alignment = { vertical: 'middle', wrapText: true };
-          cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+          
+          // ESTILO CUERPO: Texto negro, bordes suaves
+          cell.font = { size: 9, name: 'Arial', color: { argb: 'FF000000' } }; // Negro
+          cell.alignment = { vertical: 'middle', wrapText: true, horizontal: 'left' };
+          
+          // Bordes grises
+          cell.border = { 
+            top: { style: tableBorderStr, color: tableBorderColor }, 
+            left: { style: tableBorderStr, color: tableBorderColor }, 
+            bottom: { style: tableBorderStr, color: tableBorderColor }, 
+            right: { style: tableBorderStr, color: tableBorderColor } 
+          };
+
+          // Aplicar fondo alternado si corresponde
+          if (rowFill) {
+             // TypeScript trick para ExcelJS fill type
+             cell.fill = rowFill as ExcelJS.Fill; 
+          }
         });
       });
 
@@ -413,7 +468,7 @@ export class InformeInmobiliariaComponent implements OnInit {
     }
   }
 
-  exportToPdf() {
+  exportToPdf() { 
     try {
       console.log('Iniciando exportación a PDF...');
       const activeColumns = this.exportColumns.filter(c => c.selected);
@@ -421,66 +476,120 @@ export class InformeInmobiliariaComponent implements OnInit {
       const pageWidth = doc.internal.pageSize.width;
       const margin = 14;
 
-      // HEADER DINÁMICO (USANDO CLASE PROCESO)
+      // 1. AGREGAR LOGO (Mantiene proporción cuadrada 30x30)
+      doc.addImage(AFFI_LOGO_BASE64, 'PNG', margin, 3, 30, 30);
+
+      // 2. ENCABEZADO GENERAL
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text(this.getReportFullTitle(), pageWidth / 2, 20, { align: 'center' }); // <-- Uso de la nueva función
+      doc.text(this.getReportFullTitle(), pageWidth / 2, 16, { align: 'center' });
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       const fechaHoy = this.datePipe.transform(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", undefined, 'es-CO') || '';
-      doc.text(fechaHoy, pageWidth / 2, 26, { align: 'center' });
+      doc.text(fechaHoy, pageWidth / 2, 22, { align: 'center' });
 
-      // INFO DINÁMICA
+      // 3. DATOS INMOBILIARIA
+      const infoStartY = 35;
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Nombre Inmobiliaria: ${this.getReportInmobiliariaName()}`, margin, 40);
-      doc.text(`NIT Inmobiliaria: ${this.getReportInmobiliariaNit()}`, margin, 46);
-      doc.text(`Cantidad de procesos: ${this.filteredData.length}`, margin, 52);
+      doc.text(`Nombre Inmobiliaria: ${this.getReportInmobiliariaName()}`, margin, infoStartY);
+      doc.text(`NIT Inmobiliaria: ${this.getReportInmobiliariaNit()}`, margin, infoStartY + 5);
+      doc.text(`Cantidad de procesos: ${this.filteredData.length}`, margin, infoStartY + 10);
 
-      // RESUMEN
+      // 4. CAJAS DE RESUMEN
       const summary = this.getSummaryCounts();
-      const startX = pageWidth - 150;
-      const startY = 35;
-      const boxWidth = 30;
-      const boxHeight = 25;
-      const dataSum = [
-        { title: 'Demanda', color: [255, 192, 0], count: summary.demanda },
-        { title: 'Notificación', color: [255, 230, 153], count: summary.notificacion },
-        { title: 'Sentencia', color: [146, 208, 80], count: summary.sentencia },
-        { title: 'Lanzamiento', color: [180, 198, 231], count: summary.lanzamiento }
+      const descSum = [
+        'Hemos iniciado el proceso judicial de restitución',
+        'El juez acepta tramitar la demanda',
+        'Etapa en la que se notifica al arrendatario',
+        'El juez decidió sobre la demanda',
+        'Se está gestionando el desalojo de los inquilinos',
+        'Demandado presentó objeciones a la demanda'
+      ];
+
+      const boxWidth = 32; 
+      const boxHeight = 24; 
+      const gap = 3; 
+      const totalBoxesWidth = (boxWidth * 6) + (gap * 5);
+      const startX = (pageWidth - totalBoxesWidth) / 2; 
+      const startY = 55;
+
+      const dataSum = [ 
+        { title: 'Demanda', color: [255, 192, 0], count: summary.demanda }, 
+        { title: 'Admisión Demanda', color: [218, 150, 148], count: summary.admisionDemanda }, 
+        { title: 'Notificación', color: [255, 213, 180], count: summary.notificacion }, 
+        { title: 'Sentencia', color: [146, 208, 80], count: summary.sentencia }, 
+        { title: 'Lanzamiento', color: [183, 222, 232], count: summary.lanzamiento }, 
+        { title: 'Excepciones', color: [191, 191, 191], count: summary.excepciones } 
       ];
 
       dataSum.forEach((item, i) => {
-        const x = startX + (i * boxWidth);
+        const x = startX + (i * (boxWidth + gap));
+        
         doc.setFillColor(item.color[0], item.color[1], item.color[2]);
         doc.rect(x, startY, boxWidth, boxHeight, 'F');
-        doc.setDrawColor(0);
+        doc.setDrawColor(200); // Borde gris suave para las cajas también
         doc.rect(x, startY, boxWidth, boxHeight, 'S');
-        doc.setFontSize(7);
+        
+        doc.setFontSize(8); 
         doc.setFont('helvetica', 'bold');
-        doc.text(item.title, x + (boxWidth/2), startY + 5, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(item.count.toString(), x + (boxWidth/2), startY + 20, { align: 'center' });
+        doc.text(item.title, x + (boxWidth/2), startY + 4, { align: 'center', maxWidth: boxWidth - 1 });
+        
+        doc.setFontSize(6); 
+        doc.setFont('helvetica', 'normal');
+        doc.text(descSum[i], x + (boxWidth/2), startY + 9, { align: 'center', maxWidth: boxWidth - 2 });
+
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(item.count.toString(), x + (boxWidth/2), startY + 21, { align: 'center' });
       });
 
-      // TABLA
+      // 5. TABLA DE DATOS (ESTILO PROFESIONAL)
       const bodyData = this.filteredData.map(item => {
         return activeColumns.map(col => {
           let val = item[col.key as keyof InformeInmobiliaria];
           if (col.key.includes('Fecha')) val = this.datePipe.transform(val as string, 'yyyy-MM-dd') || val;
+          if (col.key === 'claseProceso') val = this.clasePipe.transform(val as string);
           return val || '';
         });
       });
 
       autoTable(doc, {
-        startY: 70,
+        startY: startY + boxHeight + 8,
         head: [activeColumns.map(c => c.label)],
         body: bodyData,
-        theme: 'grid',
-        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, lineColor: [0, 0, 0], fontStyle: 'bold', halign: 'center', valign: 'middle' },
-        styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak', lineColor: [0, 0, 0], lineWidth: 0.1 },
-        columnStyles: { 1: { cellWidth: 35 } }
+        theme: 'grid', // Mantenemos la grilla pero la estilizamos
+        
+        // Estilo del Encabezado (Fondo oscuro, texto blanco)
+        headStyles: { 
+          fillColor: [52, 73, 94], // Gris azulado oscuro profesional (Dark Slate)
+          textColor: [255, 255, 255], // Texto Blanco
+          fontStyle: 'bold',
+          halign: 'center',
+          valign: 'middle',
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200] // Líneas divisorias grises
+        },
+
+        // Estilo del Cuerpo (Texto negro, bordes suaves)
+        styles: { 
+          textColor: [0, 0, 0], // Texto NEGRO garantizado
+          fontSize: 7, 
+          cellPadding: 3, // Más espacio interno para que se vea limpio
+          valign: 'middle',
+          overflow: 'linebreak',
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200] // Bordes grises suaves, no negros fuertes
+        },
+
+        // Filas alternadas (Efecto cebra sutil)
+        alternateRowStyles: {
+          fillColor: [248, 248, 248] // Un gris muy pálido para diferenciar filas
+        },
+
+        columnStyles: { 1: { cellWidth: 35 } },
+        margin: { top: 20 } 
       });
 
       doc.save(`Informe_Inmobiliaria_${new Date().getTime()}.pdf`);

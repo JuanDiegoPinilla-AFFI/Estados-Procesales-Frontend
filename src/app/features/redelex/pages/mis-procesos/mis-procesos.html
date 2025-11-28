@@ -68,7 +68,7 @@
           <tbody>
             <tr *ngFor="let item of paginatedData" class="hover-row" [routerLink]="['../proceso', item.procesoId]">
               <td class="cell-id">#{{ item.procesoId }}</td>
-              <td><span class="tag-class">{{ item.claseProceso }}</span></td>
+              <td><span class="tag-class">{{ item.claseProceso | claseProceso }}</span></td>
               <td class="cell-nombre">{{ item.demandadoNombre }}</td>
               <td>{{ item.demandadoIdentificacion }}</td>
               <td class="cell-nombre">{{ item.demandanteNombre }}</td>
