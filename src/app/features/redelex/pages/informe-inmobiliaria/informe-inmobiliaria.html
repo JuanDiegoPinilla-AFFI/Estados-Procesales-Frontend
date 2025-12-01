@@ -129,29 +129,27 @@
           <thead>
             <tr>
               <th>ID Proceso</th>
-              <th>Clase</th>
-              <th>Radicado</th>
-              <th class="group-header">Demandado</th>
               <th class="group-header">ID Dmdado.</th>
-              <th class="group-header">Demandante</th>
+              <th class="group-header">Demandado</th>
               <th class="group-header">ID Dmte.</th>
-              <th>Despacho</th>
-              <th>Etapa</th>
-              <th>Sentencia 1ra</th>
+              <th class="group-header">Demandante</th>
               <th>Fecha Recepción</th>
+              <th>Etapa</th>
+              <th>Clase</th>
+              <th>Sentencia 1ra</th>
               <th>Ciudad</th>
+              <th>Radicado</th>
+              <th>Despacho</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of paginatedData">
               <td class="cell-id">{{ item.idProceso }}</td>
-              <td>{{ item.claseProceso | claseProceso }}</td>
-              <td class="cell-radicado" title="{{ item.numeroRadicacion }}">{{ item.numeroRadicacion || 'N/A' }}</td>
-              <td class="cell-nombre">{{ item.demandadoNombre }}</td>
               <td>{{ item.demandadoIdentificacion }}</td>
-              <td class="cell-nombre">{{ item.demandanteNombre }}</td>
+              <td class="cell-nombre">{{ item.demandadoNombre }}</td>
               <td class="cell-id">{{ item.demandanteIdentificacion }}</td>
-              <td class="cell-despacho" title="{{ item.despacho }}">{{ item.despacho }}</td>
+              <td class="cell-nombre">{{ item.demandanteNombre }}</td>
+              <td>{{ item.fechaRecepcionProceso | date:'dd/MM/yyyy' }}</td>
               <td>
                 <span class="status-badge" [ngClass]="{
                   'status-badge--active': item.etapaProcesal === 'LIQUIDACION',
@@ -159,9 +157,11 @@
                   'status-badge--inactive': item.etapaProcesal === 'TERMINACION'
                 }">{{ item.etapaProcesal }}</span>
               </td>
+              <td>{{ item.claseProceso | claseProceso }}</td>
               <td>{{ item.sentenciaPrimeraInstancia }}</td>
-              <td>{{ item.fechaRecepcionProceso | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.ciudadInmueble || '-' }}</td>
+              <td class="cell-radicado" title="{{ item.numeroRadicacion }}">{{ item.numeroRadicacion || 'N/A' }}</td>
+              <td class="cell-despacho" title="{{ item.despacho }}">{{ item.despacho }}</td>
             </tr>
             <tr *ngIf="filteredData.length === 0" class="no-results"><td colspan="12" class="helper">No se encontraron resultados.</td></tr>
           </tbody>

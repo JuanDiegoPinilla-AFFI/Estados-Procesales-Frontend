@@ -1,142 +1,228 @@
 <div class="page-container">
-  <div class="mb-6">
+  
+  <!-- BARRA DE ACCIONES -->
+  <div class="actions-bar mb-6">
     <a routerLink="/panel/consultas/mis-procesos" class="back-link">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
       Volver al listado
     </a>
+
+    <div class="export-buttons" *ngIf="!loading && !error && detalle">
+      <button class="btn btn--excel" (click)="exportToExcel()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Ficha Excel
+      </button>
+      
+      <button class="btn btn--pdf" (click)="exportToPdf()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <line x1="10" y1="9" x2="8" y2="9"></line>
+        </svg>
+        Ficha PDF
+      </button>
+    </div>
   </div>
 
+  <!-- LOADING STATE -->
   <div *ngIf="loading" class="loading-state">
     <div class="spinner"></div>
-    <p>Cargando expediente digital...</p>
+    <p>Cargando ficha del proceso...</p>
   </div>
 
+  <!-- ERROR STATE -->
   <div *ngIf="error" class="error-state">
-    <div class="error-icon">⚠️</div>
+    <div class="error-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
     <h3>No pudimos cargar el proceso</h3>
     <p>{{ error }}</p>
-    <button class="btn btn--secondary" routerLink="/panel/consultas/mis-procesos">Regresar</button>
+    <button class="btn btn--secondary" routerLink="/panel/consultas/mis-procesos">
+      Regresar al listado
+    </button>
   </div>
 
+  <!-- CONTENIDO PRINCIPAL -->
   <div *ngIf="!loading && !error && detalle" class="fade-in">
     
+    <!-- HEADER DEL PROCESO -->
     <header class="process-header">
-      <div class="header-top">
-        <span class="badge badge--primary">{{ detalle.claseProceso | claseProceso }}</span>
-        
-        <span class="badge" [ngClass]="detalle.estado === 'ACTIVO' ? 'badge--success' : 'badge--neutral'">
-          {{ detalle.estado || 'Sin Estado' }}
-        </span>
+      <div class="header-content">
+        <h1 class="process-title">
+          Radicado: {{ detalle.numeroRadicacion || 'Sin Radicado' }}
+        </h1>
+        <p class="process-subtitle">
+          ID Interno: <strong>#{{ detalle.idProceso }}</strong> &bull; Código Alterno: {{ detalle.codigoAlterno || 'N/A' }}
+        </p>
       </div>
-      
-      <h1 class="radicado-title">
-        Radicado: {{ detalle.numeroRadicacion || 'Sin Número' }}
-      </h1>
-      
-      <div class="header-meta">
-        <div class="meta-item">
-          <span class="label">ID Interno:</span>
-          <span class="value">#{{ detalle.idProceso }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="label">Despacho:</span>
-          <span class="value">{{ detalle.despacho }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="label">Ciudad:</span>
-          <span class="value">{{ detalle.regional || 'N/A' }}</span>
-        </div>
+      <div class="header-status">
+        <span class="status-pill" [ngClass]="{
+          'status-pill--green': detalle.etapaProcesal === 'LIQUIDACION' || detalle.etapaProcesal === 'TERMINACION',
+          'status-pill--orange': detalle.etapaProcesal === 'EJECUCION DEL ACUERDO' || detalle.etapaProcesal === 'ADMISION DEMANDA',
+          'status-pill--blue': !['LIQUIDACION', 'TERMINACION', 'EJECUCION DEL ACUERDO'].includes(detalle.etapaProcesal)
+        }">
+          {{ detalle.etapaProcesal || 'EN TRÁMITE' }}
+        </span>
       </div>
     </header>
 
-    <div class="details-grid">
+    <!-- GRID DE INFORMACIÓN -->
+    <div class="info-grid">
       
-      <div class="details-col">
+      <!-- CARD: ESTADO JUDICIAL -->
+      <section class="card card--featured">
+        <h3 class="card-title">Estado Judicial</h3>
         
-        <section class="info-card">
-          <h3>Partes Procesales</h3>
-          
-          <div class="parties-list">
-            
-            <div class="party-group" *ngIf="sujetoDemandante.length > 0">
-              <h4 class="group-title text-green">Demandante(s)</h4>
-              <div class="party-item party-item--demandante" *ngFor="let s of sujetoDemandante">
-                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
-                <div class="party-id">{{ s.Identificacion }}</div>
-              </div>
+        <div class="kpi-row">
+          <div class="kpi-item">
+            <span class="kpi-label">Sentencia</span>
+            <div class="kpi-value-box" [ngClass]="detalle.sentenciaPrimeraInstanciaResultado ? 'bg-green-light' : 'bg-gray-light'">
+              <svg *ngIf="detalle.sentenciaPrimeraInstanciaResultado" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+              <span class="kpi-text">{{ detalle.sentenciaPrimeraInstanciaResultado || 'Pendiente' }}</span>
             </div>
-
-            <div class="party-group" *ngIf="sujetoDemandado.length > 0">
-              <h4 class="group-title text-red">Demandado(s)</h4>
-              <div class="party-item party-item--demandado" *ngFor="let s of sujetoDemandado">
-                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
-                <div class="party-id">{{ s.Identificacion }}</div>
-              </div>
-            </div>
-
-            <div class="party-group" *ngIf="sujetosSolidarios.length > 0">
-              <h4 class="group-title">Deudores Solidarios</h4>
-              <div class="party-item" *ngFor="let s of sujetosSolidarios">
-                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
-                <div class="party-id">{{ s.Identificacion }}</div>
-              </div>
-            </div>
-
-            <div class="party-group" *ngIf="otrosSujetos.length > 0">
-              <h4 class="group-title">Otros Sujetos</h4>
-              <div class="party-item" *ngFor="let s of otrosSujetos">
-                <div class="party-role-badge">{{ s.Tipo }}</div>
-                <div class="party-name">{{ s.Nombre || s.RazonSocial }}</div>
-                <div class="party-id">{{ s.Identificacion || s.NumeroIdentificacion }}</div>
-              </div>
-            </div>
-
+            <span class="kpi-subtext" *ngIf="detalle.sentenciaPrimeraInstanciaFecha">
+              {{ detalle.sentenciaPrimeraInstanciaFecha | date:'dd/MM/yyyy' }}
+            </span>
           </div>
-        </section>
 
-        <section class="info-card mt-4" *ngIf="detalle.medidasCautelares?.length > 0">
-          <h3>Medidas Cautelares</h3>
-          
-          <div class="medidas-list">
-            <div class="medida-card" *ngFor="let medida of detalle.medidasCautelares">
-              <div class="medida-header">
-                <span class="medida-type">{{ medida.tipoBien || 'Medida Cautelar' }}</span>
-                <span class="medida-status">{{ medida.medidaEfectiva === 'S' ? 'Efectiva' : 'Pendiente' }}</span>
-              </div>
-              <div class="medida-body">
-                <p><strong>Medida:</strong> {{ medida.tipoMedida }}</p>
-                <p *ngIf="medida.avaluoJudicial"><strong>Avalúo:</strong> {{ medida.avaluoJudicial | currency }}</p>
-              </div>
+          <div class="kpi-item">
+            <span class="kpi-label">Clase de Proceso</span>
+            <div class="kpi-value text-dark">
+              {{ detalle.claseProceso | claseProceso }}
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      <div class="details-col">
-        <section class="info-card">
-          <h3>Últimas Actuaciones</h3>
-          <div class="timeline">
-            <div *ngIf="!detalle.actuaciones?.length && !detalle.ultimaActuacionFecha" class="empty-timeline">
-              No hay actuaciones registradas.
+      <!-- CARD: UBICACIÓN PROCESAL -->
+      <section class="card">
+        <h3 class="card-title">Ubicación Procesal</h3>
+        
+        <div class="data-list">
+          <div class="data-item">
+            <div class="icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
             </div>
+            <div class="data-content">
+              <span class="data-label">Despacho Judicial</span>
+              <span class="data-value">{{ detalle.despacho || 'No asignado' }}</span>
+            </div>
+          </div>
 
-            <div class="timeline-item" *ngIf="detalle.ultimaActuacionFecha">
-              <div class="timeline-marker"></div>
-              <div class="timeline-content">
-                <div class="timeline-date">
-                  {{ detalle.ultimaActuacionFecha | date:'mediumDate' }}
-                </div>
-                <div class="timeline-title">
-                  {{ detalle.ultimaActuacionTipo }}
-                </div>
-                <div class="timeline-desc">
-                  {{ detalle.ultimaActuacionObservacion }}
+          <div class="data-item">
+            <div class="icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <div class="data-content">
+              <span class="data-label">Ciudad / Jurisdicción</span>
+              <span class="data-value">{{ detalle.ubicacionContrato || detalle.regional || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <div class="data-item">
+            <div class="icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="data-content">
+              <span class="data-label">Fecha Presentación / Recepción</span>
+              <span class="data-value">
+                {{ detalle.fechaRecepcionProceso ? (detalle.fechaRecepcionProceso | date:'longDate') : 'No registrada' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD: PARTES INVOLUCRADAS (FULL WIDTH) -->
+      <section class="card full-width">
+        <h3 class="card-title">Partes Involucradas</h3>
+        
+        <div class="parties-grid">
+          <!-- DEMANDANTE -->
+          <div class="party-card party-card--demandante">
+            <div class="party-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="party-role">Demandante</span>
+            </div>
+            <div class="party-body">
+              <div class="party-name">{{ getNombreSujeto('DEMANDANTE') }}</div>
+              <div class="party-id">{{ getIdSujeto('DEMANDANTE') }}</div>
+            </div>
+          </div>
+
+          <!-- DEMANDADO -->
+          <div class="party-card party-card--demandado">
+            <div class="party-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="party-role">Demandado</span>
+            </div>
+            <div class="party-body">
+              <div class="party-name">{{ getNombreSujeto('DEMANDADO') }}</div>
+              <div class="party-id">{{ getIdSujeto('DEMANDADO') }}</div>
+            </div>
+          </div>
+
+          <!-- DEUDORES SOLIDARIOS -->
+          <div class="party-card party-card--solidarios" *ngIf="haySolidarios()">
+            <div class="party-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span class="party-role">Deudores Solidarios</span>
+            </div>
+            <div class="party-body">
+              <div class="solidarios-simple-list">
+                <div *ngFor="let s of getSolidarios(); let i = index" class="solidario-simple-item">
+                  <span class="solidario-number">{{ i + 1 }}.</span>
+                  <div class="solidario-info">
+                    <span class="solidario-name">{{ s.Nombre || s.RazonSocial }}</span>
+                    <span class="solidario-id" *ngIf="s.Identificacion || s.NumeroIdentificacion">
+                      {{ s.Identificacion || s.NumeroIdentificacion }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
     </div>
   </div>

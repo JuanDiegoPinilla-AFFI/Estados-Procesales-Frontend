@@ -8,7 +8,8 @@ import { Title } from '@angular/platform-browser';
 import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe'; // Asegura la ruta correcta
+import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe';
+import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 
 registerLocaleData(localeEsCo, 'es-CO');
 
@@ -16,7 +17,7 @@ registerLocaleData(localeEsCo, 'es-CO');
   selector: 'app-mis-procesos',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, ClaseProcesoPipe],
-  providers: [DatePipe, ClaseProcesoPipe], // Proveedor para uso interno
+  providers: [DatePipe, ClaseProcesoPipe],
   templateUrl: './mis-procesos.html',
   styleUrls: ['./mis-procesos.scss']
 })
@@ -25,36 +26,47 @@ export class MisProcesosComponent implements OnInit {
   private titleService = inject(Title);
   private datePipe = inject(DatePipe);
   private elementRef = inject(ElementRef);
-  private clasePipe = inject(ClaseProcesoPipe); // Inyección para usar en lógica TS
+  private clasePipe = inject(ClaseProcesoPipe);
 
   rawData: any[] = [];
   filteredData: any[] = [];
   loading = true;
   error = '';
+  
+  // Datos de cabecera
   identificacionUsuario = '';
+  nombreInmobiliaria = '';
 
   // Paginación
   currentPage = 1;
   itemsPerPage = 10;
-  pageSizeOptions = [5, 10, 20, 50];
+  pageSizeOptions = [5, 10, 20, 50, 100];
 
-  // Filtros
+  // Filtros Avanzados
   filtros = {
     busquedaGeneral: '',
-    claseProceso: ''
+    claseProceso: '',
+    radicado: '',       // <--- NUEVO
+    idDemandado: '',    // <--- NUEVO
+    nombreDemandado: '' // <--- NUEVO
   };
+  
   listaClaseProceso: string[] = [];
   activeDropdown: string | null = null;
-
-  // Exportación
   showExportModal = false;
+
   exportColumns = [
     { key: 'procesoId', label: 'ID Proceso', selected: true },
     { key: 'claseProceso', label: 'Clase', selected: true },
+    { key: 'numeroRadicacion', label: 'Radicado', selected: true },
     { key: 'demandadoNombre', label: 'Nombre Demandado', selected: true },
     { key: 'demandadoIdentificacion', label: 'ID Demandado', selected: true },
-    { key: 'demandanteNombre', label: 'Nombre Demandante', selected: true },
-    { key: 'demandanteIdentificacion', label: 'ID Demandante', selected: true }
+    { key: 'despacho', label: 'Despacho', selected: true },
+    { key: 'sentencia', label: 'Sentencia', selected: true },
+    { key: 'etapaProcesal', label: 'Etapa', selected: true },
+    { key: 'sentenciaPrimeraInstancia', label: 'Sentencia 1ra', selected: true },
+    { key: 'fechaRecepcionProceso', label: 'Fecha Pres.', selected: true },
+    { key: 'ciudadInmueble', label: 'Ciudad', selected: true },
   ];
 
   ngOnInit() {
@@ -62,27 +74,27 @@ export class MisProcesosComponent implements OnInit {
     this.cargarMisProcesos();
   }
 
-  // --- CARGA DE DATOS ---
   cargarMisProcesos() {
     this.loading = true;
     this.redelexService.getMisProcesos().subscribe({
       next: (res) => {
-        const rawProcesos = res.procesos || [];
+        // Mapeo de respuesta del Backend actualizada
         this.identificacionUsuario = res.identificacion;
+        this.nombreInmobiliaria = res.nombreInmobiliaria || '';
 
-        // Limpieza de nombres concatenados
+        const rawProcesos = res.procesos || [];
+
+        // Limpieza de datos
         const datosLimpios = rawProcesos.map((item: any) => {
           const newItem = { ...item };
-
-          if (newItem.demandadoNombre && newItem.demandadoNombre.includes(',')) {
-            newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
-          }
-          if (newItem.demandadoIdentificacion && newItem.demandadoIdentificacion.includes(',')) {
-            newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
-          }
-          if (newItem.demandanteNombre && newItem.demandanteNombre.includes(',')) {
-            newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
-          }
+          if (newItem.demandadoNombre?.includes(',')) newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
+          if (newItem.demandadoIdentificacion?.includes(',')) newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
+          if (newItem.demandanteNombre?.includes(',')) newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
+          
+          // Asegurar que campos vacíos no rompan la tabla
+          newItem.numeroRadicacion = newItem.numeroRadicacion || 'N/A';
+          newItem.etapaProcesal = newItem.etapaProcesal || 'EN TRÁMITE';
+          
           return newItem;
         });
         
@@ -102,41 +114,47 @@ export class MisProcesosComponent implements OnInit {
   extraerListasUnicas() {
     const clasesSet = new Set<string>();
     this.rawData.forEach(item => {
-      if (item.claseProceso) {
-        // CORRECCIÓN: Guardamos el nombre transformado (RESTITUCIÓN) en la lista
-        clasesSet.add(this.clasePipe.transform(item.claseProceso));
-      }
+      if (item.claseProceso) clasesSet.add(this.clasePipe.transform(item.claseProceso));
     });
     this.listaClaseProceso = Array.from(clasesSet).sort();
   }
 
-  // --- FILTROS Y PAGINACIÓN ---
   applyFilters() {
     this.currentPage = 1;
     this.filteredData = this.rawData.filter(item => {
-      // Filtro General
+      
+      // 1. Búsqueda General (busca en todo)
       if (this.filtros.busquedaGeneral) {
         const term = this.filtros.busquedaGeneral.toLowerCase();
-        // También buscamos por el nombre de clase transformado
         const claseTransformada = this.clasePipe.transform(item.claseProceso).toLowerCase();
-        
         const match = 
           item.procesoId?.toString().includes(term) ||
           item.demandadoNombre?.toLowerCase().includes(term) ||
           item.demandadoIdentificacion?.includes(term) ||
-          item.demandanteNombre?.toLowerCase().includes(term) ||
-          claseTransformada.includes(term); // Búsqueda por clase
-          
+          item.numeroRadicacion?.toLowerCase().includes(term) ||
+          claseTransformada.includes(term);
         if (!match) return false;
       }
 
-      // Filtro Clase (CORRECCIÓN CRÍTICA)
+      // 2. Filtro Radicado
+      if (this.filtros.radicado) {
+        if (!item.numeroRadicacion?.toLowerCase().includes(this.filtros.radicado.toLowerCase())) return false;
+      }
+
+      // 3. Filtro ID Demandado
+      if (this.filtros.idDemandado) {
+        if (!item.demandadoIdentificacion?.includes(this.filtros.idDemandado)) return false;
+      }
+
+      // 4. Filtro Nombre Demandado
+      if (this.filtros.nombreDemandado) {
+        if (!item.demandadoNombre?.toLowerCase().includes(this.filtros.nombreDemandado.toLowerCase())) return false;
+      }
+
+      // 5. Filtro Clase
       if (this.filtros.claseProceso) {
-        // Transformamos el valor de la fila para compararlo con el valor del dropdown
-        const valorFilaTransformado = this.clasePipe.transform(item.claseProceso);
-        if (valorFilaTransformado !== this.filtros.claseProceso) {
-          return false;
-        }
+        const valorFila = this.clasePipe.transform(item.claseProceso);
+        if (valorFila !== this.filtros.claseProceso) return false;
       }
 
       return true;
@@ -144,131 +162,196 @@ export class MisProcesosComponent implements OnInit {
   }
 
   limpiarFiltros() {
-    this.filtros = { busquedaGeneral: '', claseProceso: '' };
+    this.filtros = { busquedaGeneral: '', claseProceso: '', radicado: '', idDemandado: '', nombreDemandado: '' };
     this.applyFilters();
   }
 
+  // --- PAGINACIÓN Y DROPDOWNS ---
   get paginatedData() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return this.filteredData.slice(startIndex, startIndex + this.itemsPerPage);
   }
   get totalPages() { return Math.ceil(this.filteredData.length / this.itemsPerPage); }
-  
   nextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
   prevPage() { if (this.currentPage > 1) this.currentPage--; }
-  
-  selectPageSize(size: number) {
-    this.itemsPerPage = size;
-    this.currentPage = 1;
-    this.activeDropdown = null;
-  }
+  selectPageSize(size: number) { this.itemsPerPage = size; this.currentPage = 1; this.activeDropdown = null; }
 
-  // --- MANEJO DE DROPDOWNS ---
   toggleDropdown(name: string, event: Event) {
     event.stopPropagation();
     this.activeDropdown = this.activeDropdown === name ? null : name;
   }
-
-  selectOption(value: string) {
-    this.filtros.claseProceso = value;
-    this.activeDropdown = null;
-    this.applyFilters();
-  }
+  selectOption(value: string) { this.filtros.claseProceso = value; this.activeDropdown = null; this.applyFilters(); }
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event) {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.activeDropdown = null;
+    if (!this.elementRef.nativeElement.contains(event.target)) this.activeDropdown = null;
+  }
+
+  // --- MODAL Y EXPORTACIÓN ---
+  openExportModal() { this.showExportModal = true; }
+  closeExportModal() { this.showExportModal = false; }
+  toggleColumn(key: string) { const col = this.exportColumns.find(c => c.key === key); if (col) col.selected = !col.selected; }
+  selectAllColumns(select: boolean) { this.exportColumns.forEach(c => c.selected = select); }
+  // --- EXPORTAR EXCEL (ESTILO PROFESIONAL) ---
+  async exportToExcel() {
+    try {
+      const activeColumns = this.exportColumns.filter(c => c.selected);
+      if (activeColumns.length === 0) { alert('Selecciona columnas'); return; }
+
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Mis Procesos');
+
+      // 1. LOGO
+      const imageId = workbook.addImage({
+        base64: AFFI_LOGO_BASE64,
+        extension: 'png',
+      });
+      sheet.addImage(imageId, {
+        tl: { col: 0.2, row: 0.1 },
+        ext: { width: 115, height: 115 } 
+      });
+
+      // 2. TÍTULOS
+      sheet.mergeCells('C2:H2');
+      const titleCell = sheet.getCell('C2');
+      titleCell.value = 'REPORTE MIS PROCESOS JURÍDICOS';
+      titleCell.font = { bold: true, size: 14, name: 'Arial', color: { argb: 'FF333333' } };
+      titleCell.alignment = { horizontal: 'center' };
+
+      sheet.mergeCells('C3:H3');
+      const dateCell = sheet.getCell('C3');
+      const fechaHoy = this.datePipe.transform(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", undefined, 'es-CO');
+      dateCell.value = fechaHoy;
+      dateCell.font = { bold: false, size: 11, name: 'Arial', color: { argb: 'FF555555' } };
+      dateCell.alignment = { horizontal: 'center' };
+
+      // Información Cliente
+      const infoStartRow = 6;
+      sheet.getCell(`A${infoStartRow}`).value = `NIT Asociado: ${this.identificacionUsuario}`;
+      sheet.getCell(`A${infoStartRow}`).font = { bold: true, size: 10 };
+      sheet.getCell(`A${infoStartRow + 2}`).value = `Total Procesos: ${this.filteredData.length}`;
+      sheet.getCell(`A${infoStartRow + 2}`).font = { bold: true, size: 10 };
+
+      // 3. TABLA
+      const tableStartRow = 10;
+      const headerRow = sheet.getRow(tableStartRow);
+      
+      const tableBorderStr = 'thin';
+      const tableBorderColor = { argb: 'FFD3D3D3' };
+
+      activeColumns.forEach((col, idx) => {
+        const cell = headerRow.getCell(idx + 1);
+        cell.value = col.label;
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34495E' } }; // Header oscuro
+        cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' }, name: 'Arial' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.border = { top: { style: tableBorderStr, color: tableBorderColor }, left: { style: tableBorderStr, color: tableBorderColor }, bottom: { style: tableBorderStr, color: tableBorderColor }, right: { style: tableBorderStr, color: tableBorderColor } };
+        
+        sheet.getColumn(idx + 1).width = (col.key === 'demandadoNombre' || col.key === 'despacho') ? 35 : 22;
+      });
+
+      this.filteredData.forEach((item, index) => {
+        const currentRowIndex = tableStartRow + 1 + index;
+        const currentRow = sheet.getRow(currentRowIndex);
+        const rowFill = index % 2 !== 0 ? { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } } : null;
+
+        activeColumns.forEach((col, colIndex) => {
+          const cell = currentRow.getCell(colIndex + 1);
+          let val = item[col.key];
+          
+          if (col.key.includes('fecha') || col.key.includes('Fecha')) val = this.datePipe.transform(val, 'yyyy-MM-dd') || val;
+          if (col.key === 'claseProceso') val = this.clasePipe.transform(val);
+
+          cell.value = val || '';
+          cell.font = { size: 9, name: 'Arial', color: { argb: 'FF000000' } };
+          cell.alignment = { vertical: 'middle', wrapText: true, horizontal: 'left' };
+          cell.border = { top: { style: tableBorderStr, color: tableBorderColor }, left: { style: tableBorderStr, color: tableBorderColor }, bottom: { style: tableBorderStr, color: tableBorderColor }, right: { style: tableBorderStr, color: tableBorderColor } };
+          if (rowFill) cell.fill = rowFill as ExcelJS.Fill;
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      this.saveFile(buffer, 'xlsx');
+      this.closeExportModal();
+
+    } catch (error) {
+      console.error('Error Excel:', error);
+      alert('Error al generar Excel: ' + error);
     }
   }
 
-  // --- EXPORTACIÓN ---
-  openExportModal() { this.showExportModal = true; }
-  closeExportModal() { this.showExportModal = false; }
-  toggleColumn(key: string) {
-    const col = this.exportColumns.find(c => c.key === key);
-    if (col) col.selected = !col.selected;
-  }
-  selectAllColumns(select: boolean) { this.exportColumns.forEach(c => c.selected = select); }
-
-  async exportToExcel() {
-    const activeCols = this.exportColumns.filter(c => c.selected);
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Mis Procesos');
-
-    // Encabezado
-    sheet.mergeCells('A1:E1');
-    sheet.getCell('A1').value = `REPORTE DE PROCESOS - NIT: ${this.identificacionUsuario}`;
-    sheet.getCell('A1').font = { bold: true, size: 14 };
-    sheet.getCell('A1').alignment = { horizontal: 'center' };
-
-    sheet.mergeCells('A2:E2');
-    sheet.getCell('A2').value = `Generado el: ${this.datePipe.transform(new Date(), 'medium')}`;
-    sheet.getCell('A2').alignment = { horizontal: 'center' };
-
-    // Tabla Headers
-    const headerRow = sheet.getRow(4);
-    activeCols.forEach((col, idx) => {
-      const cell = headerRow.getCell(idx + 1);
-      cell.value = col.label;
-      cell.font = { bold: true };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEEEEE' } };
-      cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-      sheet.getColumn(idx + 1).width = 25;
-    });
-
-    // Datos
-    this.filteredData.forEach((item, idx) => {
-      const row = sheet.getRow(5 + idx);
-      activeCols.forEach((col, colIdx) => {
-        const cell = row.getCell(colIdx + 1);
-        let val = item[col.key] || '';
-        
-        // CORRECCIÓN: Exportar nombre transformado en Excel
-        if (col.key === 'claseProceso') {
-          val = this.clasePipe.transform(val);
-        }
-
-        cell.value = val;
-        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    this.saveFile(buffer, 'xlsx');
-    this.closeExportModal();
-  }
-
+  // --- EXPORTAR PDF (ESTILO PROFESIONAL) ---
   exportToPdf() {
-    const doc = new jsPDF();
-    const activeCols = this.exportColumns.filter(c => c.selected);
-    
-    doc.setFontSize(14);
-    doc.text('Mis Procesos Jurídicos', 14, 20);
-    doc.setFontSize(10);
-    doc.text(`NIT Asociado: ${this.identificacionUsuario}`, 14, 26);
-    doc.text(`Fecha: ${this.datePipe.transform(new Date(), 'medium')}`, 14, 32);
+    try {
+      const activeColumns = this.exportColumns.filter(c => c.selected);
+      const doc = new jsPDF('landscape');
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 14;
 
-    const bodyData = this.filteredData.map(item => activeCols.map(col => {
-      let val = item[col.key] || '';
-      // CORRECCIÓN: Exportar nombre transformado en PDF
-      if (col.key === 'claseProceso') {
-        val = this.clasePipe.transform(val);
-      }
-      return val;
-    }));
+      // Logo
+      doc.addImage(AFFI_LOGO_BASE64, 'PNG', margin, 3, 30, 30);
 
-    autoTable(doc, {
-      startY: 40,
-      head: [activeCols.map(c => c.label)],
-      body: bodyData,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [79, 70, 229] }
-    });
+      // Encabezado
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('REPORTE MIS PROCESOS JURÍDICOS', pageWidth / 2, 16, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const fechaHoy = this.datePipe.transform(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", undefined, 'es-CO') || '';
+      doc.text(fechaHoy, pageWidth / 2, 22, { align: 'center' });
 
-    doc.save(`Mis_Procesos_${new Date().getTime()}.pdf`);
-    this.closeExportModal();
+      // Info Cliente
+      const infoStartY = 35;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`NIT Asociado: ${this.identificacionUsuario}`, margin, infoStartY);
+      doc.text(`Total Procesos: ${this.filteredData.length}`, margin, infoStartY + 5);
+
+      // Tabla
+      const bodyData = this.filteredData.map(item => {
+        return activeColumns.map(col => {
+          let val = item[col.key];
+          if (col.key.includes('fecha') || col.key.includes('Fecha')) val = this.datePipe.transform(val, 'yyyy-MM-dd') || val;
+          if (col.key === 'claseProceso') val = this.clasePipe.transform(val);
+          return val || '';
+        });
+      });
+
+      autoTable(doc, {
+        startY: infoStartY + 12,
+        head: [activeColumns.map(c => c.label)],
+        body: bodyData,
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [52, 73, 94], 
+          textColor: [255, 255, 255], 
+          fontStyle: 'bold',
+          halign: 'center',
+          valign: 'middle',
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200]
+        },
+        styles: { 
+          textColor: [0, 0, 0], 
+          fontSize: 7, 
+          cellPadding: 3,
+          valign: 'middle',
+          overflow: 'linebreak',
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200]
+        },
+        alternateRowStyles: { fillColor: [248, 248, 248] },
+        margin: { top: 20 } 
+      });
+
+      doc.save(`Mis_Procesos_${new Date().getTime()}.pdf`);
+      this.closeExportModal();
+
+    } catch (error) {
+      console.error('Error PDF:', error);
+      alert('Error al generar PDF: ' + error);
+    }
   }
 
   private saveFile(buffer: any, extension: string) {

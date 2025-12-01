@@ -5,10 +5,13 @@
       <div>
         <h2>Mis Procesos Jurídicos</h2>
         <p *ngIf="identificacionUsuario">
-          NIT Asociado: <strong>{{ identificacionUsuario }}</strong> &bull; Total: {{ filteredData.length }}
+          Inmobiliaria: <strong style="color: #111827;">{{ nombreInmobiliaria | titlecase }}</strong> &bull;
+          NIT: <strong>{{ identificacionUsuario }}</strong> &bull; 
+          Total: {{ filteredData.length }}
         </p>
       </div>
       <div class="header-actions">
+        <button class="btn btn--secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
         <button class="btn btn--primary export-btn-icon" (click)="openExportModal()" [disabled]="filteredData.length === 0">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Exportar
@@ -20,9 +23,25 @@
   <div class="card">
     <div class="filter-section">
       <div class="filters-grid">
+        
         <label class="field full-width">
           <span class="field__label">Búsqueda Rápida</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.busquedaGeneral" (input)="applyFilters()" placeholder="Buscar por nombre, ID, radicado...">
+          <input class="field__input" type="text" [(ngModel)]="filtros.busquedaGeneral" (input)="applyFilters()" placeholder="Buscar en todos los campos...">
+        </label>
+
+        <label class="field">
+          <span class="field__label">Radicado</span>
+          <input class="field__input" type="text" [(ngModel)]="filtros.radicado" (input)="applyFilters()" placeholder="Ej: 11001...">
+        </label>
+
+        <label class="field">
+          <span class="field__label">ID Demandado</span>
+          <input class="field__input" type="text" [(ngModel)]="filtros.idDemandado" (input)="applyFilters()" placeholder="Cédula / NIT">
+        </label>
+
+        <label class="field">
+          <span class="field__label">Nombre Demandado</span>
+          <input class="field__input" type="text" [(ngModel)]="filtros.nombreDemandado" (input)="applyFilters()" placeholder="Nombre completo">
         </label>
 
         <div class="field custom-select-container">
@@ -38,54 +57,56 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    <div *ngIf="loading" class="helper">
-      <div class="spinner"></div>
-      <p>Consultando sus procesos...</p>
-    </div>
-
-    <div *ngIf="error" class="helper error-text">
-      <p>❌ {{ error }}</p>
-      <button class="btn-link" (click)="cargarMisProcesos()">Reintentar</button>
-    </div>
+    <div *ngIf="loading" class="helper"><div class="spinner"></div><p>Cargando datos...</p></div>
+    <div *ngIf="error" class="helper error-text"><p>❌ {{ error }}</p></div>
 
     <div class="table-container" *ngIf="!loading && !error">
       <div class="table-scroll">
         <table class="excel-table">
           <thead>
             <tr>
-              <th>ID Proceso</th>
+              <th class="group-header">Identificación</th>
+              <th class="group-header">Nombre</th>
+              <th>Etapa</th>
               <th>Clase</th>
-              <th class="group-header">Demandado</th>
-              <th class="group-header">ID Dmdado.</th>
-              <th class="group-header">Demandante</th>
-              <th class="group-header">ID Dmte.</th>
+              <th>Fecha Presentación</th>
+              <th>Sentencia</th>
+              <th>Ciudad</th>
+              <th>Radicado</th>
+              <th>Despacho</th>
               <th style="text-align: center;">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of paginatedData" class="hover-row" [routerLink]="['../proceso', item.procesoId]">
-              <td class="cell-id">#{{ item.procesoId }}</td>
-              <td><span class="tag-class">{{ item.claseProceso | claseProceso }}</span></td>
-              <td class="cell-nombre">{{ item.demandadoNombre }}</td>
               <td>{{ item.demandadoIdentificacion }}</td>
-              <td class="cell-nombre">{{ item.demandanteNombre }}</td>
-              <td class="cell-id">{{ item.demandanteIdentificacion }}</td>
+              <td class="cell-nombre">{{ item.demandadoNombre }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="{
+                  'status-badge--active': item.etapaProcesal === 'LIQUIDACION',
+                  'status-badge--pending': item.etapaProcesal === 'EJECUCION DEL ACUERDO' || item.etapaProcesal === 'ADMISION DEMANDA',
+                  'status-badge--inactive': item.etapaProcesal === 'TERMINACION'
+                }">{{ item.etapaProcesal }}</span>
+              </td>
+              <td><span class="tag-class">{{ item.claseProceso | claseProceso }}</span></td>
+              <td>{{ item.fechaRecepcionProceso | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.sentencia || '-' }}</td>
+              <td>{{ item.ciudadInmueble || '-' }}</td>
+              <td class="cell-radicado">{{ item.numeroRadicacion }}</td>
+              <td class="cell-despacho" title="{{ item.despacho }}">{{ item.despacho || '-' }}</td>
               <td style="text-align: center;">
-                <button class="btn-icon" title="Ver Detalle">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <button class="btn-icon">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </td>
-            </tr>
-            <tr *ngIf="filteredData.length === 0" class="no-results">
-              <td colspan="7" class="helper">No se encontraron procesos activos asociados a su NIT.</td>
             </tr>
           </tbody>
         </table>
       </div>
-
       <div class="pagination" *ngIf="filteredData.length > 0">
         <button class="pagination__btn" [disabled]="currentPage === 1" (click)="prevPage()">← Anterior</button>
         <div class="pagination__info">
@@ -111,14 +132,14 @@
 <div class="modal-overlay" *ngIf="showExportModal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3>Exportar Procesos</h3>
+      <h3>Configurar Exportación</h3>
       <button class="close-btn" (click)="closeExportModal()">×</button>
     </div>
     <div class="modal-body">
-      <p class="helper" style="padding:0; text-align:left; margin-bottom:1rem;">Selecciona las columnas:</p>
+      <p class="helper" style="padding:0; text-align:left; margin-bottom: 0.5rem;">Selecciona las columnas:</p>
       <div class="columns-actions">
-        <button class="btn-link" (click)="selectAllColumns(true)">Todas</button>
-        <button class="btn-link" (click)="selectAllColumns(false)">Ninguna</button>
+        <button class="btn-link" (click)="selectAllColumns(true)">Marcar todas</button>
+        <button class="btn-link" (click)="selectAllColumns(false)">Desmarcar todas</button>
       </div>
       <div class="columns-grid">
         <label *ngFor="let col of exportColumns" class="checkbox-field">
@@ -129,8 +150,12 @@
     <div class="modal-footer" style="justify-content: space-between;">
       <button class="btn btn--secondary" (click)="closeExportModal()">Cancelar</button>
       <div style="display: flex; gap: 10px;">
-        <button class="btn btn--primary" style="background-color: #217346; border-color:#217346" (click)="exportToExcel()">Excel</button>
-        <button class="btn btn--primary" style="background-color: #c0392b; border-color:#c0392b" (click)="exportToPdf()">PDF</button>
+        <button class="btn btn--primary" style="background-color: #217346; border-color:#217346" (click)="exportToExcel()">
+           Excel
+        </button>
+        <button class="btn btn--primary" style="background-color: #c0392b; border-color:#c0392b" (click)="exportToPdf()">
+           PDF
+        </button>
       </div>
     </div>
   </div>

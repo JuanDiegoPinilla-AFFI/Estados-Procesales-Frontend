@@ -117,7 +117,6 @@ export class RedelexService {
 
   constructor(private http: HttpClient) {}
 
-  // --- NUEVO MÉTODO ---
   getMisProcesos(): Observable<any> {
     // Llama al endpoint "inteligente" que usa el NIT del token
     return this.http.get(`${this.apiUrl}/mis-procesos`);
