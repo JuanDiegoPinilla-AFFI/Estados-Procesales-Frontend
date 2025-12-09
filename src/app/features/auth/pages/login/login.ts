@@ -94,10 +94,12 @@ export class LoginComponent implements OnInit {
       error: err => {
         const mensajeBackend = err.error?.message || '';
 
+        // --- CORRECCIÓN AQUÍ: Agregamos 'intento(s)' ---
         if (
           mensajeBackend.toLowerCase().includes('desactivada') || 
           mensajeBackend.toLowerCase().includes('inactivo') ||
-          mensajeBackend.toLowerCase().includes('advertencia')
+          mensajeBackend.toLowerCase().includes('advertencia') ||
+          mensajeBackend.toLowerCase().includes('intento(s)')
         ) {
           AffiAlert.fire({
             icon: 'warning',
