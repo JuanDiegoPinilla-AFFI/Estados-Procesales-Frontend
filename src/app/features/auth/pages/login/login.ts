@@ -96,7 +96,7 @@ export class LoginComponent implements OnInit {
 
         // --- CORRECCIÓN AQUÍ: Agregamos 'intento(s)' ---
         if (
-          mensajeBackend.toLowerCase().includes('desactivada') || 
+          mensajeBackend.toLowerCase().includes('desactivado') || 
           mensajeBackend.toLowerCase().includes('inactivo') ||
           mensajeBackend.toLowerCase().includes('advertencia') ||
           mensajeBackend.toLowerCase().includes('intento(s)')
