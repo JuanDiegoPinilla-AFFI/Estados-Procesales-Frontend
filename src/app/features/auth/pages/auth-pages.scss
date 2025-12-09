@@ -275,3 +275,127 @@
     }
   }
 }
+/* =============================================
+   CAMPO DE CONTRASEÑA CON VISIBILIDAD ANIMADO
+   Para usar con Angular - agregar [class.toggling]="isToggling"
+   ============================================= */
+
+.input-with-icon {
+  position: relative; 
+  display: flex;     
+  align-items: center;
+  
+  .field__input {
+    width: 100%;     
+    padding-right: 3.5rem;
+  }
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0; 
+  height: 98%;      
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-gray-500);
+  padding: 0 0.8rem;
+  transition: color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--color-primary);
+    
+    svg {
+      transform: scale(1.1);
+    }
+  }
+
+  &:active {
+    svg {
+      transform: scale(0.95);
+    }
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // Animación cuando cambia el estado
+  &.toggling svg {
+    animation: togglePassword 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+// Animación de rotación y escala
+@keyframes togglePassword {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7) rotate(180deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+// Variante alternativa: animación de deslizamiento vertical
+.password-toggle-btn.slide-variant {
+  svg {
+    transition: all 0.3s ease;
+  }
+
+  &.toggling svg {
+    animation: slideToggle 0.4s ease;
+  }
+}
+
+@keyframes slideToggle {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-8px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+// Variante con efecto de parpadeo
+.password-toggle-btn.blink-variant {
+  &.toggling svg {
+    animation: blinkToggle 0.3s ease;
+  }
+}
+
+@keyframes blinkToggle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.3;
+    transform: scale(1.15);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  75% {
+    opacity: 0.3;
+    transform: scale(1.15);
+  }
+}

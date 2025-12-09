@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -8,7 +8,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss'
 })
@@ -18,6 +18,14 @@ export class ResetPasswordComponent {
   email = '';
   message = '';
   loading = false;
+  
+  // Estados para visibilidad de contraseñas
+  showPassword = false;
+  showConfirmPassword = false;
+  
+  // Estados para animaciones
+  isTogglingPassword = false;
+  isTogglingConfirm = false;
 
   constructor(
     private fb: FormBuilder,
@@ -36,8 +44,35 @@ export class ResetPasswordComponent {
       this.email = params.get('email') || '';
     });
   }
+
   ngOnInit(): void {
     this.titleService.setTitle('Estados Procesales - Nueva Contraseña');
+  }
+
+  togglePasswordVisibility() {
+    // Activar animación
+    this.isTogglingPassword = true;
+    
+    // Cambiar visibilidad
+    this.showPassword = !this.showPassword;
+    
+    // Desactivar animación después de completarse
+    setTimeout(() => {
+      this.isTogglingPassword = false;
+    }, 400);
+  }
+
+  toggleConfirmPasswordVisibility() {
+    // Activar animación
+    this.isTogglingConfirm = true;
+    
+    // Cambiar visibilidad
+    this.showConfirmPassword = !this.showConfirmPassword;
+    
+    // Desactivar animación después de completarse
+    setTimeout(() => {
+      this.isTogglingConfirm = false;
+    }, 400);
   }
 
   submit() {

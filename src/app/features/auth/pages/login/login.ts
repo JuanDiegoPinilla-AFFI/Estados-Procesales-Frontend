@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core'; // Agregué OnInit
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
@@ -9,12 +9,14 @@ import { Title } from '@angular/platform-browser';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, CommonModule],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
 export class LoginComponent implements OnInit {
   form!: FormGroup;
+  showPassword = false;
+  isTogglingPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -37,6 +39,19 @@ export class LoginComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
+  }
+
+  togglePasswordVisibility() {
+    // Activar animación
+    this.isTogglingPassword = true;
+    
+    // Cambiar visibilidad
+    this.showPassword = !this.showPassword;
+    
+    // Desactivar animación después de completarse
+    setTimeout(() => {
+      this.isTogglingPassword = false;
+    }, 400);
   }
 
   ngOnInit(): void {
@@ -70,10 +85,8 @@ export class LoginComponent implements OnInit {
           const user = this.authService.getUserData();
           
           if (user?.role === 'admin') {
-            // CORREGIDO: Usamos la ruta real que se ve en tu navegador
             this.router.navigate(['/panel/consultas/consultar-proceso']); 
           } else {
-            // CORREGIDO
             this.router.navigate(['/panel/consultas/mis-procesos']);
           }
         });

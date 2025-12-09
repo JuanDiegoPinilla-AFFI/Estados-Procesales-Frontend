@@ -1,20 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { Title } from '@angular/platform-browser';
+import { FeatherModule } from "angular-feather";
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, FeatherModule],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
 export class RegisterComponent implements OnInit {
   form!: FormGroup;
+  showPassword = false;
+  isTogglingPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -22,7 +24,7 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private titleService: Title 
   ) {
-    // 🔒 CORRECCIÓN: Usamos isLoggedIn() para verificar sesión existente
+    // Verificar si ya hay sesión activa
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/panel']);
       return;
@@ -31,7 +33,6 @@ export class RegisterComponent implements OnInit {
     this.form = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      // Regex que coincide con tu Backend
       password: ['', [
         Validators.required, 
         Validators.minLength(8),
@@ -42,8 +43,21 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  togglePasswordVisibility() {
+    // Activar animación
+    this.isTogglingPassword = true;
+    
+    // Cambiar visibilidad
+    this.showPassword = !this.showPassword;
+    
+    // Desactivar animación después de completarse
+    setTimeout(() => {
+      this.isTogglingPassword = false;
+    }, 400);
+  }
+
   ngOnInit(): void {
-    this.titleService.setTitle('Estados Procesales - Registrarse');
+    this.titleService.setTitle('Affi - Registrarse');
   }
 
   submit() {
