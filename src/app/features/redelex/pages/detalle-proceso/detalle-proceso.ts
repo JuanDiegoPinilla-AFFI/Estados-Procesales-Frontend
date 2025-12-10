@@ -25,6 +25,7 @@ export class DetalleProcesoComponent implements OnInit {
   detalle: any = null;
   loading = true;
   error = '';
+  exportState: 'idle' | 'excel' | 'pdf' = 'idle';
 
   constructor(
     private route: ActivatedRoute,
@@ -86,6 +87,10 @@ export class DetalleProcesoComponent implements OnInit {
   // 1. EXPORTAR A EXCEL (ESTILO FORMATO OFICIAL / HOJA DE VIDA)
   // ========================================================================
   async exportToExcel() {
+
+    this.exportState = 'excel';
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       if (!this.detalle) return;
       const workbook = new ExcelJS.Workbook();
@@ -210,13 +215,22 @@ export class DetalleProcesoComponent implements OnInit {
 
       const buffer = await workbook.xlsx.writeBuffer();
       this.saveFile(buffer, 'xlsx', `Ficha_${this.detalle.numeroRadicacion || 'Proceso'}`);
-    } catch (e) { console.error(e); alert('Error exportando Excel: ' + e); }
+    } catch (e) {
+      console.error(e);
+      alert('Error exportando Excel: ' + e); 
+    } finally {
+      this.exportState = 'idle';
+    }
   }
 
 // ========================================================================
   // 2. EXPORTAR A PDF (VERTICAL - ESTILO EXPEDIENTE CORREGIDO)
   // ========================================================================
-  exportToPdf() {
+  async exportToPdf() {
+
+    this.exportState = 'pdf';
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       if (!this.detalle) return;
       // Usamos Portrait (Vertical) porque es una ficha técnica
@@ -372,7 +386,12 @@ export class DetalleProcesoComponent implements OnInit {
 
       doc.save(`Ficha_${this.detalle.numeroRadicacion || 'Proceso'}.pdf`);
 
-    } catch (e) { console.error(e); alert('Error exportando PDF: ' + e); }
+    } catch (e) {
+      console.error(e);
+      alert('Error exportando PDF: ' + e);
+    } finally {
+      this.exportState = 'idle'; // Resetear siempre
+    }
   }
 
   private saveFile(buffer: any, extension: string, name: string) {

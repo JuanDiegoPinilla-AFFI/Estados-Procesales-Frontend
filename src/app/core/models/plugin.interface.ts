@@ -28,15 +28,15 @@ export interface MenuItem {
   route?: string;
   action?: () => void;
   
-  // CONTROL DE ACCESO
-  roles?: string[];        // Filtro macro (Ej: 'admin')
-  permissions?: string[];  // Filtro granular (Ej: 'users:view') <--- NUEVO
+  roles?: string[];
+  permissions?: string[];
   
   enabled?: boolean;
   badge?: string | number;
   order?: number;
 
   sectionId?: string;
+  matchRoutes?: string[];
 }
 
 /**
@@ -47,7 +47,6 @@ export interface MenuSection {
   title: string;
   items: MenuItem[];
   
-  // CONTROL DE ACCESO
   roles?: string[];
   permissions?: string[];
   

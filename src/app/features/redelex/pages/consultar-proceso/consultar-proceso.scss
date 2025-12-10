@@ -230,6 +230,37 @@
    ============================================= */
 .helper { text-align: center; padding: 2rem; color: #6b7280; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+/* Spinner de carga */
+.spinner-loader {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.2); // Borde sutil oscuro para botones blancos
+  border-radius: 50%;
+  border-top-color: var(--color-primary); // Color principal girando
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+}
+
+/* Modificador para cuando el botón está cargando */
+.export-btn.is-loading {
+  width: auto !important; // Permitir que crezca
+  padding: 0 1rem;        // Dar espacio lateral
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  background: #f3f4f6;    // Fondo gris claro de carga
+  cursor: wait;
+  
+  svg { display: none; }  // Ocultar icono original
+}
+
+/* Estado deshabilitado (para el botón opuesto) */
+.export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .divider {

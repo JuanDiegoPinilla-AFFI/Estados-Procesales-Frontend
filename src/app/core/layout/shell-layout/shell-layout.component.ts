@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 
 // Servicios y Modelos
 import { PluginRegistryService } from '../../services/plugin-registry.service';
-import { MenuSection } from '../../models/plugin.interface';
+import { MenuSection, MenuItem } from '../../models/plugin.interface';
 import { AuthService, UserData } from '../../../features/auth/services/auth.service';
 
 // 1. Importamos solo el módulo base (los íconos ya se registraron en app.config.ts)
@@ -21,7 +21,6 @@ import { AffiAlert } from '../../../shared/services/affi-alert';
   imports: [
     RouterOutlet,
     RouterLink,
-    RouterLinkActive,
     FormsModule,
     FeatherModule
 ],
@@ -75,6 +74,33 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
+  isItemActive(item: MenuItem): boolean {
+    // 1. Verificación Personalizada (Prioridad: matchRoutes)
+    // Si la URL actual contiene alguno de los strings definidos en matchRoutes, está activo.
+    if (item.matchRoutes && item.matchRoutes.length > 0) {
+      const currentUrl = this.router.url;
+      const isCustomMatch = item.matchRoutes.some(fragment => currentUrl.includes(fragment));
+      if (isCustomMatch) return true;
+    }
+
+    // 2. Verificación Estándar (Ruta exacta o hija)
+    if (item.route) {
+      const routeCommands = Array.isArray(item.route) ? item.route : [item.route];
+      const tree = this.router.createUrlTree(routeCommands);
+      
+      // 'subset' permite que /consultas/mis-procesos active el botón si la ruta es esa
+      // pero no activará hermanos como /consultas/proceso/:id, por eso usamos el paso 1.
+      return this.router.isActive(tree, {
+        paths: 'subset',
+        queryParams: 'ignored',
+        fragment: 'ignored',
+        matrixParams: 'ignored'
+      });
+    }
+
+    return false;
+  }
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
@@ -116,7 +142,7 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-private loadMenuSections() {
+  private loadMenuSections() {
     const user = this.authService.getUserData();
     const currentRole = user?.role || 'guest';
     const currentPermissions = user?.permissions || [];

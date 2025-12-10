@@ -15,9 +15,10 @@ export const REDELEX_PLUGIN_CONFIG: PluginConfig = {
     {
       id: 'redelex-mis-procesos',
       label: 'Mis Procesos',
-      icon: 'folder', // Cambié a folder para diferenciar, o usa 'file-text'
+      icon: 'folder',
       route: '/panel/consultas/mis-procesos',
-      roles: ['inmobiliaria', 'admin'], // Legacy / Respaldo
+      matchRoutes: ['/panel/consultas/proceso'],
+      roles: ['inmobiliaria', 'admin'],
       permissions: ['procesos:view_own'],
       enabled: true,
       order: 1,
@@ -29,7 +30,7 @@ export const REDELEX_PLUGIN_CONFIG: PluginConfig = {
       icon: 'search',
       route: '/panel/consultas/consultar-proceso',
       roles: ['admin', 'affi'], 
-      permissions: ['procesos:view_all'], // <--- NUEVO: Affi y Admin lo verán
+      permissions: ['procesos:view_all'],
       enabled: true,
       order: 2,
       sectionId: 'consultas'

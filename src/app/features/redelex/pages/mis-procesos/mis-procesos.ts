@@ -55,6 +55,8 @@ export class MisProcesosComponent implements OnInit {
   activeDropdown: string | null = null;
   showExportModal = false;
 
+  exportState: 'idle' | 'excel' | 'pdf' = 'idle';
+
   exportColumns = [
     { key: 'procesoId', label: 'ID Proceso', selected: true },
     { key: 'claseProceso', label: 'Clase', selected: true },
@@ -176,6 +178,10 @@ export class MisProcesosComponent implements OnInit {
   // --- EXPORTAR EXCEL (DISEÑO AFFI - Grid Uniforme + Cajas Resumen) ---
   // ------------------------------------------------------------------------------------------------
   async exportToExcel() {
+
+    this.exportState = 'excel';
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     try {
       console.log('Generando Excel Mis Procesos...');
       const activeColumns = this.exportColumns.filter(c => c.selected);
@@ -391,14 +397,21 @@ export class MisProcesosComponent implements OnInit {
 
     } catch (error) {
       console.error('Error Excel:', error);
-      alert('Error al generar Excel: ' + error);
+      // Usamos alert o AffiAlert según prefieras (tu código usaba alert)
+      alert('Error al generar Excel: ' + error); 
+    } finally {
+      this.exportState = 'idle'; // Resetear siempre
     }
   }
 
   // ------------------------------------------------------------------------------------------------
   // --- EXPORTAR PDF (DISEÑO AFFI - Fit To Page + Cajas Centradas) ---
   // ------------------------------------------------------------------------------------------------
-  exportToPdf() { 
+  async exportToPdf() {
+
+    this.exportState = 'pdf';
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       console.log('Exportando PDF Mis Procesos...');
       
@@ -573,6 +586,8 @@ export class MisProcesosComponent implements OnInit {
     } catch (error) {
       console.error('Error PDF:', error);
       alert('Error al generar PDF: ' + error);
+    } finally {
+      this.exportState = 'idle'; // Resetear siempre
     }
   }
 

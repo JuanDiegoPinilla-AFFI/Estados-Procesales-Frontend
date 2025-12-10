@@ -37,7 +37,9 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.titleService.setTitle('Estados Procesales - Informe Inmobiliaria');
     this.loadInforme();
   }
-  
+
+  exportState: 'idle' | 'excel' | 'pdf' = 'idle';
+
   readonly INFORME_ID = 5626;
   loading = true;
   error = '';
@@ -295,6 +297,8 @@ export class InformeInmobiliariaComponent implements OnInit {
   }
 
   async exportToExcel() {
+    this.exportState = 'excel';
+    await new Promise(resolve => setTimeout(resolve, 100));
     try {
       console.log('Generando Excel con Contadores Automáticos...');
       const activeColumns = this.exportColumns.filter(c => c.selected);
@@ -515,10 +519,14 @@ export class InformeInmobiliariaComponent implements OnInit {
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
       alert('Error: ' + error);
+    } finally {
+      this.exportState = 'idle';
     }
   }
 
-exportToPdf() { 
+  async exportToPdf() { 
+    this.exportState = 'pdf';
+    await new Promise(resolve => setTimeout(resolve, 100));
     try {
       console.log('Exportando PDF con cajas de resumen centradas y con margen...');
       
@@ -688,12 +696,14 @@ exportToPdf() {
         }
       });
 
-      doc.save(`Informe_Inmobiliaria_${new Date().getTime()}.pdf`);
-      this.closeExportModal();
+    doc.save(`Informe_Inmobiliaria_${new Date().getTime()}.pdf`);
+    this.closeExportModal();
 
     } catch (error) {
       console.error('Error al exportar a PDF:', error);
       alert('Error al generar PDF: ' + error);
+    } finally {
+      this.exportState = 'idle';
     }
   }
     private saveFile(buffer: any, extension: string) {
