@@ -417,22 +417,38 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 60;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: fadeIn 0.2s;
+  animation: fadeIn var(--transition-base);
+  padding: var(--spacing-md);
+  overflow-y: auto;
 }
+
 .modal-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-xl);
   width: 90%;
   max-width: 500px;
-  max-height: 85vh;
+  max-height: calc(100vh - 2rem);
   display: flex;
   flex-direction: column;
-  animation: scaleIn 0.2s;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  animation: scaleIn var(--transition-base);
+  border: 1px solid var(--color-gray-200);
+  margin: auto;
+  
+  &.modal-lg { max-width: 700px; }
+
+  @media (max-width: 640px) {
+    width: 95%;
+    max-height: calc(100vh - 1rem);
+    border-radius: var(--border-radius-lg);
+  }
 }
 .modal-header {
   padding: 1.25rem;
