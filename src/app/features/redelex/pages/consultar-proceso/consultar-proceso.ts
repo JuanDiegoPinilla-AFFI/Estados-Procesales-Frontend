@@ -418,42 +418,313 @@ export class ConsultarProcesoComponent implements OnInit {
      return rows;
   }
 
+  // ==========================================================================
+  // EXPORTACIÓN A EXCEL (Estilo Profesional)
+  // ==========================================================================
   async exportarExcel() {
-    // ... (Mismo código que antes)
-    if (!this.proceso) { AffiAlert.fire({ icon: 'info', title: 'Sin datos', text: 'Primero consulta un proceso.' }); return; }
+    if (!this.proceso) {
+      AffiAlert.fire({
+        icon: 'info',
+        title: 'Sin datos',
+        text: 'Primero consulta un proceso para poder exportar.',
+      });
+      return;
+    }
+
     this.exportState = 'excel';
     await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
+      // Asumimos que buildExportRows devuelve un array de objetos { Seccion, Campo, Valor }
       const rows = this.buildExportRows();
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Detalle proceso');
-      try { const imageId = workbook.addImage({ base64: AFFI_LOGO_BASE64, extension: 'png' }); sheet.addImage(imageId, { tl: { col: 0.2, row: 0.1 }, ext: { width: 100, height: 100 } }); } catch (e) {}
-      sheet.mergeCells('B2:C2'); sheet.getCell('B2').value = `DETALLE DEL PROCESO ${this.proceso.idProceso || ''}`;
-      sheet.getCell('B2').font = { bold: true, size: 14 }; sheet.getCell('B2').alignment = { horizontal: 'center' };
+
+      // 1. LOGO
+      try {
+        const imageId = workbook.addImage({
+          base64: AFFI_LOGO_BASE64,
+          extension: 'png',
+        });
+        // Ajuste de logo en esquina superior izquierda
+        sheet.addImage(imageId, {
+          tl: { col: 0.2, row: 0.1 },
+          ext: { width: 100, height: 100 } 
+        });
+      } catch (e) { console.warn('No se pudo cargar el logo', e); }
+
+      // 2. TÍTULOS
+      sheet.mergeCells('B2:C2');
+      const titleCell = sheet.getCell('B2');
+      titleCell.value = `DETALLE DEL PROCESO ${this.proceso.idProceso || ''}`;
+      titleCell.font = { bold: true, size: 14, name: 'Arial', color: { argb: 'FF333333' } };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
       const demandadoNombres = this.sujetoDemandado.map(s => s.Nombre || '').join(', ');
-      sheet.mergeCells('B3:C3'); sheet.getCell('B3').value = demandadoNombres.toUpperCase();
-      sheet.getColumn(1).width = 25; sheet.getColumn(2).width = 35; sheet.getColumn(3).width = 80; 
-      const headerRow = sheet.getRow(6); headerRow.values = ['Sección', 'Campo', 'Valor'];
-      headerRow.eachCell((cell) => { cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34495E' } }; });
-      rows.forEach((r, index) => { const row = sheet.addRow([r.Seccion, r.Campo, r.Valor]); if(index % 2 !== 0) row.eachCell(c => c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } } as ExcelJS.Fill); });
+      sheet.mergeCells('B3:C3');
+      const subTitleCell = sheet.getCell('B3');
+      subTitleCell.value = demandadoNombres.toUpperCase();
+      subTitleCell.font = { bold: false, size: 11, name: 'Arial', color: { argb: 'FF555555' } };
+      subTitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // 3. COLUMNAS Y ENCABEZADO DE TABLA
+      const headerRowIdx = 6;
+      
+      sheet.getColumn(1).width = 25; // Sección
+      sheet.getColumn(2).width = 35; // Campo
+      sheet.getColumn(3).width = 80; // Valor
+
+      const headerRow = sheet.getRow(headerRowIdx);
+      headerRow.values = ['Sección', 'Campo', 'Valor'];
+
+      // Estilo Encabezado: Gris Pizarra / Texto Blanco
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34495E' } };
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11, name: 'Arial' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = { 
+          top: { style: 'thin', color: { argb: 'FFD3D3D3' } }, 
+          bottom: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+          right: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+          left: { style: 'thin', color: { argb: 'FFD3D3D3' } }
+        };
+      });
+
+      // 4. DATOS Y ESTILOS DE CUERPO
+      const borderStyle = { style: 'thin', color: { argb: 'FFD3D3D3' } } as ExcelJS.Border;
+
+      rows.forEach((r, index) => {
+        const currentRow = sheet.addRow([r.Seccion, r.Campo, r.Valor]);
+        
+        // Filas Alternadas (Zebra Striping)
+        const isEven = index % 2 === 0;
+        const fillConfig = isEven ? null : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } };
+
+        currentRow.eachCell((cell) => {
+          cell.font = { size: 10, name: 'Arial', color: { argb: 'FF000000' } };
+          cell.alignment = { vertical: 'top', wrapText: true };
+          cell.border = { top: borderStyle, left: borderStyle, bottom: borderStyle, right: borderStyle };
+
+          if (fillConfig) {
+            cell.fill = fillConfig as ExcelJS.Fill;
+          }
+        });
+      });
+
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, `proceso-${this.proceso.idProceso}.xlsx`);
-    } catch (error) { AffiAlert.fire({ icon: 'error', title: 'Error', text: 'No se pudo generar el Excel.' }); } 
-    finally { this.exportState = 'idle'; }
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+      });
+
+      const fileName = `proceso-${this.proceso.idProceso || 'detalle'}.xlsx`;
+      saveAs(blob, fileName);
+    } catch (error) {
+      console.error(error);
+      AffiAlert.fire({ icon: 'error', title: 'Error', text: 'No se pudo generar el Excel.' });
+    } finally {
+      this.exportState = 'idle';
+    }
   }
 
+  // ==========================================================================
+  // EXPORTACIÓN A PDF (Estilo Profesional)
+  // ==========================================================================
   async exportarPdf() {
-    // ... (Mismo código que antes)
-    if (!this.proceso) { AffiAlert.fire({ icon: 'info', title: 'Sin datos', text: 'Primero consulta un proceso.' }); return; }
+    if (!this.proceso) {
+      AffiAlert.fire({ icon: 'info', title: 'Sin datos', text: 'Primero consulta un proceso para poder exportar.' });
+      return;
+    }
+
     this.exportState = 'pdf';
     await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
-       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-       // ... (Lógica de PDF existente) ...
-       // (Por brevedad asumo que mantienes el código original de PDF que ya tenías)
-       AffiAlert.fire({ icon: 'success', title: 'PDF Generado', text: 'El PDF se ha descargado correctamente.', timer: 1500, showConfirmButton: false });
-    } catch (error) { AffiAlert.fire({ icon: 'error', title: 'Error', text: 'No se pudo generar el PDF.' }); }
-    finally { this.exportState = 'idle'; }
+      const p = this.proceso;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 14;
+
+      // 1. LOGO
+      if (AFFI_LOGO_BASE64) {
+        try {
+          doc.addImage(AFFI_LOGO_BASE64, 'PNG', margin, 6, 30, 30); 
+        } catch {}
+      }
+
+      // 2. TÍTULOS
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text(`PROCESO ID ${p.idProceso ?? ''}`, pageWidth / 2, 18, { align: 'center' });
+
+      const demandadoNombres = this.sujetoDemandado.length ? this.sujetoDemandado.map(s => s.Nombre || '-').join(', ') : '-';
+      const demandadoIdentificaciones = this.sujetoDemandado.length ? this.sujetoDemandado.map(s => s.NumeroIdentificacion || '-').join(', ') : '-';
+      const subtitle = (demandadoNombres !== '-' ? demandadoNombres : demandadoIdentificaciones).toUpperCase();
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(subtitle, pageWidth / 2, 24, { align: 'center' });
+
+      // --- ESTILOS COMUNES ---
+      // NOTA: Tipamos esto como UserOptions para evitar el error de 'theme'
+      const commonTableStyles: UserOptions = {
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [52, 73, 94], // Gris Pizarra
+          textColor: 255, 
+          fontStyle: 'bold',
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200]
+        },
+        styles: { 
+          textColor: 0, 
+          fontSize: 8, 
+          cellPadding: 3,
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200],
+          overflow: 'linebreak'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 248, 248]
+        }
+      };
+
+      let currentY = 40;
+
+      // --- TABLA RESUMEN ---
+      const demandanteNombres = this.sujetoDemandante.length ? this.sujetoDemandante.map(s => s.Nombre || '-').join(', ') : '-';
+      const demandanteIdentificaciones = this.sujetoDemandante.length ? this.sujetoDemandante.map(s => s.NumeroIdentificacion || '-').join(', ') : '-';
+
+      autoTable(doc, {
+        startY: currentY,
+        ...commonTableStyles,
+        head: [[
+          'Demandado', demandadoNombres,
+          'Identificación', demandadoIdentificaciones,
+          'Radicación', p.numeroRadicacion || '-'
+        ]],
+        body: [[
+          'Demandante', demandanteNombres,
+          'Identificación', demandanteIdentificaciones,
+          'Cód. Alterno', p.codigoAlterno || '-'
+        ]],
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 25, fillColor: [240, 240, 240] },
+          1: { cellWidth: 60 },
+          2: { fontStyle: 'bold', cellWidth: 25, fillColor: [240, 240, 240] },
+          3: { cellWidth: 35 },
+          4: { fontStyle: 'bold', cellWidth: 25, fillColor: [240, 240, 240] },
+          5: { cellWidth: 'auto' }
+        }
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+
+      // --- DEUDORES SOLIDARIOS ---
+      if (this.sujetosSolidarios.length) {
+        const solidarioNombres = this.sujetosSolidarios.map(s => s.Nombre || '-').join(', ');
+        const solidarioIdentificaciones = this.sujetosSolidarios.map(s => s.NumeroIdentificacion || '-').join(', ');
+
+        autoTable(doc, {
+          startY: currentY,
+          ...commonTableStyles,
+          head: [['Deudores Solidarios', 'Información']],
+          body: [['Nombres', solidarioNombres], ['Identificación', solidarioIdentificaciones]],
+          columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } }
+        });
+        currentY = (doc as any).lastAutoTable.finalY + 10;
+      }
+
+      // --- OTROS SUJETOS ---
+      if (this.otrosSujetos.length) {
+        const otrosSujetosBody = this.otrosSujetos.flatMap(s => [
+          [`${s.Tipo || 'Otro'} - Nombre`, s.Nombre || '-'],
+          [`${s.Tipo || 'Otro'} - ID`, s.NumeroIdentificacion || '-'],
+        ]);
+
+        autoTable(doc, {
+          startY: currentY,
+          ...commonTableStyles,
+          head: [['Otros Sujetos', 'Detalle']],
+          body: otrosSujetosBody,
+          columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' } }
+        });
+        currentY = (doc as any).lastAutoTable.finalY + 10;
+      }
+
+      // --- DATOS DEL PROCESO ---
+      autoTable(doc, {
+        startY: currentY,
+        ...commonTableStyles,
+        head: [['Campo', 'Valor']],
+        body: [
+          ['Clase de proceso', this.clasePipe.transform(p.claseProceso) || ''],
+          ['Etapa procesal', p.etapaProcesal || ''],
+          ['Estado', p.estado || ''],
+          ['Regional', p.regional || ''],
+          ['Tema', p.tema || ''],
+          ['Fecha creación', p.fechaCreacion || ''],
+          ['Fecha entrega abogado', p.fechaEntregaAbogado || ''],
+          ['Fecha admisión', p.fechaAdmisionDemanda || ''],
+          ['Fecha recepción', p.fechaRecepcionProceso || ''],
+          ['Calificación', p.calificacion || ''],
+          ['Sentencia 1ra Inst.', p.sentenciaPrimeraInstanciaResultado || ''],
+        ],
+        columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' } }
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+
+      // --- MEDIDAS CAUTELARES ---
+      if (this.medidas.length) {
+        this.medidas.forEach((m, idx) => {
+          if (currentY > 170) { doc.addPage(); currentY = 20; } 
+
+          autoTable(doc, {
+            startY: currentY,
+            ...commonTableStyles,
+            head: [[`Medida Cautelar #${idx + 1}`, 'Detalle']],
+            body: [
+              ['Tipo medida', m.tipoMedida || ''],
+              ['Estado medida', m.medidaEfectiva || ''],
+              ['Sujeto', m.sujeto || ''],
+              ['Tipo bien', m.tipoBien || ''],
+              ['Avalúo judicial', m.avaluoJudicial ?? ''],
+              ['Observaciones', m.observaciones || ''],
+            ],
+            columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' } }
+          });
+          currentY = (doc as any).lastAutoTable.finalY + 10;
+        });
+      }
+
+      // --- ABOGADOS ---
+      if (currentY > 170) { doc.addPage(); currentY = 20; }
+
+      const abogadosBody: any[] = [['Abogado Principal', this.abogadoPrincipal?.Nombre || 'Sin asignar']];
+
+      if (this.abogadosInternos.length) {
+        const internos = this.abogadosInternos.map(ab => ab.Nombre || '-').join(', ');
+        abogadosBody.push(['Abogados Internos', internos]);
+      }
+
+      this.otrosAbogados.forEach(ab => {
+        abogadosBody.push([`${ab.ActuaComo || 'Otro Abogado'}`, ab.Nombre || '-']);
+      });
+
+      autoTable(doc, {
+        startY: currentY,
+        ...commonTableStyles,
+        head: [['Rol', 'Nombre del Abogado']],
+        body: abogadosBody,
+        columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' } }
+      });
+
+      const fileName = `proceso-${p.idProceso || 'detalle'}.pdf`;
+      doc.save(fileName);
+    } catch (error) {
+      console.error(error);
+      AffiAlert.fire({ icon: 'error', title: 'Error', text: 'No se pudo generar el PDF.' });
+    } finally {
+      this.exportState = 'idle'; // Resetear siempre
+    }
   }
 }
