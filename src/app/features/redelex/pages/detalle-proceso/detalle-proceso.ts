@@ -210,7 +210,6 @@ export class DetalleProcesoComponent implements OnInit {
       // INFORMACIÓN GENERAL
       addSectionHeader('Información General');
       addRowData('Número de Radicación', this.detalle.numeroRadicacion);
-      addRowData('ID Interno del Proceso', `#${this.detalle.idProceso}`);
       addRowData('Cuenta', this.detalle.codigoAlterno);
       addRowData('Clase de Proceso', this.clasePipe.transform(this.detalle.claseProceso));
       
@@ -328,7 +327,6 @@ export class DetalleProcesoComponent implements OnInit {
       }]);
       
       pushRow('Número de Radicación', this.detalle.numeroRadicacion);
-      pushRow('ID Interno', `#${this.detalle.idProceso}`);
       pushRow('Cuenta', this.detalle.codigoAlterno);
       pushRow('Clase de Proceso', this.clasePipe.transform(this.detalle.claseProceso));
       
