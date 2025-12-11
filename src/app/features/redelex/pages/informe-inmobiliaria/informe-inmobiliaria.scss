@@ -36,13 +36,14 @@
 
 .header-actions {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: var(--spacing-md);
   flex-wrap: wrap;
-  
-  .export-btn-icon {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
