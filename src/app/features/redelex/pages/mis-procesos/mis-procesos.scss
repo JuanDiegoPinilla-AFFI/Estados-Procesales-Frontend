@@ -137,7 +137,7 @@
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  pointer-events: none; // Evita clics extra
+  pointer-events: none;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -171,7 +171,7 @@
   text-overflow: ellipsis;
 }
 
-/* Badges de Estado (Etapa Procesal) */
+/* Badges de Estado (Etapa Procesal) - ACTUALIZADOS SEGÚN ESPECIFICACIÓN */
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;
@@ -182,9 +182,71 @@
   background: #e5e7eb; /* Default gris */
   color: #374151;
 
-  &--active { background: #dcfce7; color: #166534; } /* Verdes */
-  &--pending { background: #fef3c7; color: #92400e; } /* Amarillos */
-  &--inactive { background: #fee2e2; color: #991b1b; } /* Rojos */
+  // Recolección y Validación Documental - Amarillo claro (#FFFF99)
+  &--recoleccion { 
+    background: #ffff99; 
+    color: #856404;
+  }
+
+  // Demanda - Naranja (#F1A983)
+  &--demanda { 
+    background: #f1a983; 
+    color: #7c3c00;
+  }
+
+  // Mandamiento de Pago - Rosa claro (#FBE2D5)
+  &--mandamiento { 
+    background: #fbe2d5; 
+    color: #8b4513;
+  }
+
+  // Admisión Demanda - Verde (#92D050)
+  &--admision { 
+    background: #92d050; 
+    color: #2d5016;
+  }
+
+  // Notificación - Verde claro (#B5E6A2)
+  &--notificacion { 
+    background: #b5e6a2; 
+    color: #3d6e2a;
+  }
+
+  // Excepciones - Azul (#00B0F0)
+  &--excepciones { 
+    background: #00b0f0; 
+    color: #003d5c;
+  }
+
+  // Audiencia - Celeste (#C0E6F5)
+  &--audiencia { 
+    background: #c0e6f5; 
+    color: #004d66;
+  }
+
+  // Sentencia - Magenta (#D86DCD)
+  &--sentencia { 
+    background: #d86dcd; 
+    color: #6b0f62;
+  }
+
+  // Liquidación - Rosa magenta (#E49EDD)
+  &--liquidacion { 
+    background: #e49edd; 
+    color: #7d2774;
+  }
+
+  // Lanzamiento - Amarillo/Naranja (#FFC000)
+  &--lanzamiento { 
+    background: #ffc000; 
+    color: #664d00;
+  }
+
+  // No se muestran al cliente - Gris
+  &--terminacion { 
+    background: #bfbfbf; 
+    color: #4d4d4d;
+  }
 }
 
 /* Ajustes adicionales para igualar cabeceras */

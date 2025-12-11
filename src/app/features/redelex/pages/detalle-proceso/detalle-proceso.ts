@@ -8,6 +8,12 @@ import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
+import { 
+  getEtapaConfig, 
+  getEtapaIndex, 
+  getEtapasParaStepper, 
+  EtapaProcesal 
+} from './etapas-procesales.config';
 
 @Component({
   selector: 'app-detalle-proceso',
@@ -27,6 +33,11 @@ export class DetalleProcesoComponent implements OnInit {
   error = '';
   exportState: 'idle' | 'excel' | 'pdf' = 'idle';
 
+  // Nuevas propiedades para el stepper
+  etapaActualConfig: EtapaProcesal | null = null;
+  etapaActualIndex: number = 0;
+  etapasStepper: { nombre: string; color: string }[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private redelexService: RedelexService,
@@ -42,6 +53,9 @@ export class DetalleProcesoComponent implements OnInit {
       this.error = 'ID de proceso no válido';
       this.loading = false;
     }
+    
+    // Cargar las etapas para el stepper
+    this.etapasStepper = getEtapasParaStepper();
   }
 
   cargarDetalle(id: number) {
@@ -50,7 +64,13 @@ export class DetalleProcesoComponent implements OnInit {
       next: (res) => {
         this.detalle = res.data || res;
         const nombreDemandado = this.getNombreSujeto('DEMANDADO');
-        this.titleService.setTitle(`Estados Procesales - Demandado ${nombreDemandado}`);        this.loading = false;
+        this.titleService.setTitle(`Estados Procesales - Demandado ${nombreDemandado}`);
+        
+        // Configurar la etapa actual
+        this.etapaActualConfig = getEtapaConfig(this.detalle.etapaProcesal);
+        this.etapaActualIndex = getEtapaIndex(this.detalle.etapaProcesal);
+        
+        this.loading = false;
       },
       error: (err) => {
         console.error(err);
@@ -60,17 +80,28 @@ export class DetalleProcesoComponent implements OnInit {
     });
   }
 
-  // --- MÉTODOS AUXILIARES ---
   getNombreSujeto(tipoBuscado: string): string {
     if (!this.detalle || !this.detalle.sujetos) return 'No registrado';
-    const sujeto = this.detalle.sujetos.find((s: any) => s.Tipo?.toUpperCase().includes(tipoBuscado));
-    return sujeto ? (sujeto.Nombre || sujeto.RazonSocial) : 'No registrado';
+    const sujetos = this.detalle.sujetos.filter((s: any) => s.Tipo?.toUpperCase().includes(tipoBuscado));
+    if (sujetos.length === 0) return 'No registrado';
+    return sujetos.map((s: any) => s.Nombre || s.RazonSocial).join(' - ');
   }
 
   getIdSujeto(tipoBuscado: string): string {
     if (!this.detalle || !this.detalle.sujetos) return '';
-    const sujeto = this.detalle.sujetos.find((s: any) => s.Tipo?.toUpperCase().includes(tipoBuscado));
-    return sujeto ? (sujeto.Identificacion || sujeto.NumeroIdentificacion) : '';
+    const sujetos = this.detalle.sujetos.filter((s: any) => s.Tipo?.toUpperCase().includes(tipoBuscado));
+    if (sujetos.length === 0) return '';
+    return sujetos.map((s: any) => s.Identificacion || s.NumeroIdentificacion).join(' - ');
+  }
+  
+  getDemandantes(): any[] {
+    if (!this.detalle || !this.detalle.sujetos) return [];
+    return this.detalle.sujetos.filter((s: any) => s.Tipo?.toUpperCase().includes('DEMANDANTE'));
+  }
+
+  getDemandados(): any[] {
+    if (!this.detalle || !this.detalle.sujetos) return [];
+    return this.detalle.sujetos.filter((s: any) => s.Tipo?.toUpperCase().includes('DEMANDADO'));
   }
 
   haySolidarios(): boolean {
@@ -84,10 +115,9 @@ export class DetalleProcesoComponent implements OnInit {
   }
 
   // ========================================================================
-  // 1. EXPORTAR A EXCEL (ESTILO FORMATO OFICIAL / HOJA DE VIDA)
+  // EXPORTAR A EXCEL
   // ========================================================================
   async exportToExcel() {
-
     this.exportState = 'excel';
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -96,16 +126,13 @@ export class DetalleProcesoComponent implements OnInit {
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Ficha Técnica');
 
-      // --- CONFIGURACIÓN VISUAL ---
-      // Columnas: A (Etiqueta) y B (Valor). A más angosta, B más ancha.
       sheet.getColumn(1).width = 30; 
       sheet.getColumn(2).width = 70;
 
-      // Colores Corporativos
       const colors = {
-        headerBlue: 'FF1F4E78', // Azul Oscuro Affi
-        bgGray: 'FFF2F2F2',     // Gris claro para etiquetas
-        border: 'FFBFBFBF'      // Borde gris
+        headerBlue: 'FF1F4E78',
+        bgGray: 'FFF2F2F2',
+        border: 'FFBFBFBF'
       };
 
       const borderStyle: Partial<ExcelJS.Borders> = {
@@ -115,11 +142,10 @@ export class DetalleProcesoComponent implements OnInit {
         right: { style: 'thin', color: { argb: colors.border } }
       };
 
-      // 1. LOGO
+      // Logo y títulos
       const imageId = workbook.addImage({ base64: AFFI_LOGO_BASE64, extension: 'png' });
       sheet.addImage(imageId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 100, height: 100 } });
 
-      // 2. TÍTULO PRINCIPAL (Centrado sobre A y B)
       sheet.mergeCells('A2:B2');
       const titleCell = sheet.getCell('A2');
       titleCell.value = 'FICHA TÉCNICA DEL PROCESO JURÍDICO';
@@ -133,7 +159,6 @@ export class DetalleProcesoComponent implements OnInit {
       dateCell.font = { size: 10, color: { argb: 'FF555555' }, name: 'Arial' };
       dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-      // --- HELPER PARA CREAR SECCIONES ---
       let currentRow = 6;
 
       const addSectionHeader = (title: string) => {
@@ -148,7 +173,6 @@ export class DetalleProcesoComponent implements OnInit {
       };
 
       const addRowData = (label: string, value: string) => {
-        // Celda Etiqueta (Col A)
         const cellLabel = sheet.getCell(`A${currentRow}`);
         cellLabel.value = label;
         cellLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.bgGray } };
@@ -156,34 +180,16 @@ export class DetalleProcesoComponent implements OnInit {
         cellLabel.border = borderStyle;
         cellLabel.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
 
-        // Celda Valor (Col B)
         const cellValue = sheet.getCell(`B${currentRow}`);
         cellValue.value = value || '---';
         cellValue.font = { color: { argb: 'FF000000' }, name: 'Arial', size: 10 };
         cellValue.border = borderStyle;
-        cellValue.alignment = { vertical: 'middle', horizontal: 'left', indent: 1, wrapText: true }; // Wrap para textos largos
+        cellValue.alignment = { vertical: 'middle', horizontal: 'left', indent: 1, wrapText: true };
 
         currentRow++;
       };
 
-      // --- BLOQUE 1: INFORMACIÓN GENERAL ---
-      addSectionHeader('Información General');
-      addRowData('Número de Radicación', this.detalle.numeroRadicacion);
-      addRowData('ID Interno del Proceso', `#${this.detalle.idProceso}`);
-      addRowData('Código Alterno / Cuenta', this.detalle.codigoAlterno);
-      addRowData('Clase de Proceso', this.clasePipe.transform(this.detalle.claseProceso));
-      addRowData('Etapa Procesal Actual', this.detalle.etapaProcesal || 'EN TRÁMITE');
-      
-      currentRow++; // Espacio
-
-      // --- BLOQUE 2: UBICACIÓN Y DESPACHO ---
-      addSectionHeader('Ubicación y Competencia');
-      addRowData('Despacho Judicial', this.detalle.despacho);
-      addRowData('Ciudad / Municipio', this.detalle.ubicacionContrato || this.detalle.regional);
-      
-      currentRow++;
-
-      // --- BLOQUE 3: PARTES PROCESALES ---
+      // PARTES PROCESALES
       addSectionHeader('Partes Procesales');
       
       const demNombre = this.getNombreSujeto('DEMANDANTE');
@@ -198,10 +204,34 @@ export class DetalleProcesoComponent implements OnInit {
         const solidarios = this.getSolidarios().map(s => `${s.Nombre || s.RazonSocial} (${s.Identificacion || 'S/N'})`).join('\n');
         addRowData('Deudores Solidarios', solidarios);
       }
+
+      currentRow++;
+
+      // INFORMACIÓN GENERAL
+      addSectionHeader('Información General');
+      addRowData('Número de Radicación', this.detalle.numeroRadicacion);
+      addRowData('ID Interno del Proceso', `#${this.detalle.idProceso}`);
+      addRowData('Cuenta', this.detalle.codigoAlterno);
+      addRowData('Clase de Proceso', this.clasePipe.transform(this.detalle.claseProceso));
+      
+      // Usar el nombre de etapa para el cliente
+      const etapaParaCliente = this.etapaActualConfig?.nombreCliente || this.detalle.etapaProcesal || 'EN TRÁMITE';
+      addRowData('Etapa Procesal Actual', etapaParaCliente);
+      
+      if (this.etapaActualConfig) {
+        addRowData('Descripción de Etapa', this.etapaActualConfig.definicion);
+      }
       
       currentRow++;
 
-      // --- BLOQUE 4: ESTADO Y SENTENCIA ---
+      // UBICACIÓN Y DESPACHO
+      addSectionHeader('Despacho y Ubicación');
+      addRowData('Despacho Judicial', this.detalle.despacho);
+      addRowData('Ubicación del Contrato', this.detalle.ubicacionContrato || this.detalle.regional);
+      
+      currentRow++;
+
+      // ESTADO Y SENTENCIA
       addSectionHeader('Estado Judicial y Sentencia');
       const fechaPres = this.datePipe.transform(this.detalle.fechaRecepcionProceso, 'dd/MM/yyyy') || 'N/A';
       addRowData('Fecha Presentación Demanda', fechaPres);
@@ -214,7 +244,7 @@ export class DetalleProcesoComponent implements OnInit {
       }
 
       const buffer = await workbook.xlsx.writeBuffer();
-      this.saveFile(buffer, 'xlsx', `Ficha_${this.detalle.numeroRadicacion || 'Proceso'}`);
+      this.saveFile(buffer, 'xlsx', `FICHA ${ddoNombre}`);
     } catch (e) {
       console.error(e);
       alert('Error exportando Excel: ' + e); 
@@ -223,84 +253,44 @@ export class DetalleProcesoComponent implements OnInit {
     }
   }
 
-// ========================================================================
-  // 2. EXPORTAR A PDF (VERTICAL - ESTILO EXPEDIENTE CORREGIDO)
+  // ========================================================================
+  // EXPORTAR A PDF
   // ========================================================================
   async exportToPdf() {
-
     this.exportState = 'pdf';
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
       if (!this.detalle) return;
-      // Usamos Portrait (Vertical) porque es una ficha técnica
       const doc = new jsPDF('p', 'mm', 'a4'); 
       const pageWidth = doc.internal.pageSize.width;
       const margin = 15;
 
-      // 1. LOGO Y ENCABEZADO
+      // Logo y encabezado
       doc.addImage(AFFI_LOGO_BASE64, 'PNG', margin, 10, 25, 25);
 
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(31, 78, 120); // Azul Affi
+      doc.setTextColor(31, 78, 120);
       doc.text('FICHA TÉCNICA DEL PROCESO', pageWidth / 2, 20, { align: 'center' });
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100); // Gris
+      doc.setTextColor(100);
       const fechaHoy = this.datePipe.transform(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", undefined, 'es-CO') || '';
       doc.text(fechaHoy, pageWidth / 2, 26, { align: 'center' });
 
-      // Separador visual
       doc.setDrawColor(200);
       doc.setLineWidth(0.5);
       doc.line(margin, 40, pageWidth - margin, 40);
 
-      // --- CONSTRUCCIÓN DE LA TABLA VERTICAL ---
-      
-      // Definimos el tipo explícito para las filas de autotable para evitar líos
       const bodyData: any[] = [];
 
-      // Helper para agregar filas
       const pushRow = (label: string, value: string) => {
         bodyData.push([label, value || '---']);
       };
 
-      // SECCIÓN 1: Info General
-      // CORRECCIÓN AQUÍ: Castear los valores literales (as 'bold', as 'left')
-      bodyData.push([{ 
-        content: 'INFORMACIÓN GENERAL', 
-        colSpan: 2, 
-        styles: { 
-          fillColor: [31, 78, 120], 
-          textColor: 255, 
-          fontStyle: 'bold' as 'bold', // <--- CORRECCIÓN TIPO
-          halign: 'left' as 'left'     // <--- CORRECCIÓN TIPO
-        } 
-      }]);
-      
-      pushRow('Número de Radicación', this.detalle.numeroRadicacion);
-      pushRow('ID Interno', `#${this.detalle.idProceso}`);
-      pushRow('Código Alterno / Cuenta', this.detalle.codigoAlterno);
-      pushRow('Clase de Proceso', this.clasePipe.transform(this.detalle.claseProceso));
-      pushRow('Etapa Procesal', this.detalle.etapaProcesal || 'EN TRÁMITE');
-
-      // SECCIÓN 2: Ubicación
-      bodyData.push([{ 
-        content: 'UBICACIÓN Y COMPETENCIA', 
-        colSpan: 2, 
-        styles: { 
-          fillColor: [31, 78, 120], 
-          textColor: 255, 
-          fontStyle: 'bold' as 'bold', 
-          halign: 'left' as 'left' 
-        } 
-      }]);
-      pushRow('Despacho Judicial', this.detalle.despacho);
-      pushRow('Ciudad / Municipio', this.detalle.ubicacionContrato || this.detalle.regional);
-
-      // SECCIÓN 3: Partes
+      // PARTES
       bodyData.push([{ 
         content: 'PARTES PROCESALES', 
         colSpan: 2, 
@@ -311,7 +301,7 @@ export class DetalleProcesoComponent implements OnInit {
           halign: 'left' as 'left' 
         } 
       }]);
-      
+
       const demNombre = this.getNombreSujeto('DEMANDANTE');
       const demId = this.getIdSujeto('DEMANDANTE');
       pushRow('Demandante', `${demNombre}\nID: ${demId}`);
@@ -321,11 +311,49 @@ export class DetalleProcesoComponent implements OnInit {
       pushRow('Demandado', `${ddoNombre}\nID: ${ddoId}`);
 
       if (this.haySolidarios()) {
-        const solidarios = this.getSolidarios().map(s => `• ${s.Nombre || s.RazonSocial} (ID: ${s.Identificacion || 'S/N'})`).join('\n');
+        const solidarios = this.getSolidarios().map(s => `• ${s.Nombre || s.RazonSocial} (ID: ${s.NumeroIdentificacion || 'S/N'})`).join('\n');
         pushRow('Deudores Solidarios', solidarios);
       }
 
-      // SECCIÓN 4: Judicial
+      // INFORMACIÓN GENERAL
+      bodyData.push([{ 
+        content: 'INFORMACIÓN GENERAL', 
+        colSpan: 2, 
+        styles: { 
+          fillColor: [31, 78, 120], 
+          textColor: 255, 
+          fontStyle: 'bold' as 'bold',
+          halign: 'left' as 'left'
+        } 
+      }]);
+      
+      pushRow('Número de Radicación', this.detalle.numeroRadicacion);
+      pushRow('ID Interno', `#${this.detalle.idProceso}`);
+      pushRow('Cuenta', this.detalle.codigoAlterno);
+      pushRow('Clase de Proceso', this.clasePipe.transform(this.detalle.claseProceso));
+      
+      const etapaParaCliente = this.etapaActualConfig?.nombreCliente || this.detalle.etapaProcesal || 'EN TRÁMITE';
+      pushRow('Etapa Procesal', etapaParaCliente);
+      
+      if (this.etapaActualConfig) {
+        pushRow('Descripción de Etapa', this.etapaActualConfig.definicion);
+      }
+
+      // UBICACIÓN
+      bodyData.push([{ 
+        content: 'DESPACHO Y UBICACIÓN', 
+        colSpan: 2, 
+        styles: { 
+          fillColor: [31, 78, 120], 
+          textColor: 255, 
+          fontStyle: 'bold' as 'bold', 
+          halign: 'left' as 'left' 
+        } 
+      }]);
+      pushRow('Despacho Judicial', this.detalle.despacho);
+      pushRow('Ubicación del Contrato', this.detalle.ubicacionContrato || this.detalle.regional);
+
+      // JUDICIAL
       bodyData.push([{ 
         content: 'ESTADO JUDICIAL', 
         colSpan: 2, 
@@ -337,13 +365,10 @@ export class DetalleProcesoComponent implements OnInit {
         } 
       }]);
       
-      // CORRECCIÓN AQUÍ: Agregar || '' para evitar el error de 'null' is not assignable to 'string'
       pushRow('Fecha Presentación Demanda', this.datePipe.transform(this.detalle.fechaRecepcionProceso, 'dd/MM/yyyy') || '');
-      
       pushRow('Fallo Sentencia', this.detalle.sentenciaPrimeraInstanciaResultado || 'Pendiente');
       
       if (this.detalle.sentenciaPrimeraInstanciaFecha) {
-        // CORRECCIÓN AQUÍ: Agregar || ''
         pushRow('Fecha de Sentencia', this.datePipe.transform(this.detalle.sentenciaPrimeraInstanciaFecha, 'dd/MM/yyyy') || '');
       }
 
@@ -381,16 +406,16 @@ export class DetalleProcesoComponent implements OnInit {
         doc.setFontSize(8);
         doc.setTextColor(150);
         doc.text(`Página ${i} de ${pageCount}`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
-        doc.text(`Estados Procesales - Sistema de Gestión Procesal`, margin, doc.internal.pageSize.height - 10);
+        doc.text(`Estados Procesales - Affi`, margin, doc.internal.pageSize.height - 10);
       }
 
-      doc.save(`Ficha_${this.detalle.numeroRadicacion || 'Proceso'}.pdf`);
+      doc.save(`FICHA ${ddoNombre}.pdf`);
 
     } catch (e) {
       console.error(e);
       alert('Error exportando PDF: ' + e);
     } finally {
-      this.exportState = 'idle'; // Resetear siempre
+      this.exportState = 'idle';
     }
   }
 

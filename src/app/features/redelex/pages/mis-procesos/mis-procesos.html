@@ -55,15 +55,32 @@
           @if (activeDropdown === 'clase') {
             <div class="dropdown-menu">
               <div class="options-list">
-                <div class="option" (click)="selectOption('')" [class.selected]="filtros.claseProceso === ''">Todas</div>
+                <div class="option" (click)="selectOption('clase', '')" [class.selected]="filtros.claseProceso === ''">Todas</div>
                 @for (c of listaClaseProceso; track c) {
-                  <div class="option" (click)="selectOption(c)" [class.selected]="filtros.claseProceso === c">{{ c }}</div>
+                  <div class="option" (click)="selectOption('clase', c)" [class.selected]="filtros.claseProceso === c">{{ c }}</div>
                 }
               </div>
             </div>
           }
         </div>
 
+        <div class="field custom-select-container">
+          <span class="field__label">Etapa Procesal</span>
+          <div class="custom-select" (click)="toggleDropdown('etapa', $event)" [class.open]="activeDropdown === 'etapa'">
+            <span class="selected-value" [class.placeholder]="!filtros.etapa">{{ filtros.etapa || 'Todas' }}</span>
+            <span class="arrow">▼</span>
+          </div>
+          @if (activeDropdown === 'etapa') {
+            <div class="dropdown-menu">
+              <div class="options-list">
+                <div class="option" (click)="selectOption('etapa', '')" [class.selected]="filtros.etapa === ''">Todas</div>
+                @for (e of listaEtapas; track e) {
+                  <div class="option" (click)="selectOption('etapa', e)" [class.selected]="filtros.etapa === e">{{ e }}</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
       </div>
     </div>
 
@@ -98,11 +115,19 @@
                   <td>{{ item.demandadoIdentificacion }}</td>
                   <td class="cell-nombre">{{ item.demandadoNombre }}</td>
                   <td>
-                <span class="status-badge" [ngClass]="{
-                  'status-badge--active': item.etapaProcesal === 'LIQUIDACION',
-                  'status-badge--pending': item.etapaProcesal === 'EJECUCION DEL ACUERDO' || item.etapaProcesal === 'ADMISION DEMANDA',
-                  'status-badge--inactive': item.etapaProcesal === 'TERMINACION'
-                }">{{ item.etapaProcesal }}</span>
+                    <span class="status-badge" [ngClass]="{
+                      'status-badge--recoleccion': item.etapaProcesal === 'RECOLECCION Y VALIDACION DOCUMENTAL',
+                      'status-badge--demanda': item.etapaProcesal === 'DEMANDA',
+                      'status-badge--mandamiento': item.etapaProcesal === 'MANDAMIENTO DE PAGO',
+                      'status-badge--admision': item.etapaProcesal === 'ADMISION DEMANDA',
+                      'status-badge--notificacion': item.etapaProcesal === 'NOTIFICACION',
+                      'status-badge--excepciones': item.etapaProcesal === 'EXCEPCIONES',
+                      'status-badge--audiencia': item.etapaProcesal === 'AUDIENCIA',
+                      'status-badge--sentencia': item.etapaProcesal === 'SENTENCIA',
+                      'status-badge--liquidacion': item.etapaProcesal === 'LIQUIDACION',
+                      'status-badge--lanzamiento': item.etapaProcesal === 'LANZAMIENTO',
+                      'status-badge--terminacion': item.etapaProcesal === 'No se muestran al cliente'
+                    }">{{ item.etapaProcesal }}</span>
                   </td>
                   <td><span class="tag-class">{{ item.claseProceso | claseProceso }}</span></td>
                   <td>{{ item.fechaRecepcionProceso | date:'dd/MM/yyyy' }}</td>

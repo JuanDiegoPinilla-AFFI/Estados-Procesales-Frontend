@@ -13,6 +13,27 @@ import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 
 registerLocaleData(localeEsCo, 'es-CO');
 
+// Mapeo de etapas según la especificación
+const ETAPA_MAPPING: { [key: string]: { display: string, color: string, colorRGB: [number, number, number], order: number } } = {
+  'ALISTAMIENTO MES': { display: 'RECOLECCION Y VALIDACION DOCUMENTAL', color: 'FFFFFF99', colorRGB: [255, 255, 153], order: 1 },
+  'ALISTAMIENTO MESES ANTERIORES': { display: 'RECOLECCION Y VALIDACION DOCUMENTAL', color: 'FFFFFF99', colorRGB: [255, 255, 153], order: 1 },
+  'DOCUMENTACION COMPLETA': { display: 'RECOLECCION Y VALIDACION DOCUMENTAL', color: 'FFFFFF99', colorRGB: [255, 255, 153], order: 1 },
+  'ASIGNACION': { display: 'RECOLECCION Y VALIDACION DOCUMENTAL', color: 'FFFFFF99', colorRGB: [255, 255, 153], order: 1 },
+  'DEMANDA': { display: 'DEMANDA', color: 'FFF1A983', colorRGB: [241, 169, 131], order: 2 },
+  'MANDAMIENTO DE PAGO': { display: 'MANDAMIENTO DE PAGO', color: 'FFFBE2D5', colorRGB: [251, 226, 213], order: 3 },
+  'ADMISION DEMANDA': { display: 'ADMISION DEMANDA', color: 'FF92D050', colorRGB: [146, 208, 80], order: 4 },
+  'NOTIFICACION': { display: 'NOTIFICACION', color: 'FFB5E6A2', colorRGB: [181, 230, 162], order: 5 },
+  'EXCEPCIONES': { display: 'EXCEPCIONES', color: 'FF00B0F0', colorRGB: [0, 176, 240], order: 6 },
+  'AUDIENCIA': { display: 'AUDIENCIA', color: 'FFC0E6F5', colorRGB: [192, 230, 245], order: 7 },
+  'SENTENCIA': { display: 'SENTENCIA', color: 'FFD86DCD', colorRGB: [216, 109, 205], order: 8 },
+  'LIQUIDACION': { display: 'LIQUIDACION', color: 'FFE49EDD', colorRGB: [228, 158, 221], order: 9 },
+  'AVALUO DE BIENES': { display: 'LIQUIDACION', color: 'FFE49EDD', colorRGB: [228, 158, 221], order: 9 },
+  'REMATE': { display: 'LIQUIDACION', color: 'FFE49EDD', colorRGB: [228, 158, 221], order: 9 },
+  'LANZAMIENTO': { display: 'LANZAMIENTO', color: 'FFFFC000', colorRGB: [255, 192, 0], order: 10 },
+  'TERMINACION': { display: 'No se muestran al cliente', color: 'FFBFBFBF', colorRGB: [191, 191, 191], order: 11 },
+  'TERMINADO DESISTIMIENTO': { display: 'No se muestran al cliente', color: 'FFBFBFBF', colorRGB: [191, 191, 191], order: 11 },
+};
+
 @Component({
   selector: 'app-mis-procesos',
   standalone: true,
@@ -30,22 +51,21 @@ export class MisProcesosComponent implements OnInit {
 
   rawData: any[] = [];
   filteredData: any[] = [];
+  listaEtapas: string[] = [];
   loading = true;
   error = '';
   
-  // Datos de cabecera
   identificacionUsuario = '';
   nombreInmobiliaria = '';
 
-  // Paginación
   currentPage = 1;
   itemsPerPage = 10;
   pageSizeOptions = [5, 10, 20, 50, 100];
 
-  // Filtros Avanzados
   filtros = {
     busquedaGeneral: '',
     claseProceso: '',
+    etapa: '',
     radicado: '',       
     idDemandado: '',    
     nombreDemandado: '' 
@@ -54,7 +74,6 @@ export class MisProcesosComponent implements OnInit {
   listaClaseProceso: string[] = [];
   activeDropdown: string | null = null;
   showExportModal = false;
-
   exportState: 'idle' | 'excel' | 'pdf' = 'idle';
 
   exportColumns = [
@@ -76,6 +95,12 @@ export class MisProcesosComponent implements OnInit {
     this.cargarMisProcesos();
   }
 
+  // Función helper para normalizar y obtener etapa display
+  getEtapaDisplay(etapaRaw: string): string {
+    const etapaNormalizada = etapaRaw ? etapaRaw.toUpperCase().trim() : '';
+    return ETAPA_MAPPING[etapaNormalizada]?.display || etapaRaw || 'EN TRÁMITE';
+  }
+
   cargarMisProcesos() {
     this.loading = true;
     this.redelexService.getMisProcesos().subscribe({
@@ -91,7 +116,9 @@ export class MisProcesosComponent implements OnInit {
           if (newItem.demandanteNombre?.includes(',')) newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
           
           newItem.numeroRadicacion = newItem.numeroRadicacion || 'N/A';
-          newItem.etapaProcesal = newItem.etapaProcesal || 'EN TRÁMITE';
+          
+          // Normalizar etapa usando el mapeo
+          newItem.etapaProcesal = this.getEtapaDisplay(newItem.etapaProcesal);
           
           return newItem;
         });
@@ -111,10 +138,15 @@ export class MisProcesosComponent implements OnInit {
 
   extraerListasUnicas() {
     const clasesSet = new Set<string>();
+    const etapasSet = new Set<string>(); // <--- NUEVO
+
     this.rawData.forEach(item => {
       if (item.claseProceso) clasesSet.add(this.clasePipe.transform(item.claseProceso));
+      if (item.etapaProcesal) etapasSet.add(item.etapaProcesal); // <--- NUEVO
     });
+
     this.listaClaseProceso = Array.from(clasesSet).sort();
+    this.listaEtapas = Array.from(etapasSet).sort(); // <--- NUEVO
   }
 
   applyFilters() {
@@ -123,10 +155,12 @@ export class MisProcesosComponent implements OnInit {
       if (this.filtros.busquedaGeneral) {
         const term = this.filtros.busquedaGeneral.toLowerCase();
         const claseTransformada = this.clasePipe.transform(item.claseProceso).toLowerCase();
+        const etapa = (item.etapaProcesal || '').toLowerCase();
         const match = 
           item.procesoId?.toString().includes(term) ||
           item.demandadoNombre?.toLowerCase().includes(term) ||
           item.demandadoIdentificacion?.includes(term) ||
+          etapa.includes(term) ||
           item.numeroRadicacion?.toLowerCase().includes(term) ||
           claseTransformada.includes(term);
         if (!match) return false;
@@ -138,16 +172,18 @@ export class MisProcesosComponent implements OnInit {
         const valorFila = this.clasePipe.transform(item.claseProceso);
         if (valorFila !== this.filtros.claseProceso) return false;
       }
+      if (this.filtros.etapa) {
+      if (item.etapaProcesal !== this.filtros.etapa) return false;
+    }
       return true;
     });
   }
 
   limpiarFiltros() {
-    this.filtros = { busquedaGeneral: '', claseProceso: '', radicado: '', idDemandado: '', nombreDemandado: '' };
+    this.filtros = { busquedaGeneral: '', claseProceso: '', etapa: '', radicado: '', idDemandado: '', nombreDemandado: '' };
     this.applyFilters();
   }
 
-  // --- PAGINACIÓN Y DROPDOWNS ---
   get paginatedData() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return this.filteredData.slice(startIndex, startIndex + this.itemsPerPage);
@@ -161,85 +197,89 @@ export class MisProcesosComponent implements OnInit {
     event.stopPropagation();
     this.activeDropdown = this.activeDropdown === name ? null : name;
   }
-  selectOption(value: string) { this.filtros.claseProceso = value; this.activeDropdown = null; this.applyFilters(); }
+
+  selectOption(type: 'clase' | 'etapa', value: string) {
+    if (type === 'clase') {
+      this.filtros.claseProceso = value;
+    } else if (type === 'etapa') {
+      this.filtros.etapa = value;
+    }
+    this.activeDropdown = null;
+    this.applyFilters();
+  }
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) this.activeDropdown = null;
   }
 
-  // --- MODAL Y EXPORTACIÓN ---
   openExportModal() { this.showExportModal = true; }
   closeExportModal() { this.showExportModal = false; }
   toggleColumn(key: string) { const col = this.exportColumns.find(c => c.key === key); if (col) col.selected = !col.selected; }
   selectAllColumns(select: boolean) { this.exportColumns.forEach(c => c.selected = select); }
 
-  // ------------------------------------------------------------------------------------------------
-  // --- EXPORTAR EXCEL (DISEÑO AFFI - Grid Uniforme + Cajas Resumen) ---
-  // ------------------------------------------------------------------------------------------------
-  async exportToExcel() {
+  // Función helper para contar etapas usando el display name
+  private contarEtapaDisplay(displayName: string): number {
+    return this.filteredData.filter(item => {
+      const etapa = item.etapaProcesal || '';
+      return etapa === displayName;
+    }).length;
+  }
 
+  async exportToExcel() {
     this.exportState = 'excel';
     await new Promise(resolve => setTimeout(resolve, 100));
     
     try {
-      console.log('Generando Excel Mis Procesos...');
       const activeColumns = this.exportColumns.filter(c => c.selected);
       if (activeColumns.length === 0) { alert('Selecciona columnas'); return; }
 
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Mis Procesos');
 
-      // --- 0. CALCULAR CONTADORES AUTOMÁTICAMENTE ---
-      const contarEtapa = (termino: string, exacto: boolean = false) => {
-        return this.filteredData.filter(item => {
-          const etapa = item.etapaProcesal ? item.etapaProcesal.toUpperCase() : '';
-          const busqueda = termino.toUpperCase();
-          return exacto ? etapa === busqueda : etapa.includes(busqueda);
-        }).length;
-      };
-
+      // Contadores basados en nombres display
       const counts = {
-        demanda: contarEtapa('DEMANDA', true),
-        admision: contarEtapa('ADMISION DEMANDA'),
-        notificacion: contarEtapa('NOTIFICACION'),
-        sentencia: contarEtapa('SENTENCIA'),
-        lanzamiento: contarEtapa('LANZAMIENTO'),
-        excepciones: contarEtapa('EXCEPCIONES'),
-        terminacion: contarEtapa('TERMINACION'),
-        archivo: contarEtapa('ARCHIVO'),
-        liquidacion: contarEtapa('LIQUIDACION'),
-        acuerdo: contarEtapa('ACUERDO'),
-        embargo: contarEtapa('EMBARGO'),
-        secuestro: contarEtapa('SECUESTRO')
+        recoleccion: this.contarEtapaDisplay('RECOLECCION Y VALIDACION DOCUMENTAL'),
+        demanda: this.contarEtapaDisplay('DEMANDA'),
+        mandamiento: this.contarEtapaDisplay('MANDAMIENTO DE PAGO'),
+        admision: this.contarEtapaDisplay('ADMISION DEMANDA'),
+        notificacion: this.contarEtapaDisplay('NOTIFICACION'),
+        excepciones: this.contarEtapaDisplay('EXCEPCIONES'),
+        audiencia: this.contarEtapaDisplay('AUDIENCIA'),
+        sentencia: this.contarEtapaDisplay('SENTENCIA'),
+        liquidacion: this.contarEtapaDisplay('LIQUIDACION'),
+        lanzamiento: this.contarEtapaDisplay('LANZAMIENTO'),
       };
 
-      // --- 1. CONFIGURACIÓN ESTRUCTURAL ---
-      // Definimos qué campos ocupan 2 celdas para mantener el grid alineado
       const colSpans: { [key: string]: number } = {
         'numeroRadicacion': 2,
         'demandadoNombre': 2,
         'despacho': 2,
-        'sentencia': 1 // A veces es largo, pero dejémoslo en 1 por ahora o cámbialo a 2 si ves necesario
       };
       
-      const UNIFORM_WIDTH = 22; 
-      
-      // Ancho uniforme para todas las columnas
+      const UNIFORM_WIDTH = 22;
       for (let i = 1; i <= 50; i++) { sheet.getColumn(i).width = UNIFORM_WIDTH; }
 
-      // Calculamos columnas físicas totales para centrar títulos
       let totalPhysicalColumns = 0;
       activeColumns.forEach(col => { totalPhysicalColumns += (colSpans[col.key] || 1); });
 
-      // --- 2. ESTILOS Y COLORES ---
       const colors = {
-        yellow: 'FFFFC000', pink: 'FFDA9694', orange: 'FFFCD5B4',
-        green: 'FF92D050', blue: 'FFB7DEE8', gray: 'FFBFBFBF',
-        headerBlue: 'FF1F4E78', textDark: 'FF333333'
+        yellow99: 'FFFFFF99',
+        orangeF1: 'FFF1A983',
+        pinkFBE: 'FFFBE2D5',
+        green92: 'FF92D050',
+        greenB5: 'FFB5E6A2',
+        blue00: 'FF00B0F0',
+        blueC0: 'FFC0E6F5',
+        pinkD8: 'FFD86DCD',
+        pinkE4: 'FFE49EDD',
+        yellowFF: 'FFFFC000',
+        gray: 'FFBFBFBF',
+        headerBlue: 'FF1F4E78',
+        textDark: 'FF333333'
       };
 
-      // --- 3. LOGO Y ENCABEZADOS ---
+      // Logo y encabezados
       const imageId = workbook.addImage({ base64: AFFI_LOGO_BASE64, extension: 'png' });
       sheet.addImage(imageId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 90, height: 90 } });
 
@@ -266,29 +306,26 @@ export class MisProcesosComponent implements OnInit {
       setInfo(8, `Inmobiliaria: ${this.nombreInmobiliaria || 'N/A'}`);
       setInfo(10, `Total Procesos: ${this.filteredData.length}`);
 
-      // --- 4. CAJAS DE RESUMEN (GRID) ---
+      // Cajas de resumen actualizadas
       const datosFila1 = [
-        { title: 'Demanda', desc: 'Iniciado proceso restitución', count: counts.demanda, color: colors.yellow },
-        { title: 'Admisión Demanda', desc: 'Juez acepta demanda', count: counts.admision, color: colors.pink },
-        { title: 'Notificación', desc: 'Notificación al arrendatario', count: counts.notificacion, color: colors.orange },
-        { title: 'Sentencia', desc: 'Decisión sobre la demanda', count: counts.sentencia, color: colors.green },
-        { title: 'Lanzamiento', desc: 'Gestionando desalojo', count: counts.lanzamiento, color: colors.blue },
-        { title: 'Excepciones', desc: 'Objeciones presentadas', count: counts.excepciones, color: colors.gray },
+        { title: 'Recolección y Validación Documental', desc: 'Se está completando y revisando la información necesaria para iniciar los procesos.', count: counts.recoleccion, color: colors.yellow99 },
+        { title: 'Demanda', desc: 'Hemos iniciado el proceso judicial.', count: counts.demanda, color: colors.orangeF1 },
+        { title: 'Mandamiento de Pago', desc: 'El juez acepta tramitar la demanda.', count: counts.mandamiento, color: colors.pinkFBE },
+        { title: 'Admisión Demanda', desc: 'El juez acepta tramitar la demanda.', count: counts.admision, color: colors.green92 },
+        { title: 'Notificación', desc: 'Etapa en la que se comunica la existencia del proceso.', count: counts.notificacion, color: colors.greenB5 },
       ];
 
       const datosFila2 = [
-        { title: 'Terminación', desc: 'Terminado por pago/acuerdo', count: counts.terminacion, color: colors.blue }, 
-        { title: 'Archivo', desc: 'Archivado / Desistimiento', count: counts.archivo, color: colors.gray },
-        { title: 'Liquidación', desc: 'Etapa liquidación crédito', count: counts.liquidacion, color: colors.yellow },
-        { title: 'Acuerdo Pago', desc: 'Acuerdo logrado', count: counts.acuerdo, color: colors.green },
-        { title: 'Embargo', desc: 'Medidas cautelares', count: counts.embargo, color: colors.pink },
-        { title: 'Secuestro', desc: 'Diligencia secuestro', count: counts.secuestro, color: colors.orange },
+        { title: 'Excepciones', desc: 'Demandado presentó objeciones a la demanda.', count: counts.excepciones, color: colors.blue00 },
+        { title: 'Audiencia', desc: 'Diligencia donde el juez escucha a las partes.', count: counts.audiencia, color: colors.blueC0 },
+        { title: 'Sentencia', desc: 'El juez decidió sobre la demanda.', count: counts.sentencia, color: colors.pinkD8 },
+        { title: 'Liquidación', desc: 'Se cuantifica con exactitud las obligaciones.', count: counts.liquidacion, color: colors.pinkE4 },
+        { title: 'Lanzamiento', desc: 'Se está gestionando el desalojo de los inquilinos.', count: counts.lanzamiento, color: colors.yellowFF },
       ];
 
       const drawBoxRow = (startRow: number, datos: any[]) => {
-        let currentBoxCol = 4; // Columna D
+        let currentBoxCol = 4;
         datos.forEach(box => {
-          // Título
           const cellTitle = sheet.getCell(startRow, currentBoxCol);
           cellTitle.value = box.title;
           cellTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: box.color } };
@@ -296,7 +333,6 @@ export class MisProcesosComponent implements OnInit {
           cellTitle.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
           cellTitle.border = { top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
 
-          // Descripción
           sheet.mergeCells(startRow + 1, currentBoxCol, startRow + 2, currentBoxCol);
           const cellDesc = sheet.getCell(startRow + 1, currentBoxCol);
           cellDesc.value = box.desc;
@@ -305,7 +341,6 @@ export class MisProcesosComponent implements OnInit {
           cellDesc.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
           cellDesc.border = { left: {style:'thin'}, right: {style:'thin'} };
 
-          // Contador
           const cellCount = sheet.getCell(startRow + 3, currentBoxCol);
           cellCount.value = box.count;
           cellCount.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: box.color } };
@@ -320,12 +355,11 @@ export class MisProcesosComponent implements OnInit {
       drawBoxRow(6, datosFila1);
       drawBoxRow(11, datosFila2);
 
-      // --- 5. TABLA DE DATOS ---
+      // Tabla de datos
       const tableStartRow = 16;
       const headerRow = sheet.getRow(tableStartRow);
       let currentPhysicalCol = 1;
 
-      // Encabezados
       activeColumns.forEach((col) => {
         const span = colSpans[col.key] || 1;
         if (span > 1) { sheet.mergeCells(tableStartRow, currentPhysicalCol, tableStartRow, currentPhysicalCol + span - 1); }
@@ -346,7 +380,7 @@ export class MisProcesosComponent implements OnInit {
         right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
       };
 
-      // Filas
+      // Filas de datos
       this.filteredData.forEach((item, index) => {
         const currentRowIndex = tableStartRow + 1 + index;
         let rowPhysicalCol = 1;
@@ -366,26 +400,22 @@ export class MisProcesosComponent implements OnInit {
           cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
           cell.border = borderStyle;
 
-          // PINTAR CELDA ETAPA
+          // Colorear celda de etapa según mapeo
           if (col.key === 'etapaProcesal') {
-             const etapaVal = val ? String(val).toUpperCase() : '';
-             let cellArgb = null;
-             
-             if (etapaVal === 'DEMANDA') cellArgb = colors.yellow;
-             else if (etapaVal.includes('ADMISION DEMANDA')) cellArgb = colors.pink;
-             else if (etapaVal.includes('NOTIFICACION')) cellArgb = colors.orange;
-             else if (etapaVal.includes('SENTENCIA')) cellArgb = colors.green;
-             else if (etapaVal.includes('LANZAMIENTO')) cellArgb = colors.blue;
-             else if (etapaVal.includes('EXCEPCIONES')) cellArgb = colors.gray;
-             
-             else if (etapaVal.includes('TERMINACION')) cellArgb = colors.blue;
-             else if (etapaVal.includes('ARCHIVO') || etapaVal.includes('DESISTIMIENTO')) cellArgb = colors.gray;
-             else if (etapaVal.includes('LIQUIDACION')) cellArgb = colors.yellow;
-             else if (etapaVal.includes('ACUERDO')) cellArgb = colors.green;
-             else if (etapaVal.includes('EMBARGO')) cellArgb = colors.pink;
-             else if (etapaVal.includes('SECUESTRO')) cellArgb = colors.orange;
+            const etapaDisplay = val || '';
+            let cellColor = null;
 
-             if (cellArgb) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cellArgb } };
+            // Buscar el color correspondiente en el mapeo
+            for (const [key, value] of Object.entries(ETAPA_MAPPING)) {
+              if (value.display === etapaDisplay) {
+                cellColor = value.color;
+                break;
+              }
+            }
+
+            if (cellColor) {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cellColor } };
+            }
           }
           rowPhysicalCol += span;
         });
@@ -397,63 +427,53 @@ export class MisProcesosComponent implements OnInit {
 
     } catch (error) {
       console.error('Error Excel:', error);
-      // Usamos alert o AffiAlert según prefieras (tu código usaba alert)
-      alert('Error al generar Excel: ' + error); 
+      alert('Error al generar Excel: ' + error);
     } finally {
-      this.exportState = 'idle'; // Resetear siempre
+      this.exportState = 'idle';
     }
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // --- EXPORTAR PDF (DISEÑO AFFI - Fit To Page + Cajas Centradas) ---
-  // ------------------------------------------------------------------------------------------------
   async exportToPdf() {
-
     this.exportState = 'pdf';
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      console.log('Exportando PDF Mis Procesos...');
-      
       const activeColumns = this.exportColumns.filter(c => c.selected);
       const etapaColIndex = activeColumns.findIndex(c => c.key === 'etapaProcesal');
 
-      const contarEtapa = (termino: string, exacto: boolean = false) => {
-        return this.filteredData.filter(item => {
-          const etapa = item.etapaProcesal ? item.etapaProcesal.toUpperCase() : '';
-          const busqueda = termino.toUpperCase();
-          return exacto ? etapa === busqueda : etapa.includes(busqueda);
-        }).length;
-      };
-
+      // Contadores basados en nombres display
       const counts = {
-        demanda: contarEtapa('DEMANDA', true),
-        admision: contarEtapa('ADMISION DEMANDA'),
-        notificacion: contarEtapa('NOTIFICACION'),
-        sentencia: contarEtapa('SENTENCIA'),
-        lanzamiento: contarEtapa('LANZAMIENTO'),
-        excepciones: contarEtapa('EXCEPCIONES'),
-        terminacion: contarEtapa('TERMINACION'),
-        archivo: contarEtapa('ARCHIVO'),
-        liquidacion: contarEtapa('LIQUIDACION'),
-        acuerdo: contarEtapa('ACUERDO'),
-        embargo: contarEtapa('EMBARGO'),
-        secuestro: contarEtapa('SECUESTRO')
+        recoleccion: this.contarEtapaDisplay('RECOLECCION Y VALIDACION DOCUMENTAL'),
+        demanda: this.contarEtapaDisplay('DEMANDA'),
+        mandamiento: this.contarEtapaDisplay('MANDAMIENTO DE PAGO'),
+        admision: this.contarEtapaDisplay('ADMISION DEMANDA'),
+        notificacion: this.contarEtapaDisplay('NOTIFICACION'),
+        excepciones: this.contarEtapaDisplay('EXCEPCIONES'),
+        audiencia: this.contarEtapaDisplay('AUDIENCIA'),
+        sentencia: this.contarEtapaDisplay('SENTENCIA'),
+        liquidacion: this.contarEtapaDisplay('LIQUIDACION'),
+        lanzamiento: this.contarEtapaDisplay('LANZAMIENTO'),
       };
 
       const colorsRGB: { [key: string]: [number, number, number] } = {
-        yellow: [255, 192, 0], pink: [218, 150, 148], orange: [255, 213, 180],
-        green: [146, 208, 80], blue: [183, 222, 232], gray: [191, 191, 191]
+        yellow99: [255, 255, 153],
+        orangeF1: [241, 169, 131],
+        pinkFBE: [251, 226, 213],
+        green92: [146, 208, 80],
+        greenB5: [181, 230, 162],
+        blue00: [0, 176, 240],
+        blueC0: [192, 230, 245],
+        pinkD8: [216, 109, 205],
+        pinkE4: [228, 158, 221],
+        yellowFF: [255, 192, 0],
+        gray: [191, 191, 191]
       };
 
-      // Configuración Página
-      const doc = new jsPDF('landscape', 'mm', 'a4'); 
+      const doc = new jsPDF('landscape', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.width;
-      const margin = 5; 
+      const margin = 5;
       const usableWidth = pageWidth - (margin * 2);
 
-      // --- CÁLCULO PROPORCIONAL DE ANCHOS ---
-      // Columnas "dobles" para datos largos
       const doubleColumns = ['numeroRadicacion', 'demandadoNombre', 'despacho'];
       
       let totalUnits = 0;
@@ -469,7 +489,7 @@ export class MisProcesosComponent implements OnInit {
         };
       });
 
-      // 3. ENCABEZADO
+      // Encabezado
       doc.addImage(AFFI_LOGO_BASE64, 'PNG', margin, 5, 20, 20);
       doc.setFontSize(12); doc.setFont('helvetica', 'bold');
       doc.text('REPORTE MIS PROCESOS JURÍDICOS', pageWidth / 2, 10, { align: 'center' });
@@ -478,44 +498,41 @@ export class MisProcesosComponent implements OnInit {
       const fechaHoy = this.datePipe.transform(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", undefined, 'es-CO') || '';
       doc.text(fechaHoy, pageWidth / 2, 15, { align: 'center' });
 
-      // Info
       const infoY = 28;
       doc.setFontSize(7); doc.setFont('helvetica', 'bold');
       doc.text(`NIT Asociado: ${this.identificacionUsuario}`, margin, infoY);
       doc.text(`Inmobiliaria: ${this.nombreInmobiliaria || 'N/A'}`, margin, infoY + 4);
       doc.text(`Total Procesos: ${this.filteredData.length}`, margin, infoY + 8);
 
-      // --- 4. CAJAS DE RESUMEN (CENTRADO) ---
-      const numBoxes = 6;
-      const boxGap = 4; 
-      const boxWidth = 42; 
-      const boxHeight = 14; 
-      const startBoxY = 42; 
+      // Cajas de resumen actualizadas
+      const numBoxes = 5;
+      const boxGap = 4;
+      const boxWidth = 52;
+      const boxHeight = 14;
+      const startBoxY = 42;
 
       const totalBlockWidth = (numBoxes * boxWidth) + ((numBoxes - 1) * boxGap);
       const startX = margin + (usableWidth - totalBlockWidth) / 2;
 
       const boxesRow1 = [
-        { title: 'Demanda', desc: 'Iniciado proceso restitución', count: counts.demanda, color: colorsRGB['yellow'] },
-        { title: 'Admisión', desc: 'Juez acepta demanda', count: counts.admision, color: colorsRGB['pink'] },
-        { title: 'Notificación', desc: 'Notificación al arrendatario', count: counts.notificacion, color: colorsRGB['orange'] },
-        { title: 'Sentencia', desc: 'Decisión sobre la demanda', count: counts.sentencia, color: colorsRGB['green'] },
-        { title: 'Lanzamiento', desc: 'Gestionando desalojo', count: counts.lanzamiento, color: colorsRGB['blue'] },
-        { title: 'Excepciones', desc: 'Objeciones presentadas', count: counts.excepciones, color: colorsRGB['gray'] },
+        { title: 'Recolección y Validación Documental', desc: 'Se está completando y revisando la información necesaria para iniciar los procesos.', count: counts.recoleccion, color: colorsRGB['yellow99'] },
+        { title: 'Demanda', desc: 'Hemos iniciado el proceso judicial.', count: counts.demanda, color: colorsRGB['orangeF1'] },
+        { title: 'Mandamiento de PAgo', desc: 'El juez acepta tramitar la demanda.', count: counts.mandamiento, color: colorsRGB['pinkFBE'] },
+        { title: 'Admisión Demanda', desc: 'El juez acepta tramitar la demanda.', count: counts.admision, color: colorsRGB['green92'] },
+        { title: 'Notificación', desc: 'Etapa en la que se comunica la existencia del proceso.', count: counts.notificacion, color: colorsRGB['greenB5'] },
       ];
 
       const boxesRow2 = [
-        { title: 'Terminación', desc: 'Terminado por pago/acuerdo', count: counts.terminacion, color: colorsRGB['blue'] },
-        { title: 'Archivo', desc: 'Archivado / Desistimiento', count: counts.archivo, color: colorsRGB['gray'] },
-        { title: 'Liquidación', desc: 'Etapa liquidación crédito', count: counts.liquidacion, color: colorsRGB['yellow'] },
-        { title: 'Acuerdo Pago', desc: 'Acuerdo logrado', count: counts.acuerdo, color: colorsRGB['green'] },
-        { title: 'Embargo', desc: 'Medidas cautelares', count: counts.embargo, color: colorsRGB['pink'] },
-        { title: 'Secuestro', desc: 'Diligencia secuestro', count: counts.secuestro, color: colorsRGB['orange'] },
+        { title: 'Excepciones', desc: 'Demandado presentó objeciones a la demanda.', count: counts.excepciones, color: colorsRGB['blue00'] },
+        { title: 'Audiencia', desc: 'Diligencia donde el juez escucha a las partes.', count: counts.audiencia, color: colorsRGB['blueC0'] },
+        { title: 'Sentencia', desc: 'El juez decidió sobre la demanda.', count: counts.sentencia, color: colorsRGB['pinkD8'] },
+        { title: 'Liquidación', desc: 'Se cuantifica con exactitud las obligaciones.', count: counts.liquidacion, color: colorsRGB['pinkE4'] },
+        { title: 'Lanzamiento', desc: 'Se está gestionando el desalojo de los inquilinos.', count: counts.lanzamiento, color: colorsRGB['yellowFF'] },
       ];
 
       const drawPDFBoxRow = (y: number, items: any[]) => {
         items.forEach((item, i) => {
-          const x = startX + (i * (boxWidth + boxGap)); 
+          const x = startX + (i * (boxWidth + boxGap));
           doc.setFillColor(item.color[0], item.color[1], item.color[2]);
           doc.rect(x, y, boxWidth, boxHeight, 'F');
           doc.setDrawColor(100); doc.setLineWidth(0.1);
@@ -523,7 +540,7 @@ export class MisProcesosComponent implements OnInit {
 
           doc.setTextColor(0);
           doc.setFontSize(6); doc.setFont('helvetica', 'bold');
-          doc.text(item.title, x + (boxWidth/2), y + 3, { align: 'center' }); 
+          doc.text(item.title, x + (boxWidth/2), y + 3, { align: 'center' });
 
           doc.setFontSize(5); doc.setFont('helvetica', 'normal');
           doc.text(item.desc, x + (boxWidth/2), y + 6.5, { align: 'center', maxWidth: boxWidth - 2 });
@@ -536,7 +553,7 @@ export class MisProcesosComponent implements OnInit {
       drawPDFBoxRow(startBoxY, boxesRow1);
       drawPDFBoxRow(startBoxY + boxHeight + boxGap, boxesRow2);
 
-      // 5. TABLA DE DATOS
+      // Tabla de datos
       const bodyData = this.filteredData.map(item => {
         return activeColumns.map(col => {
           let val = item[col.key];
@@ -558,22 +575,17 @@ export class MisProcesosComponent implements OnInit {
         columnStyles: dynamicColumnStyles,
         didParseCell: (data) => {
           if (data.section === 'body' && etapaColIndex !== -1 && data.column.index === etapaColIndex) {
-            const cellValue = data.cell.raw; 
-            const etapa = cellValue ? String(cellValue).toUpperCase() : '';
+            const cellValue = data.cell.raw;
+            const etapaDisplay = cellValue ? String(cellValue) : '';
             let colorRGB: [number, number, number] | null = null;
-            
-            if (etapa === 'DEMANDA') colorRGB = colorsRGB['yellow'];
-            else if (etapa.includes('ADMISION DEMANDA')) colorRGB = colorsRGB['pink'];
-            else if (etapa.includes('NOTIFICACION')) colorRGB = colorsRGB['orange'];
-            else if (etapa.includes('SENTENCIA')) colorRGB = colorsRGB['green'];
-            else if (etapa.includes('LANZAMIENTO')) colorRGB = colorsRGB['blue'];
-            else if (etapa.includes('EXCEPCIONES')) colorRGB = colorsRGB['gray'];
-            else if (etapa.includes('TERMINACION')) colorRGB = colorsRGB['blue'];
-            else if (etapa.includes('ARCHIVO') || etapa.includes('DESISTIMIENTO')) colorRGB = colorsRGB['gray'];
-            else if (etapa.includes('LIQUIDACION')) colorRGB = colorsRGB['yellow'];
-            else if (etapa.includes('ACUERDO')) colorRGB = colorsRGB['green'];
-            else if (etapa.includes('EMBARGO')) colorRGB = colorsRGB['pink'];
-            else if (etapa.includes('SECUESTRO')) colorRGB = colorsRGB['orange'];
+
+            // Buscar el color correspondiente en el mapeo
+            for (const [key, value] of Object.entries(ETAPA_MAPPING)) {
+              if (value.display === etapaDisplay) {
+                colorRGB = value.colorRGB;
+                break;
+              }
+            }
 
             if (colorRGB) data.cell.styles.fillColor = colorRGB;
           }
@@ -587,7 +599,7 @@ export class MisProcesosComponent implements OnInit {
       console.error('Error PDF:', error);
       alert('Error al generar PDF: ' + error);
     } finally {
-      this.exportState = 'idle'; // Resetear siempre
+      this.exportState = 'idle';
     }
   }
 

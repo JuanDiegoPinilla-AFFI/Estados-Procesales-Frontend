@@ -67,23 +67,67 @@
       <!-- COLUMNA IZQUIERDA -->
       <div class="main-column">
         
+        <!-- STEPPER DE ETAPAS PROCESALES -->
+        @if (etapaActualConfig) {
+          <section class="process-stepper">
+            <h2>Etapa Procesal Actual</h2>
+            <div class="stepper-container">
+              @for (etapa of etapasStepper; track etapa.nombre; let i = $index) {
+                <div class="stepper-step" 
+                     [class.active]="i === etapaActualIndex"
+                     [class.completed]="i < etapaActualIndex">
+                  <div class="step-connector" 
+                       [class.completed]="i < etapaActualIndex"></div>
+                  <div class="step-circle" 
+                       [style.background-color]="i <= etapaActualIndex ? etapa.color : '#E5E7EB'">
+                    @if (i < etapaActualIndex) {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    } @else {
+                      <span class="step-number">{{ i + 1 }}</span>
+                    }
+                  </div>
+                  <div class="step-label" [class.active]="i === etapaActualIndex">
+                    {{ etapa.nombre }}
+                  </div>
+                </div>
+              }
+            </div>
+            
+            <!-- Descripción de la etapa actual -->
+            <div class="etapa-descripcion" [style.border-left-color]="etapaActualConfig.color">
+              <div class="descripcion-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <p>{{ etapaActualConfig.definicion }}</p>
+            </div>
+          </section>
+        }
+        
         <!-- RESUMEN DEL PROCESO -->
         <section class="process-summary">
           <div class="process-meta">
             <div class="meta-info">
-              <h1>{{ detalle.numeroRadicacion || 'Sin Radicado' }}</h1>
+              <h1>Radicado: {{ detalle.numeroRadicacion || 'Sin Radicado' }}</h1>
               <div class="meta-details">
-                <span>ID: <strong>#{{ detalle.idProceso }}</strong></span>
-                <span>Código: <strong>{{ detalle.codigoAlterno || 'N/A' }}</strong></span>
+                <span>ID: <strong>{{ detalle.idProceso }}</strong></span>
+                <span>Cuenta: <strong>{{ detalle.codigoAlterno || 'N/A' }}</strong></span>
               </div>
             </div>
-            <span class="status-badge" [ngClass]="{
-              'status-badge--active': detalle.etapaProcesal === 'LIQUIDACION' || detalle.etapaProcesal === 'TERMINACION',
-              'status-badge--pending': detalle.etapaProcesal === 'EJECUCION DEL ACUERDO' || detalle.etapaProcesal === 'ADMISION DEMANDA',
-              'status-badge--review': !['LIQUIDACION', 'TERMINACION', 'EJECUCION DEL ACUERDO', 'ADMISION DEMANDA'].includes(detalle.etapaProcesal)
-            }">
-              {{ detalle.etapaProcesal || 'EN TRÁMITE' }}
-            </span>
+            @if (etapaActualConfig) {
+              <span class="status-badge" [style.background-color]="etapaActualConfig.color">
+                {{ etapaActualConfig.nombreCliente }}
+              </span>
+            } @else {
+              <span class="status-badge status-badge--review">
+                {{ detalle.etapaProcesal || 'EN TRÁMITE' }}
+              </span>
+            }
           </div>
 
           <div class="process-details">
@@ -102,7 +146,7 @@
 
         <!-- UBICACIÓN Y COMPETENCIA -->
         <section class="location-section">
-          <h2>Ubicación y Competencia</h2>
+          <h2>Despacho y Ubicación</h2>
           <div class="location-grid">
             <div class="location-item">
               <div class="icon">
@@ -124,7 +168,7 @@
                 </svg>
               </div>
               <div class="content">
-                <span class="label">Ciudad / Jurisdicción</span>
+                <span class="label">Ubicación del Contrato</span>
                 <div class="value">{{ detalle.ubicacionContrato || detalle.regional || 'N/A' }}</div>
               </div>
             </div>
@@ -166,10 +210,21 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span class="role">Demandante</span>
+                <span class="role">Demandante(s)</span>
               </div>
-              <div class="party-name">{{ getNombreSujeto('DEMANDANTE') }}</div>
-              <span class="party-id">{{ getIdSujeto('DEMANDANTE') }}</span>
+              <div class="solidarios-list">
+                  @for (s of getDemandantes(); track s; let i = $index) {
+                    <div class="solidario-item">
+                      <span class="number">{{ i + 1 }}.</span>
+                      <div class="info">
+                        <div class="name">{{ s.Nombre || s.RazonSocial }}</div>
+                        @if (s.Identificacion || s.NumeroIdentificacion) {
+                          <span class="id">{{ s.Identificacion || s.NumeroIdentificacion }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
             </div>
 
             <!-- DEMANDADO -->
@@ -179,10 +234,21 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span class="role">Demandado</span>
+                <span class="role">Demandado(s)</span>
               </div>
-              <div class="party-name">{{ getNombreSujeto('DEMANDADO') }}</div>
-              <span class="party-id">{{ getIdSujeto('DEMANDADO') }}</span>
+              <div class="solidarios-list">
+                  @for (s of getDemandados(); track s; let i = $index) {
+                    <div class="solidario-item">
+                      <span class="number">{{ i + 1 }}.</span>
+                      <div class="info">
+                        <div class="name">{{ s.Nombre || s.RazonSocial }}</div>
+                        @if (s.Identificacion || s.NumeroIdentificacion) {
+                          <span class="id">{{ s.Identificacion || s.NumeroIdentificacion }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
             </div>
 
             <!-- DEUDORES SOLIDARIOS -->
