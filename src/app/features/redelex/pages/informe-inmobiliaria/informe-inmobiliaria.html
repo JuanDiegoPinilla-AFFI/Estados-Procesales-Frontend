@@ -33,7 +33,13 @@
               <span class="selected-value" [class.placeholder]="!filtros.demandante">
                 {{ filtros.demandante ? filtros.demandante.nombre : 'Todas las Inmobiliarias' }}
               </span>
-              <span class="arrow">▼</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'demandante') {
+                  <polyline points="6 15 12 9 18 15"></polyline>
+                } @else {
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                }
+              </svg>
             </div>
             @if (activeDropdown === 'demandante') {
               <div class="dropdown-menu">
@@ -66,7 +72,13 @@
             <span class="field__label">Clase Proceso</span>
             <div class="custom-select" (click)="toggleDropdown('clase', $event)" [class.open]="activeDropdown === 'clase'">
               <span class="selected-value" [class.placeholder]="!filtros.claseProceso">{{ filtros.claseProceso || 'Todas' }}</span>
-              <span class="arrow">▼</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'clase') {
+                  <polyline points="6 15 12 9 18 15"></polyline>
+                } @else {
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                }
+              </svg>
             </div>
             @if (activeDropdown === 'clase') {
               <div class="dropdown-menu">
@@ -89,7 +101,13 @@
             <span class="field__label">Etapa Procesal</span>
             <div class="custom-select" (click)="toggleDropdown('etapa', $event)" [class.open]="activeDropdown === 'etapa'">
               <span class="selected-value" [class.placeholder]="!filtros.etapa">{{ filtros.etapa || 'Todas' }}</span>
-              <span class="arrow">▼</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'etapa') {
+                  <polyline points="6 15 12 9 18 15"></polyline>
+                } @else {
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                }
+              </svg>
             </div>
             @if (activeDropdown === 'etapa') {
               <div class="dropdown-menu">
@@ -112,8 +130,13 @@
             <span class="field__label">Despacho</span>
             <div class="custom-select" (click)="toggleDropdown('despacho', $event)" [class.open]="activeDropdown === 'despacho'">
               <span class="selected-value" [class.placeholder]="!filtros.despacho">{{ filtros.despacho || 'Todos' }}</span>
-              <span class="arrow">▼</span>
-            </div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'despacho') {
+                  <polyline points="6 15 12 9 18 15"></polyline>
+                } @else {
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                }
+              </svg>            </div>
             @if (activeDropdown === 'despacho') {
               <div class="dropdown-menu">
                 <div class="search-box" (click)="$event.stopPropagation()">
