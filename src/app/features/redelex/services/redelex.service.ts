@@ -41,16 +41,16 @@ export interface ProcesoDetalleDto {
   despacho: string | null;
   despachoOrigen: string | null;
 
-  fechaAdmisionDemanda: string | null;
-  fechaCreacion: string | null;
-  fechaEntregaAbogado: string | null;
-  fechaRecepcionProceso: string | null;
+  fechaAdmisionDemanda: string;
+  fechaCreacion: string;
+  fechaEntregaAbogado: string;
+  fechaRecepcionProceso: string;
 
   ubicacionContrato: string | null;
 
   // Subrogación
-  fechaAceptacionSubrogacion: string | null;
-  fechaPresentacionSubrogacion: string | null;
+  fechaAceptacionSubrogacion: string;
+  fechaPresentacionSubrogacion: string;
   motivoNoSubrogacion: string | null;
 
   // Calificación
@@ -64,7 +64,7 @@ export interface ProcesoDetalleDto {
   medidasCautelares: MedidasDto[];
 
   // Última actuación
-  ultimaActuacionFecha: string | null;
+  ultimaActuacionFecha: string;
   ultimaActuacionTipo: string | null;
   ultimaActuacionObservacion: string | null;
   actuacionesRecientes?: ActuacionDto[];

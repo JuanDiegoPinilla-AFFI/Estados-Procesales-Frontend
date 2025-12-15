@@ -338,17 +338,17 @@
                 </div>
                 <div class="proceso-card">
                   <div class="detail-grid">
-                    <div><p class="detail-label">Creación expediente</p><p class="detail-value">{{ proceso.fechaCreacion || '-' }}</p></div>
-                    <div><p class="detail-label">Entrega abogado</p><p class="detail-value">{{ proceso.fechaEntregaAbogado || '-' }}</p></div>
-                    <div><p class="detail-label">Admisión demanda</p><p class="detail-value">{{ proceso.fechaAdmisionDemanda || '-' }}</p></div>
-                    <div><p class="detail-label">Recepción proceso</p><p class="detail-value">{{ proceso.fechaRecepcionProceso || '-' }}</p></div>
+                    <div><p class="detail-label">Creación expediente</p><p class="detail-value">{{ formatDate(proceso.fechaCreacion) || '-' }}</p></div>
+                    <div><p class="detail-label">Entrega abogado</p><p class="detail-value">{{ formatDate(proceso.fechaEntregaAbogado) || '-' }}</p></div>
+                    <div><p class="detail-label">Admisión demanda</p><p class="detail-value">{{ formatDate(proceso.fechaAdmisionDemanda) || '-' }}</p></div>
+                    <div><p class="detail-label">Recepción proceso</p><p class="detail-value">{{ formatDate(proceso.fechaRecepcionProceso) || '-' }}</p></div>
                     <div><p class="detail-label">Sentencia 1ra</p><p class="detail-value">{{ proceso.sentenciaPrimeraInstanciaResultado || '-' }} @if(proceso.sentenciaPrimeraInstanciaFecha){<span>({{ proceso.sentenciaPrimeraInstanciaFecha }})</span>}</p></div>
                   </div>
                 </div>
                 <div class="proceso-card">
                   <div class="detail-grid">
                     <div><p class="detail-label">Última Actuación</p><p class="detail-value">{{ proceso.ultimaActuacionTipo || '-' }}</p></div>
-                    <div><p class="detail-label">Fecha</p><p class="detail-value">{{ proceso.ultimaActuacionFecha || '-' }}</p></div>
+                    <div><p class="detail-label">Fecha</p><p class="detail-value">{{ formatDate(proceso.ultimaActuacionFecha) || '-' }}</p></div>
                     <div class="detail-grid--full"><p class="detail-label">Observación</p><p class="detail-value">{{ proceso.ultimaActuacionObservacion || '-' }}</p></div>
                   </div>
                 </div>

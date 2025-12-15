@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import {
@@ -54,7 +54,7 @@ const ETAPAS_MASTER: EtapaConfig[] = [
   selector: 'app-consultar-proceso',
   standalone: true,
   imports: [CommonModule, FormsModule, ClaseProcesoPipe],
-  providers: [ClaseProcesoPipe], 
+  providers: [ClaseProcesoPipe, DatePipe], 
   templateUrl: './consultar-proceso.html',
   styleUrl: './consultar-proceso.scss',
 })
@@ -107,11 +107,18 @@ export class ConsultarProcesoComponent implements OnInit {
 
   constructor(
     private redelexService: RedelexService,
-    private titleService: Title
+    private titleService: Title,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
     this.titleService.setTitle('Estados Procesales - Consulta de Procesos');
+  }
+
+  formatDate(date?: string): string {
+    return date
+      ? this.datePipe.transform(date, 'dd/MM/yyyy', 'UTC') ?? ''
+      : '';
   }
 
   toggleActuacion(index: number) {
