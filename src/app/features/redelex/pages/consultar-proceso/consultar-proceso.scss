@@ -716,20 +716,25 @@
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem 1.5rem;
-
-  @media (max-width: 1500px) {
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 1rem;
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  align-items: start;
 }
 
+.detail-grid > div {
+  grid-column: span 4; /* Desktop: 3 columnas */
+  min-width: 0;        /* clave para que no reviente el layout */
+}
+
+@media (max-width: 1100px) {
+  .detail-grid > div { grid-column: span 6; } /* Tablet: 2 columnas */
+}
+
+@media (max-width: 768px) {
+  .detail-grid > div { grid-column: span 12; } /* Móvil: 1 columna */
+}
+
+/* ya la tienes, la dejo aquí por claridad */
 .detail-grid--full {
   grid-column: 1 / -1;
 }
