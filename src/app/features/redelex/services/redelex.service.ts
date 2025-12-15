@@ -17,6 +17,14 @@ export interface ProcesosPorIdentificacionResponse {
   procesos: ProcesoResumenDto[];
 }
 
+export interface ActuacionDto {
+  fecha: string;
+  observacion: string;
+  etapa: string;
+  tipo: string;
+  cuaderno: string;
+}
+
 export interface ProcesoDetalleDto {
   idProceso: number;
   numeroRadicacion: string | null;
@@ -59,6 +67,7 @@ export interface ProcesoDetalleDto {
   ultimaActuacionFecha: string | null;
   ultimaActuacionTipo: string | null;
   ultimaActuacionObservacion: string | null;
+  actuacionesRecientes?: ActuacionDto[];
 
   abogados: AbogadoDto[];
 }

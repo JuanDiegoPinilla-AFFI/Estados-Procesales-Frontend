@@ -349,10 +349,47 @@
                   <div class="detail-grid">
                     <div><p class="detail-label">Última Actuación</p><p class="detail-value">{{ proceso.ultimaActuacionTipo || '-' }}</p></div>
                     <div><p class="detail-label">Fecha</p><p class="detail-value">{{ proceso.ultimaActuacionFecha || '-' }}</p></div>
-                    <div class="detail-grid--full"><p class="detail-label">Última Actuación</p><p class="detail-value">{{ proceso.ultimaActuacionObservacion || '-' }}</p></div>
+                    <div class="detail-grid--full"><p class="detail-label">Observación</p><p class="detail-value">{{ proceso.ultimaActuacionObservacion || '-' }}</p></div>
                   </div>
                 </div>
               </div>
+
+              @if (proceso.actuacionesRecientes && proceso.actuacionesRecientes.length > 0) {
+                <div class="historial-container">
+                  <h5 class="historial-title">Historial Últimas 5 Actuaciones</h5>
+                  
+                  @for (act of proceso.actuacionesRecientes; track $index) {
+                    <div class="actuacion-card-accordion" [class.is-open]="openActuaciones.has($index)">
+                      
+                      <div class="actuacion-header" (click)="toggleActuacion($index)">
+                        <div class="actuacion-info-resumen">
+                          @if(act.cuaderno) {
+                            <span class="cuaderno-badge">{{ act.cuaderno }}</span>
+                          }
+                          <span class="actuacion-fecha">{{ act.fecha | date:'dd/MM/yyyy' }}</span>
+                          <strong class="actuacion-tipo">{{ act.tipo || 'Actuación' }}</strong>
+                        </div>
+                        <span class="chevron">{{ openActuaciones.has($index) ? '▾' : '▸' }}</span>
+                      </div>
+
+                      @if (openActuaciones.has($index)) {
+                        <div class="actuacion-body fade-in">
+                          <div class="detail-grid">
+                            <div>
+                              <p class="detail-label">Etapa</p>
+                              <p class="detail-value">{{ act.etapa || '-' }}</p>
+                            </div>
+                            <div class="detail-grid--full">
+                              <p class="detail-label">Observación</p>
+                              <p class="detail-value" [innerHTML]="formatObservaciones(act.observacion)"></p>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             }
           </div>
 

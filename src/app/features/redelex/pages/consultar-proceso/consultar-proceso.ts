@@ -87,6 +87,7 @@ export class ConsultarProcesoComponent implements OnInit {
   openMedidas = new Set<number>();
   hasSearched: boolean = false; 
   medidas: MedidasDto[] = [];
+  openActuaciones = new Set<number>();
   loading = false;
 
   currentPage = 1;
@@ -111,6 +112,14 @@ export class ConsultarProcesoComponent implements OnInit {
 
   ngOnInit(): void {
     this.titleService.setTitle('Estados Procesales - Consulta de Procesos');
+  }
+
+  toggleActuacion(index: number) {
+    if (this.openActuaciones.has(index)) {
+      this.openActuaciones.delete(index);
+    } else {
+      this.openActuaciones.add(index);
+    }
   }
 
   // --- LÓGICA DEL STEPPER ---
@@ -212,7 +221,7 @@ export class ConsultarProcesoComponent implements OnInit {
     this.otrosSujetos = [];
     this.medidas = [];
     this.openMedidas.clear();
-    // Limpiar también datos del stepper
+    this.openActuaciones.clear(); 
     this.etapaActualIndex = -1;
     this.etapaActualConfig = null;
   }
