@@ -1,8 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, registerLocaleData } from '@angular/common';
+import localeEsCo from '@angular/common/locales/es-CO'; // Importar configuración regional
 import { RedelexService } from '../../services/redelex.service';
 import { Title } from '@angular/platform-browser';
 import { FeatherModule } from 'angular-feather';
+
+// Registrar idioma español Colombia
+registerLocaleData(localeEsCo, 'es-CO');
 
 interface StatItem {
   label: string;
@@ -33,6 +37,8 @@ export class DashboardInmobiliariaComponent implements OnInit {
   loading = true;
   nombreInmobiliaria = '';
   identificacionUsuario = '';
+  
+  // Fecha actual (Angular se encargará de formatearla)
   fechaActual = new Date();
 
   // KPIs
@@ -41,7 +47,7 @@ export class DashboardInmobiliariaComponent implements OnInit {
     enPreparacion: 0, 
     enJuzgado: 0,
     conSentencia: 0,
-    nuevosEsteMes: 0 // Dato principal de la 5ta tarjeta
+    nuevosEsteMes: 0
   };
 
   // Datos Gráficos
@@ -133,14 +139,13 @@ export class DashboardInmobiliariaComponent implements OnInit {
       let despacho = p.despacho ? p.despacho.trim() : 'SIN DESPACHO';
       despachosMap.set(despacho, (despachosMap.get(despacho) || 0) + 1);
 
-      // 5. Fechas (Ingresos)
+      // 5. Fechas
       if (p.fechaRecepcionProceso) {
         const fecha = new Date(p.fechaRecepcionProceso);
         if (!isNaN(fecha.getTime())) {
           const year = fecha.getFullYear().toString();
           aniosMap.set(year, (aniosMap.get(year) || 0) + 1);
 
-          // Contar si es de este mes
           if (fecha.getMonth() === currentMonth && fecha.getFullYear() === currentYear) {
             nuevosMesCount++;
           }
@@ -190,8 +195,8 @@ export class DashboardInmobiliariaComponent implements OnInit {
   }
 
   get donutGradient(): string {
-    if (this.kpis.total === 0) return 'conic-gradient(#e5e7eb 0% 100%)';
+    if (this.kpis.total === 0) return 'conic-gradient(#260086 0% 100%)';
     const pctJuzgado = (this.kpis.enJuzgado / this.kpis.total) * 100;
-    return `conic-gradient(#3b82f6 0% ${pctJuzgado}%, #fbbf24 ${pctJuzgado}% 100%)`;
+    return `conic-gradient(#260086 0% ${pctJuzgado}%, #fbbf24 ${pctJuzgado}% 100%)`;
   }
 }

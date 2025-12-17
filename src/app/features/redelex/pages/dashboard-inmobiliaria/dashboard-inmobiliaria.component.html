@@ -4,7 +4,7 @@
     <div>
       <h2>Tablero de Control</h2>
       <p class="subtitle">
-        {{ nombreInmobiliaria | titlecase }} &bull; Última actualización: {{ fechaActual | date:'mediumDate' }}
+        {{ nombreInmobiliaria | titlecase }} &bull; Actualizado: {{ fechaActual | date:'dd/MM/yyyy, h:mm a':'-0500' }}
       </p>
     </div>
     <div class="refresh-action">

@@ -1,7 +1,7 @@
 /* =============================================
    VARIABLES Y CONFIGURACIÓN
    ============================================= */
-$primary: #4f46e5;
+$primary: #260086;
 $bg-page: #f9fafb;
 $card-bg: #ffffff;
 $text-main: #111827;
@@ -137,10 +137,10 @@ $border: #e5e7eb;
   }
 
   /* Colores */
-  &.total .icon-wrapper { background: #eff6ff; color: #2563eb; }
+  &.total .icon-wrapper { background: #eff6ff; color: #260086; }
   &.prep { .icon-wrapper { background: #fffbeb; color: #d97706; } .sub-label { color: #d97706; } }
-  &.court { .icon-wrapper { background: #eff6ff; color: #2563eb; } .sub-label { color: #2563eb; } }
-  &.success { .icon-wrapper { background: #f5f3ff; color: #7c3aed; } .sub-label { color: #7c3aed; } }
+  &.court { .icon-wrapper { background: #eff6ff; color: #260086; } .sub-label { color: #260086; } }
+  &.success { .icon-wrapper { background: #f5f3ff; color: #260086; } .sub-label { color: #260086; } }
   &.new-cases { .icon-wrapper { background: #ecfdf5; color: #059669; } .sub-label { color: #059669; } }
 }
 
@@ -269,7 +269,7 @@ $border: #e5e7eb;
     .time-bar { 
       width: 100%; 
       max-width: 40px; /* No muy anchas en pantallas grandes */
-      background: #6366f1; 
+      background: #260086; 
       border-radius: 4px 4px 0 0; 
       min-height: 4px; 
       transition: height 1s ease; 
@@ -308,7 +308,7 @@ $border: #e5e7eb;
   }
   
   .mini-bar { height: 6px; background: #f3f4f6; border-radius: 4px; overflow: hidden; .fill { height: 100%; border-radius: 4px; } }
-  .fill.purple { background: #8b5cf6; }
+  .fill.purple { background: #260086; }
   
   .mini-count { 
     font-weight: 700; 
@@ -390,7 +390,7 @@ $border: #e5e7eb;
   .legend-item {
     display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #4b5563; font-weight: 500;
     .dot { width: 8px; height: 8px; border-radius: 50%; }
-    .court-dot { background: #3b82f6; }
+    .court-dot { background: #260086; }
     .prep-dot { background: #fbbf24; }
   }
 }
