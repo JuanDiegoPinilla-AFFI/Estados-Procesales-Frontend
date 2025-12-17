@@ -26,6 +26,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 export class InmobiliariaListComponent implements OnInit {
   inmobiliarias: Inmobiliaria[] = [];
   loading = true;
+  isSendingEmail = false;
 
   // Estados de Modales
   showEditModal = false;
@@ -141,6 +142,33 @@ export class InmobiliariaListComponent implements OnInit {
       inactivos: total - activos,
       pctInactivos: Math.round(((total - activos) / total) * 100)
     };
+  }
+
+  onSendReminder() {
+    this.isSendingEmail = true;
+
+    this.inmoService.triggerImportReminder().subscribe({
+      next: () => {
+        this.isSendingEmail = false;
+        AffiAlert.fire({
+          icon: 'success',
+          title: 'Enviado',
+          text: 'El recordatorio de importación se ha enviado correctamente.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      // CORRECCIÓN AQUÍ: Agrega ": any" después de err
+      error: (err: any) => { 
+        this.isSendingEmail = false;
+        console.error(err);
+        AffiAlert.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo enviar el recordatorio.'
+        });
+      }
+    });
   }
 
   private extractUniqueLocations() {

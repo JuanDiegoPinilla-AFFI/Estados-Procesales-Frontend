@@ -9,7 +9,20 @@
       
       <div class="header-actions">
         <button class="btn btn--secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
-        
+        <button class="btn btn--secondary" 
+                (click)="onSendReminder()" 
+                [disabled]="isSendingEmail"
+                *ngIf="authService.hasPermission('inmo:import') || authService.isAdmin()"
+                title="Enviar recordatorio de importación">
+          
+          @if (isSendingEmail) {
+            <span class="spinner-loader" style="border-top-color: #6b7280; border-color: rgba(107, 114, 128, 0.3);"></span>
+            Enviando...
+          } @else {
+            <i-feather name="bell" class="btn-icon-left"></i-feather>
+            Recordatorio
+          }
+        </button>
         <button class="btn btn--primary" (click)="openExportModal()">
           <i-feather name="download" class="btn-icon-left"></i-feather>
           Exportar

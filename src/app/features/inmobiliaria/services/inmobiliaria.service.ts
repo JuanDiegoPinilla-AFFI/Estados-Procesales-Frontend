@@ -62,4 +62,8 @@ export class InmobiliariaService {
 
     return this.http.request(req);
   }
+  
+  triggerImportReminder(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/send-import-reminder`);
+  }
 }
