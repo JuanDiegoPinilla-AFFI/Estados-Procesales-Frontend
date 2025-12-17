@@ -24,14 +24,10 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private titleService: Title
   ) {
-    // Si ya está logueado, redirigir inteligentemente
     if (this.authService.isLoggedIn()) {
-      const user = this.authService.getUserData();
-      if (user?.role === 'admin') {
-         this.router.navigate(['/panel/consultas/consultar-proceso']);
-      } else {
-         this.router.navigate(['/panel/consultas/mis-procesos']);
-      }
+      // Usamos la nueva función centralizada
+      const target = this.authService.getRedirectUrl();
+      this.router.navigate([target]);
       return;
     }
 
@@ -82,16 +78,8 @@ export class LoginComponent implements OnInit {
           timer: 1300,
           showConfirmButton: false
           }).then(() => {
-          const user = this.authService.getUserData();
-          
-          if (user?.role === 'affi') {
-            this.router.navigate(['/panel/consultas/consultar-proceso']); 
-          } else if (user?.role === 'admin' || user?.role === 'inmobiliaria') {
-            this.router.navigate(['/panel/consultas/mis-procesos']);
-          } else {
-            // Fallback
-            this.router.navigate(['/panel']); 
-          }
+          const target = this.authService.getRedirectUrl();
+          this.router.navigate([target]);
         });
       },
       error: err => {

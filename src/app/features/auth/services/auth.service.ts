@@ -133,30 +133,24 @@ export class AuthService {
    * Obtiene la ruta de destino según los permisos del usuario
    * Previene bucles infinitos al redirigir a rutas accesibles
    */
-  getDefaultRoute(): string {
+  getRedirectUrl(): string {
     const user = this.getUserData();
-    
-    if (!user) {
-      return '/auth/login';
-    }
+    const role = user?.role?.toLowerCase(); 
 
-    // Admin y AFFI: Tienen procesos:view_all
-    if (this.hasPermission('procesos:view_all')) {
-      return '/panel/consultas/consultar-proceso';
+    switch (role) {
+      case 'admin':
+        return '/panel/usuarios';
+        
+      case 'affi':
+        return '/panel/consultas/consultar-proceso';
+        
+      case 'inmobiliaria':
+        return '/panel/consultas/dashboard';
+        
+      default:
+        // Fallback seguro si el rol no coincide
+        return '/panel/consultas/consultar-proceso';
     }
-
-    // INMOBILIARIA: Tiene procesos:view_own
-    if (this.hasPermission('procesos:view_own')) {
-      return '/panel/consultas/mis-procesos';
-    }
-
-    // Usuarios con permisos de reportes pero sin procesos
-    if (this.hasPermission('reports:view')) {
-      return '/panel/consultas/informe-inmobiliaria';
-    }
-
-    // Fallback: Ruta segura por defecto
-    return '/panel/consultas/consultar-proceso';
   }
 
   // --- OTROS MÉTODOS ---
