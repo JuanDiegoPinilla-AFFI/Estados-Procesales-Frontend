@@ -727,3 +727,138 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =============================================
+   STATS OVERVIEW (KPI CARDS - NUEVO)
+   ============================================= */
+
+.stats-grid-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem; // var(--spacing-lg)
+  margin-bottom: 2rem; // var(--spacing-xl)
+  animation: slideDown 0.3s ease-out;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 12px; // var(--border-radius-xl)
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb; // var(--color-gray-200)
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+  }
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.kpi-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280; // var(--color-gray-500)
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827; // var(--color-gray-900)
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-value-row {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-subtext {
+  font-size: 0.75rem;
+  color: #6b7280; // var(--color-gray-500)
+  margin-top: 0.25rem;
+}
+
+/* Barras de progreso mini dentro de las cards */
+.progress-mini {
+  width: 100%;
+  height: 4px;
+  background: #f3f4f6; // var(--color-gray-100)
+  border-radius: 2px;
+  margin: 4px 0;
+  overflow: hidden;
+  
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease-out;
+  }
+}
+
+/* Barra multicolor para Activos/Terminados */
+.progress-multi {
+  width: 100%;
+  height: 4px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  margin: 4px 0;
+  display: flex;
+  overflow: hidden;
+  
+  .p-segment {
+    height: 100%;
+    &:first-child { border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
+    &:last-child { border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
+  }
+}
+
+/* Utilidades de color */
+.bg-blue-100 { background-color: #dbeafe; }
+.text-blue-700 { color: #1d4ed8; }
+
+.bg-purple-100 { background-color: #f3e8ff; }
+.text-purple-700 { color: #7e22ce; }
+.bg-purple-500 { background-color: #a855f7; }
+
+.bg-orange-100 { background-color: #ffedd5; }
+.text-orange-700 { color: #c2410c; }
+.bg-orange-500 { background-color: #f97316; }
+
+.bg-green-100 { background-color: #dcfce7; }
+.text-green-700 { color: #15803d; }
+.bg-green-500 { background-color: #22c55e; }
+
+.bg-red-200 { background-color: #fecaca; }

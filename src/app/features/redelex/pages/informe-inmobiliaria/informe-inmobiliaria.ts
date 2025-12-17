@@ -116,6 +116,21 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.loadInforme();
   }
 
+  // --- ESTADÍSTICAS KPI (NUEVO) ---
+  stats = {
+    total: 0,
+    topClase: 'N/A',
+    topClaseCount: 0,
+    topClasePct: 0,
+    topEtapa: 'N/A',
+    topEtapaCount: 0,
+    topEtapaPct: 0,
+    activos: 0,
+    terminados: 0,
+    pctActivos: 0,
+    pctTerminados: 0
+  };
+
   exportState: 'idle' | 'excel' | 'pdf' = 'idle';
 
   readonly INFORME_ID = 5626;
@@ -242,6 +257,7 @@ export class InformeInmobiliariaComponent implements OnInit {
         this.rawData = datosLimpios;
         this.filteredData = datosLimpios;
         this.extraerListasUnicas();
+        this.calculateStats(); // <--- CÁLCULO DE KPIs
         this.loading = false;
       },
       error: (err) => {
@@ -250,6 +266,54 @@ export class InformeInmobiliariaComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // --- LÓGICA DE CÁLCULO DE KPIs (NUEVO) ---
+  calculateStats() {
+    const data = this.rawData; // Estadísticas Globales (Base completa)
+    const total = data.length;
+    this.stats.total = total;
+    
+    if (total === 0) return;
+
+    // 1. Clase más común
+    const claseCounts: Record<string, number> = {};
+    data.forEach(d => {
+      const c = this.clasePipe.transform(d.claseProceso) || 'Sin Clase';
+      claseCounts[c] = (claseCounts[c] || 0) + 1;
+    });
+    const topClaseArr = Object.entries(claseCounts).sort((a,b) => b[1] - a[1]);
+    if (topClaseArr.length > 0) {
+      this.stats.topClase = topClaseArr[0][0];
+      this.stats.topClaseCount = topClaseArr[0][1];
+      this.stats.topClasePct = Math.round((topClaseArr[0][1] / total) * 100);
+    }
+
+    // 2. Etapa más frecuente
+    const etapaCounts: Record<string, number> = {};
+    data.forEach(d => {
+      const e = d.etapaProcesal || 'Sin Etapa';
+      etapaCounts[e] = (etapaCounts[e] || 0) + 1;
+    });
+    const topEtapaArr = Object.entries(etapaCounts).sort((a,b) => b[1] - a[1]);
+    if (topEtapaArr.length > 0) {
+      this.stats.topEtapa = topEtapaArr[0][0];
+      this.stats.topEtapaCount = topEtapaArr[0][1];
+      this.stats.topEtapaPct = Math.round((topEtapaArr[0][1] / total) * 100);
+    }
+
+    // 3. Activos vs Terminados
+    // Usamos ETAPAS_CONFIG para identificar cuáles son de terminación
+    const termConfig = ETAPAS_CONFIG.find(c => c.summaryTitle === 'TERMINACION');
+    const termTriggers = termConfig ? termConfig.triggers : [];
+    
+    const terminados = data.filter(d => termTriggers.includes(d.etapaProcesal ? d.etapaProcesal.toUpperCase() : '')).length;
+    const activos = total - terminados;
+
+    this.stats.activos = activos;
+    this.stats.terminados = terminados;
+    this.stats.pctActivos = Math.round((activos / total) * 100);
+    this.stats.pctTerminados = Math.round((terminados / total) * 100);
   }
 
   extraerListasUnicas() {
@@ -355,14 +419,12 @@ export class InformeInmobiliariaComponent implements OnInit {
     return this.filtros.demandante ? this.filtros.demandante.identificacion : 'N/A';
   }
 
-  // --- HELPER PARA OBTENER CONFIGURACIÓN DE UNA ETAPA ---
   getEtapaConfig(nombreEtapa: string | undefined): EtapaConfig | undefined {
     if (!nombreEtapa) return undefined;
     const nombreNormalizado = nombreEtapa.toUpperCase();
     return ETAPAS_CONFIG.find(conf => conf.triggers.includes(nombreNormalizado));
   }
 
-  // --- HELPER PARA CALCULAR LOS CONTADORES DINÁMICAMENTE ---
   getDynamicCounts() {
     return ETAPAS_CONFIG.map(config => {
       const count = this.filteredData.filter(item => {
@@ -395,16 +457,11 @@ export class InformeInmobiliariaComponent implements OnInit {
     this.exportState = 'excel';
     await new Promise(resolve => setTimeout(resolve, 100));
     try {
-      console.log('Generando Excel con Configuración Dinámica...');
       const activeColumns = this.exportColumns.filter(c => c.selected);
-
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Informe Estado Procesal');
-
-      // --- 0. OBTENER DATOS DE RESUMEN ---
       const summaryData = this.getDynamicCounts();
 
-      // --- 1. CONFIGURACIÓN ESTRUCTURAL ---
       const colSpans: { [key: string]: number } = {
         'numeroRadicacion': 2, 'demandadoNombre': 2, 'despacho': 2, 
       };
@@ -414,7 +471,6 @@ export class InformeInmobiliariaComponent implements OnInit {
       activeColumns.forEach(col => { totalPhysicalColumns += (colSpans[col.key] || 1); });
       for (let i = 1; i <= 50; i++) { sheet.getColumn(i).width = UNIFORM_WIDTH; }
 
-      // --- 2. LOGO Y ENCABEZADOS ---
       const imageId = workbook.addImage({ base64: AFFI_LOGO_BASE64, extension: 'png' });
       sheet.addImage(imageId, { tl: { col: 0.1, row: 0.1 }, ext: { width: 90, height: 90 } });
 
@@ -441,18 +497,14 @@ export class InformeInmobiliariaComponent implements OnInit {
       setInfo(8, `NIT Inmobiliaria: ${this.getReportInmobiliariaNit()}`);
       setInfo(10, `Cantidad de procesos: ${this.filteredData.length}`);
 
-      // --- 3. CAJAS DE RESUMEN DINÁMICAS ---
-      // Dividimos las etapas en dos filas para que se vean bien
-      const splitIndex = 6; // Primeras 6 en fila 1, resto en fila 2
+      const splitIndex = 6; 
       const row1Data = summaryData.slice(0, splitIndex);
       const row2Data = summaryData.slice(splitIndex);
 
       const drawBoxRow = (startRow: number, datos: any[]) => {
         let currentBoxCol = 4;
         datos.forEach(box => {
-          const argbColor = 'FF' + box.colorHex.replace('#', ''); // Convertir #RGB a FFRGB
-
-          // Título (Usa summaryTitle)
+          const argbColor = 'FF' + box.colorHex.replace('#', ''); 
           const cellTitle = sheet.getCell(startRow, currentBoxCol);
           cellTitle.value = box.summaryTitle;
           cellTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argbColor } };
@@ -460,7 +512,6 @@ export class InformeInmobiliariaComponent implements OnInit {
           cellTitle.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
           cellTitle.border = { top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
 
-          // Descripción
           sheet.mergeCells(startRow + 1, currentBoxCol, startRow + 2, currentBoxCol);
           const cellDesc = sheet.getCell(startRow + 1, currentBoxCol);
           cellDesc.value = box.desc;
@@ -469,7 +520,6 @@ export class InformeInmobiliariaComponent implements OnInit {
           cellDesc.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
           cellDesc.border = { left: {style:'thin'}, right: {style:'thin'} };
 
-          // Contador
           const cellCount = sheet.getCell(startRow + 3, currentBoxCol);
           cellCount.value = box.count; 
           cellCount.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argbColor } };
@@ -486,8 +536,6 @@ export class InformeInmobiliariaComponent implements OnInit {
         drawBoxRow(11, row2Data);
       }
 
-      // --- 4. TABLA DE DATOS ---
-      // Si hay fila 2 de cajas, la tabla baja, si no, se queda donde estaba (aprox fila 16)
       const tableStartRow = row2Data.length > 0 ? 16 : 11; 
       const headerRow = sheet.getRow(tableStartRow);
       let currentPhysicalCol = 1;
@@ -531,7 +579,6 @@ export class InformeInmobiliariaComponent implements OnInit {
           cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
           cell.border = borderStyle;
 
-          // PINTAR CELDA ETAPA SEGÚN LA CONFIGURACIÓN (NOMBRE REAL PERO COLOR DE GRUPO)
           if (col.key === 'etapaProcesal') {
              const config = this.getEtapaConfig(item.etapaProcesal);
              if (config) {
@@ -557,12 +604,7 @@ export class InformeInmobiliariaComponent implements OnInit {
 
     } catch (error) {
       console.error('Error Excel:', error);
-      AffiAlert.fire({
-        icon: 'error',
-        title: 'Error al exportar',
-        text: 'No se pudo generar el archivo Excel. Intenta nuevamente.',
-        confirmButtonText: 'Cerrar'
-      });
+      AffiAlert.fire({ icon: 'error', title: 'Error al exportar', text: 'No se pudo generar el archivo Excel.', confirmButtonText: 'Cerrar' });
     } finally {
       this.exportState = 'idle';
     }
@@ -582,36 +624,22 @@ export class InformeInmobiliariaComponent implements OnInit {
 
   async exportToPdf() { 
     if (!this.hasSelectedColumns) {
-      AffiAlert.fire({
-        icon: 'warning',
-        title: 'Selecciona columnas',
-        text: 'Debes seleccionar al menos una columna para exportar.',
-        confirmButtonText: 'Entendido'
-      });
+      AffiAlert.fire({ icon: 'warning', title: 'Selecciona columnas', text: 'Debes seleccionar al menos una columna para exportar.', confirmButtonText: 'Entendido' });
       return;
     }
 
     this.exportState = 'pdf';
     await new Promise(resolve => setTimeout(resolve, 100));
     try {
-      console.log('Exportando PDF Dinámico...');
-      
-      // 1. PREPARACIÓN DE DATOS
       const activeColumns = this.exportColumns.filter(c => c.selected);
       const etapaColIndex = activeColumns.findIndex(c => c.key === 'etapaProcesal');
       const summaryData = this.getDynamicCounts();
 
-      // Helper Hex to RGB
       const hexToRgb = (hex: string): [number, number, number] => {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? [
-          parseInt(result[1], 16),
-          parseInt(result[2], 16),
-          parseInt(result[3], 16)
-        ] : [255, 255, 255];
+        return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [255, 255, 255];
       };
 
-      // 2. CONFIGURACIÓN DE PÁGINA
       const doc = new jsPDF('landscape', 'mm', 'a4'); 
       const pageWidth = doc.internal.pageSize.width; 
       const margin = 5; 
@@ -628,7 +656,6 @@ export class InformeInmobiliariaComponent implements OnInit {
         dynamicColumnStyles[index] = { cellWidth: unitWidth * weight, overflow: 'linebreak' };
       });
 
-      // 3. ENCABEZADO
       doc.addImage(AFFI_LOGO_BASE64, 'PNG', margin, 5, 20, 20);
       doc.setFontSize(12); doc.setFont('helvetica', 'bold');
       doc.text('INFORME ESTADO PROCESAL - TODOS LOS PROCESOS', pageWidth / 2, 10, { align: 'center' });
@@ -642,10 +669,7 @@ export class InformeInmobiliariaComponent implements OnInit {
       doc.text(`NIT Inmobiliaria: ${this.getReportInmobiliariaNit()}`, margin, infoY + 4);
       doc.text(`Cantidad de procesos: ${this.filteredData.length}`, margin, infoY + 8);
 
-      // --- 4. CAJAS DE RESUMEN DINÁMICAS (CORREGIDO) ---
-      
       const boxWidth = 42; 
-      // CAMBIO 1: Aumentamos altura para que quepa todo el texto
       const boxHeight = 22; 
       const boxGap = 4;
       
@@ -658,28 +682,19 @@ export class InformeInmobiliariaComponent implements OnInit {
           const x = startX + (i * (boxWidth + boxGap)); 
           const rgb = hexToRgb(item.colorHex);
 
-          // Fondo y Borde
           doc.setFillColor(rgb[0], rgb[1], rgb[2]);
           doc.rect(x, y, boxWidth, boxHeight, 'F');
           doc.setDrawColor(100); doc.setLineWidth(0.1);
           doc.rect(x, y, boxWidth, boxHeight, 'S');
 
-          // Textos
           doc.setTextColor(0);
-          
-          // Título (Arriba)
           doc.setFontSize(6); doc.setFont('helvetica', 'bold');
-          // CAMBIO 2: maxWidth un poco más pequeño (boxWidth - 4) para márgenes laterales
           doc.text(item.summaryTitle, x + (boxWidth/2), y + 4, { align: 'center', maxWidth: boxWidth - 4 }); 
 
-          // Descripción (En medio)
           doc.setFontSize(5); doc.setFont('helvetica', 'normal');
-          // CAMBIO 3: Bajamos la posición Y a (y + 11) para dar espacio al título si ocupa 2 líneas
           doc.text(item.desc, x + (boxWidth/2), y + 11, { align: 'center', maxWidth: boxWidth - 4 });
 
-          // Contador (Abajo)
-          doc.setFontSize(9); doc.setFont('helvetica', 'bold'); // Un poco más grande el número
-          // CAMBIO 4: Bajamos el número al fondo de la caja nueva (y + 22)
+          doc.setFontSize(9); doc.setFont('helvetica', 'bold'); 
           doc.text(item.count.toString(), x + (boxWidth/2), y + 18, { align: 'center' });
         });
       };
@@ -688,7 +703,7 @@ export class InformeInmobiliariaComponent implements OnInit {
       const row1Data = summaryData.slice(0, splitIndex);
       const row2Data = summaryData.slice(splitIndex);
       
-      let currentY = 42; // startBoxY
+      let currentY = 42; 
 
       drawPDFBoxRow(currentY, row1Data);
       
@@ -697,7 +712,6 @@ export class InformeInmobiliariaComponent implements OnInit {
         drawPDFBoxRow(currentY, row2Data);
       }
 
-      // 5. TABLA DE DATOS
       const bodyData = this.filteredData.map(item => {
         return activeColumns.map(col => {
           let val = item[col.key as keyof InformeInmobiliaria];
@@ -707,8 +721,6 @@ export class InformeInmobiliariaComponent implements OnInit {
         });
       });
 
-      // CAMBIO 5: Calculamos dinámicamente dónde empieza la tabla
-      // currentY es la posición Y de la última fila de cajas dibujada
       const tableStartY = currentY + boxHeight + 4; 
 
       autoTable(doc, {
@@ -737,22 +749,11 @@ export class InformeInmobiliariaComponent implements OnInit {
     doc.save(`INFORME INMOBILIARIA ${this.getReportInmobiliariaName()}.pdf`);
     this.closeExportModal();
 
-    AffiAlert.fire({
-      icon: 'success',
-      title: 'PDF generado',
-      text: 'El archivo se ha descargado correctamente.',
-      timer: 2000,
-      showConfirmButton: false
-    });
+    AffiAlert.fire({ icon: 'success', title: 'PDF generado', text: 'El archivo se ha descargado correctamente.', timer: 2000, showConfirmButton: false });
 
     } catch (error) {
       console.error('Error PDF:', error);
-      AffiAlert.fire({
-        icon: 'error',
-        title: 'Error al exportar',
-        text: 'No se pudo generar el archivo PDF. Intenta nuevamente.',
-        confirmButtonText: 'Cerrar'
-      });
+      AffiAlert.fire({ icon: 'error', title: 'Error al exportar', text: 'No se pudo generar el archivo PDF.', confirmButtonText: 'Cerrar' });
     } finally {
       this.exportState = 'idle';
     }

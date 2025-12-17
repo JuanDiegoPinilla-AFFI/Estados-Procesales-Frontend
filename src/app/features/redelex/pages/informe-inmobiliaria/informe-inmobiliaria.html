@@ -7,6 +7,7 @@
         <p>Informe ID: {{ INFORME_ID }} &bull; Mostrando {{ filteredData.length }} registros</p>
       </div>
       <div class="header-actions">
+        <button class="btn btn--secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
         <button class="btn btn--secondary" (click)="toggleFiltros()">
           {{ mostrarFiltros ? 'Ocultar Filtros' : 'Filtrar Resultados' }}
         </button>
@@ -18,6 +19,74 @@
       </div>
     </div>
   </div>
+
+  @if (!loading) {
+    <div class="stats-grid-overview">
+      
+      <div class="kpi-card">
+        <div class="kpi-icon bg-blue-100 text-blue-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Total Procesos</span>
+          <div class="kpi-value">{{ stats.total }}</div>
+          <span class="kpi-subtext">Expedientes cargados</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-purple-100 text-purple-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Clase Más Común</span>
+          <div class="kpi-value-row" style="font-size: 1rem;">
+            {{ stats.topClase }}
+          </div>
+          <div class="progress-mini">
+            <div class="progress-fill bg-purple-500" [style.width.%]="stats.topClasePct"></div>
+          </div>
+          <span class="kpi-subtext">{{ stats.topClaseCount }} procesos ({{ stats.topClasePct }}%)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-orange-100 text-orange-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Etapa Frecuente</span>
+          <div class="kpi-value-row" style="font-size: 1rem;">
+            {{ stats.topEtapa }}
+          </div>
+           <div class="progress-mini">
+            <div class="progress-fill bg-orange-500" [style.width.%]="stats.topEtapaPct"></div>
+          </div>
+          <span class="kpi-subtext">{{ stats.topEtapaCount }} procesos ({{ stats.topEtapaPct }}%)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-green-100 text-green-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Estado Procesal</span>
+          <div class="kpi-value-row">
+            <span class="text-green-700">{{ stats.activos }} Activos</span>
+          </div>
+           <div class="progress-multi">
+            <div class="p-segment bg-green-500" [style.width.%]="stats.pctActivos"></div>
+            <div class="p-segment bg-red-200" [style.width.%]="stats.pctTerminados"></div>
+          </div>
+          <span class="kpi-subtext">
+            {{ stats.pctActivos }}% Activos &bull; {{ stats.terminados }} Terminados
+          </span>
+        </div>
+      </div>
+
+    </div>
+  }
 
   <div class="card">
     @if (mostrarFiltros) {
@@ -154,9 +223,6 @@
               </div>
             }
           </div>
-        </div>
-        <div class="filters-footer">
-          <button class="btn-link" (click)="limpiarFiltros()">Limpiar todos los filtros</button>
         </div>
         <div class="divider"></div>
       </div>
