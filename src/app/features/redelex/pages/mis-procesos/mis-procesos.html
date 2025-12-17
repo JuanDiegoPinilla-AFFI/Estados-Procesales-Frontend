@@ -14,6 +14,9 @@
       </div>
       <div class="header-actions">
         <button class="btn btn--secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
+        <button class="btn btn--secondary" (click)="toggleFiltros()">
+          {{ mostrarFiltros ? 'Ocultar Filtros' : 'Filtrar Resultados' }}
+        </button>
         <button class="btn btn--primary export-btn-icon" (click)="openExportModal()" [disabled]="filteredData.length === 0">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Exportar
@@ -90,78 +93,80 @@
   }
 
   <div class="card">
-    <div class="filter-section">
-      <div class="filters-grid">
+    @if (mostrarFiltros) {
+      <div class="filter-section">
+        <div class="filters-grid">
 
-        <label class="field full-width">
-          <span class="field__label">Búsqueda Rápida</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.busquedaGeneral" (input)="applyFilters()" placeholder="Buscar en todos los campos...">
-        </label>
+          <label class="field full-width">
+            <span class="field__label">Búsqueda Rápida</span>
+            <input class="field__input" type="text" [(ngModel)]="filtros.busquedaGeneral" (input)="applyFilters()" placeholder="Buscar en todos los campos...">
+          </label>
 
-        <label class="field">
-          <span class="field__label">Radicado</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.radicado" (input)="applyFilters()" placeholder="Ej: 11001...">
-        </label>
+          <label class="field">
+            <span class="field__label">Radicado</span>
+            <input class="field__input" type="text" [(ngModel)]="filtros.radicado" (input)="applyFilters()" placeholder="Ej: 11001...">
+          </label>
 
-        <label class="field">
-          <span class="field__label">ID Demandado</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.idDemandado" (input)="applyFilters()" placeholder="Cédula / NIT">
-        </label>
+          <label class="field">
+            <span class="field__label">ID Demandado</span>
+            <input class="field__input" type="text" [(ngModel)]="filtros.idDemandado" (input)="applyFilters()" placeholder="Cédula / NIT">
+          </label>
 
-        <label class="field">
-          <span class="field__label">Nombre Demandado</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.nombreDemandado" (input)="applyFilters()" placeholder="Nombre completo">
-        </label>
+          <label class="field">
+            <span class="field__label">Nombre Demandado</span>
+            <input class="field__input" type="text" [(ngModel)]="filtros.nombreDemandado" (input)="applyFilters()" placeholder="Nombre completo">
+          </label>
 
-        <div class="field custom-select-container">
-          <span class="field__label">Clase Proceso</span>
-          <div class="custom-select" (click)="toggleDropdown('clase', $event)" [class.open]="activeDropdown === 'clase'">
-            <span class="selected-value" [class.placeholder]="!filtros.claseProceso">{{ filtros.claseProceso || 'Todas' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'clase') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>          
-          </div>
-          @if (activeDropdown === 'clase') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectOption('clase', '')" [class.selected]="filtros.claseProceso === ''">Todas</div>
-                @for (c of listaClaseProceso; track c) {
-                  <div class="option" (click)="selectOption('clase', c)" [class.selected]="filtros.claseProceso === c">{{ c }}</div>
+          <div class="field custom-select-container">
+            <span class="field__label">Clase Proceso</span>
+            <div class="custom-select" (click)="toggleDropdown('clase', $event)" [class.open]="activeDropdown === 'clase'">
+              <span class="selected-value" [class.placeholder]="!filtros.claseProceso">{{ filtros.claseProceso || 'Todas' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'clase') {
+                  <polyline points="6 15 12 9 18 15"></polyline>
+                } @else {
+                  <polyline points="6 9 12 15 18 9"></polyline>
                 }
-              </div>
+              </svg>          
             </div>
-          }
-        </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Etapa Procesal</span>
-          <div class="custom-select" (click)="toggleDropdown('etapa', $event)" [class.open]="activeDropdown === 'etapa'">
-            <span class="selected-value" [class.placeholder]="!filtros.etapa">{{ filtros.etapa || 'Todas' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'etapa') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
+            @if (activeDropdown === 'clase') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectOption('clase', '')" [class.selected]="filtros.claseProceso === ''">Todas</div>
+                  @for (c of listaClaseProceso; track c) {
+                    <div class="option" (click)="selectOption('clase', c)" [class.selected]="filtros.claseProceso === c">{{ c }}</div>
+                  }
+                </div>
+              </div>
+            }
           </div>
-          @if (activeDropdown === 'etapa') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectOption('etapa', '')" [class.selected]="filtros.etapa === ''">Todas</div>
-                @for (e of listaEtapas; track e) {
-                  <div class="option" (click)="selectOption('etapa', e)" [class.selected]="filtros.etapa === e">{{ e }}</div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Etapa Procesal</span>
+            <div class="custom-select" (click)="toggleDropdown('etapa', $event)" [class.open]="activeDropdown === 'etapa'">
+              <span class="selected-value" [class.placeholder]="!filtros.etapa">{{ filtros.etapa || 'Todas' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'etapa') {
+                  <polyline points="6 15 12 9 18 15"></polyline>
+                } @else {
+                  <polyline points="6 9 12 15 18 9"></polyline>
                 }
-              </div>
+              </svg>
             </div>
-          }
+            @if (activeDropdown === 'etapa') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectOption('etapa', '')" [class.selected]="filtros.etapa === ''">Todas</div>
+                  @for (e of listaEtapas; track e) {
+                    <div class="option" (click)="selectOption('etapa', e)" [class.selected]="filtros.etapa === e">{{ e }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
       </div>
-    </div>
+    }
 
     @if (loading) {
       <div class="helper"><div class="spinner"></div><p>Cargando datos...</p></div>

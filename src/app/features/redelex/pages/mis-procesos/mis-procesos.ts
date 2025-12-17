@@ -59,6 +59,8 @@ export class MisProcesosComponent implements OnInit {
   identificacionUsuario = '';
   nombreInmobiliaria = '';
 
+  mostrarFiltros = true;
+
   // --- ESTADÍSTICAS KPI ---
   stats = {
     total: 0,
@@ -247,6 +249,10 @@ export class MisProcesosComponent implements OnInit {
   limpiarFiltros() {
     this.filtros = { busquedaGeneral: '', claseProceso: '', etapa: '', radicado: '', idDemandado: '', nombreDemandado: '' };
     this.applyFilters();
+  }
+
+  toggleFiltros() { 
+    this.mostrarFiltros = !this.mostrarFiltros; 
   }
 
   get paginatedData() {
