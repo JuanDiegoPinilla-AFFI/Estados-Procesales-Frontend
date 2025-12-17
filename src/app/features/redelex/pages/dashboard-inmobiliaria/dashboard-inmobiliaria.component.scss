@@ -235,8 +235,8 @@ $border: #e5e7eb;
   border-bottom: 1px solid $border;
   
   /* Scroll horizontal en móviles */
-  overflow-x: auto;
   min-width: 0;
+  padding-bottom: 4px;
   gap: 10px; /* Espacio mínimo entre barras */
 
   .time-col {
@@ -246,11 +246,12 @@ $border: #e5e7eb;
     /* Ancho dinámico pero con mínimo para touch */
     min-width: 30px; 
     flex: 1;
-    height: 100%;
+    height: 95%;
     justify-content: flex-end;
     gap: 0.5rem;
     cursor: pointer;
     transition: transform 0.2s;
+    transform-origin: bottom center;
 
     &:hover { 
       transform: scale(1.05); 
