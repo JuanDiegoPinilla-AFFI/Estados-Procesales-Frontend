@@ -72,7 +72,7 @@ export class DashboardInmobiliariaComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.titleService.setTitle('Tablero de Mando - Inmobiliaria');
+    this.titleService.setTitle('Estados Procesales - Tablero');
     this.loadData();
   }
 
