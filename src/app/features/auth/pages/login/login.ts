@@ -95,24 +95,37 @@ export class LoginComponent implements OnInit {
         });
       },
       error: err => {
-        const mensajeBackend = err.error?.message || '';
+        const mensajeBackend = err.error?.message || 'Error desconocido';
+        const msgLower = mensajeBackend.toLowerCase();
 
-        // --- CORRECCIÓN AQUÍ: Agregamos 'intento(s)' ---
+        // CASO 1: CUENTA BLOQUEADA O INACTIVA (Alerta ROJA)
         if (
-          mensajeBackend.toLowerCase().includes('desactivado') || 
-          mensajeBackend.toLowerCase().includes('inactivo') ||
-          mensajeBackend.toLowerCase().includes('advertencia') ||
-          mensajeBackend.toLowerCase().includes('intento(s)')
+          msgLower.includes('desactivad') || 
+          msgLower.includes('inactiva') ||
+          msgLower.includes('bloqueada')
+        ) {
+          AffiAlert.fire({
+            icon: 'error', // Icono de error para bloqueo total
+            title: 'Acceso Denegado',
+            text: mensajeBackend // "Su cuenta ha sido desactivada..." o "Inmobiliaria inactiva"
+          });
+        } 
+        // CASO 2: ADVERTENCIA DE INTENTOS (Alerta AMARILLA)
+        else if (
+          msgLower.includes('intento(s)') ||
+          msgLower.includes('advertencia')
         ) {
           AffiAlert.fire({
             icon: 'warning',
-            title: 'Atención',
+            title: 'Advertencia de Seguridad',
             text: mensajeBackend
           });
-        } else {
+        } 
+        // CASO 3: CREDENCIALES INCORRECTAS GENÉRICAS
+        else {
           AffiAlert.fire({
             icon: 'error',
-            title: 'Error al iniciar sesión',
+            title: 'Error de acceso',
             text: 'Correo o contraseña incorrectos.'
           });
         }

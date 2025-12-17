@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; // Agregué OnInit
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Title } from '@angular/platform-browser';
+import { AffiAlert } from '../../../../shared/services/affi-alert'; // <--- IMPORTANTE: Importar AffiAlert
 
 @Component({
   selector: 'app-reset-password',
@@ -12,18 +13,15 @@ import { Title } from '@angular/platform-browser';
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss'
 })
-export class ResetPasswordComponent {
+export class ResetPasswordComponent implements OnInit {
   form: FormGroup;
   token = '';
   email = '';
-  message = '';
   loading = false;
   
-  // Estados para visibilidad de contraseñas
+  // Estados para visibilidad
   showPassword = false;
   showConfirmPassword = false;
-  
-  // Estados para animaciones
   isTogglingPassword = false;
   isTogglingConfirm = false;
 
@@ -50,42 +48,32 @@ export class ResetPasswordComponent {
   }
 
   togglePasswordVisibility() {
-    // Activar animación
     this.isTogglingPassword = true;
-    
-    // Cambiar visibilidad
     this.showPassword = !this.showPassword;
-    
-    // Desactivar animación después de completarse
-    setTimeout(() => {
-      this.isTogglingPassword = false;
-    }, 400);
+    setTimeout(() => { this.isTogglingPassword = false; }, 400);
   }
 
   toggleConfirmPasswordVisibility() {
-    // Activar animación
     this.isTogglingConfirm = true;
-    
-    // Cambiar visibilidad
     this.showConfirmPassword = !this.showConfirmPassword;
-    
-    // Desactivar animación después de completarse
-    setTimeout(() => {
-      this.isTogglingConfirm = false;
-    }, 400);
+    setTimeout(() => { this.isTogglingConfirm = false; }, 400);
   }
 
   submit() {
     if (this.form.invalid) return;
 
     const { password, confirmPassword } = this.form.value;
+    
     if (password !== confirmPassword) {
-      this.message = 'Las contraseñas no coinciden.';
+      AffiAlert.fire({
+        icon: 'warning',
+        title: 'Contraseñas no coinciden',
+        text: 'Por favor verifica que ambas contraseñas sean iguales.'
+      });
       return;
     }
 
     this.loading = true;
-    this.message = '';
 
     this.authService.resetPassword({
       email: this.email,
@@ -93,16 +81,43 @@ export class ResetPasswordComponent {
       password,
     }).subscribe({
       next: res => {
-        this.message = res.message || 'Contraseña actualizada correctamente.';
         this.loading = false;
+        const msg = res.message || '';
+        
+        // Verificamos si el mensaje menciona que sigue inactiva
+        // (Esto coincide con lo que programamos en el backend: "...permanece inactiva...")
+        if (msg.toLowerCase().includes('inactiva') || msg.toLowerCase().includes('bloqueada')) {
+          
+          AffiAlert.fire({
+            icon: 'warning', // Amarillo
+            title: 'Contraseña Actualizada',
+            text: msg, // "Contraseña actualizada. Sin embargo, tu cuenta permanece inactiva..."
+            confirmButtonText: 'Entendido'
+          }).then(() => {
+            this.router.navigate(['/auth/login']);
+          });
 
-        setTimeout(() => {
-          this.router.navigate(['/auth/login']);
-        }, 2000);
+        } else {
+          // Éxito total
+          AffiAlert.fire({
+            icon: 'success', // Verde
+            title: '¡Excelente!',
+            text: 'Tu contraseña ha sido restablecida correctamente.',
+            timerProgressBar: true,
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            this.router.navigate(['/auth/login']);
+          });
+        }
       },
       error: err => {
-        this.message = err.error?.message || 'Enlace inválido o expirado.';
         this.loading = false;
+        AffiAlert.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.error?.message || 'El enlace es inválido o ha expirado.'
+        });
       }
     });
   }

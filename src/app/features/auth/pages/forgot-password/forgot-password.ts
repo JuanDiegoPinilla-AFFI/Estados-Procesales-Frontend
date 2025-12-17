@@ -1,25 +1,26 @@
-import { Component } from '@angular/core';
-
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { RouterLink } from '@angular/router';
+import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, CommonModule],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.scss'
 })
-export class ForgotPasswordComponent {
+export class ForgotPasswordComponent implements OnInit {
   form: FormGroup;
-  message = '';
   loading = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private router: Router,
     private titleService: Title
   ) {
     this.form = this.fb.group({
@@ -32,19 +33,40 @@ export class ForgotPasswordComponent {
   }
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      AffiAlert.fire({
+        icon: 'info',
+        title: 'Correo incompleto',
+        text: 'Por favor ingresa un correo electrónico válido.'
+      });
+      return;
+    }
 
     this.loading = true;
-    this.message = '';
 
-    this.authService.requestPasswordReset(this.form.value.email).subscribe({
-      next: res => {
-        this.message = res.message || 'Si el correo está registrado, te enviaremos un enlace para restablecer la contraseña.';
+    const emailString = this.form.get('email')?.value; 
+
+    this.authService.requestPasswordReset(emailString).subscribe({
+      next: (res) => {
         this.loading = false;
+        
+        AffiAlert.fire({
+          icon: 'success',
+          title: 'Solicitud Enviada',
+          text: res.message || 'Si el correo existe, se enviará el enlace.',
+          timerProgressBar: true,
+          timer: 3500
+        }).then(() => {
+          this.router.navigate(['/auth/login']);
+        });
       },
-      error: err => {
-        this.message = err.error?.message || 'Ocurrió un error al solicitar el restablecimiento.';
+      error: (err) => {
         this.loading = false;
+        AffiAlert.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.error?.message || 'Ocurrió un error al procesar la solicitud.'
+        });
       }
     });
   }

@@ -11,6 +11,12 @@ export interface Inmobiliaria {
   emailRegistrado?: string;
   isActive: boolean;
   updatedAt?: string;
+  departamento?: string;
+  ciudad?: string;
+  telefono?: string;
+  emailContacto?: string;
+  fechaInicioFianza?: string | Date;
+  modifiedBy?: string;
 }
 
 export interface ImportResult {
@@ -19,7 +25,7 @@ export interface ImportResult {
     procesados_excel: number;
     nuevos: number;
     actualizados: number;
-    eliminados: number;
+    inactivados: number;
   };
 }
 

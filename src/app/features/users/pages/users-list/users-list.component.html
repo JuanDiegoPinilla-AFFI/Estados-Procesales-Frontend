@@ -3,12 +3,17 @@
     <div class="header-content">
       <div>
         <h2>Gestión de Usuarios</h2>
-        <p>Administra el acceso, roles y permisos de la plataforma. &bull;
-          Total: {{ filteredUsers.length }}</p>
+        <p>Administra el acceso, roles y permisos de la plataforma.
       </div>
       
       <div class="header-actions">
         <button class="btn btn--secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
+        
+        <button class="btn btn--primary" (click)="openExportModal()">
+          <i-feather name="download" class="btn-icon-left"></i-feather>
+          Exportar
+        </button>
+
         <button class="btn btn--primary" (click)="openEditModal(null)">
           <i-feather name="plus" class="btn-icon-left"></i-feather>
           Crear Usuario
@@ -17,6 +22,70 @@
 
     </div>
   </div>
+
+  @if (!loading) {
+    <div class="stats-grid-overview">
+      
+      <div class="kpi-card">
+        <div class="kpi-icon bg-blue-100 text-blue-700">
+          <i-feather name="users"></i-feather>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Total Usuarios</span>
+          <div class="kpi-value">{{ stats.total }}</div>
+          <span class="kpi-subtext">Registrados en plataforma</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-purple-100 text-purple-700">
+          <i-feather name="shield"></i-feather>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Equipo Interno</span>
+          <div class="kpi-value">{{ stats.staff }}</div>
+          <div class="progress-mini">
+            <div class="progress-fill bg-purple-500" [style.width.%]="stats.pctStaff"></div>
+          </div>
+          <span class="kpi-subtext">{{ stats.pctStaff }}% (Admin / Affi)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-orange-100 text-orange-700">
+          <i-feather name="briefcase"></i-feather>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Clientes Inmobiliarias</span>
+          <div class="kpi-value">{{ stats.clients }}</div>
+           <div class="progress-mini">
+            <div class="progress-fill bg-orange-500" [style.width.%]="stats.pctClients"></div>
+          </div>
+          <span class="kpi-subtext">{{ stats.pctClients }}% Usuarios Externos</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-green-100 text-green-700">
+          <i-feather name="activity"></i-feather>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Estado de Acceso</span>
+          <div class="kpi-value-row">
+            <span class="text-green-700">{{ stats.active }} Activos</span>
+          </div>
+           <div class="progress-multi">
+            <div class="p-segment bg-green-500" [style.width.%]="stats.pctActive"></div>
+            <div class="p-segment bg-red-200" [style.width.%]="stats.pctInactive"></div>
+          </div>
+          <span class="kpi-subtext">
+            {{ stats.pctActive }}% Activos &bull; {{ stats.inactive }} Inactivos
+          </span>
+        </div>
+      </div>
+
+    </div>
+  }
 
   <div class="card">
     <div class="filter-section">
@@ -65,12 +134,8 @@
             <span class="selected-value" [class.placeholder]="!filtros.rol">
               {{ filtros.rol || 'Todos' }}
             </span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'rol') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow">
+              <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </div>
           @if (activeDropdown === 'rol') {
@@ -95,12 +160,8 @@
             <span class="selected-value" [class.placeholder]="!filtros.estado">
               {{ filtros.estado || 'Todos' }}
             </span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'estado') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow">
+              <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </div>
           @if (activeDropdown === 'estado') {
@@ -226,6 +287,58 @@
     }
   </div>
 </div>
+
+@if (showExportModal) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Exportar Usuarios</h3>
+        <button class="close-btn" (click)="closeExportModal()"><i-feather name="x"></i-feather></button>
+      </div>
+      <div class="modal-body">
+        <p class="helper-text">Selecciona los datos a exportar:</p>
+        
+        <div class="columns-actions">
+          <button class="btn-link" (click)="selectAllColumns(true)">Marcar todas</button>
+          <button class="btn-link" (click)="selectAllColumns(false)">Desmarcar todas</button>
+        </div>
+
+        <div class="columns-grid">
+          @for (col of exportColumns; track col.key) {
+            <label class="permission-item" [class.active]="col.selected">
+              <input type="checkbox" [checked]="col.selected" (change)="toggleColumn(col.key)">
+              <span class="perm-label">{{ col.label }}</span>
+            </label>
+          }
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn--secondary" (click)="closeExportModal()" [disabled]="exportState !== 'idle'">
+          Cancelar
+        </button>
+
+        <div class="export-buttons">
+          <button class="btn btn--excel" (click)="exportToExcel()" [disabled]="exportState !== 'idle'">
+            @if (exportState === 'excel') {
+              <span class="spinner-loader"></span> Generando...
+            } @else {
+              <i-feather name="file-text"></i-feather> Excel
+            }
+          </button>
+
+          <button class="btn btn--pdf" (click)="exportToPdf()" [disabled]="exportState !== 'idle'">
+            @if (exportState === 'pdf') {
+              <span class="spinner-loader"></span> Generando...
+            } @else {
+              <i-feather name="file-text"></i-feather> PDF
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
 
 @if (showEditModal && selectedUser) {
   <div class="modal-overlay">

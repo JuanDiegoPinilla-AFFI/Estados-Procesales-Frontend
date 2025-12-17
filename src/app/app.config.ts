@@ -14,7 +14,7 @@ import { authInterceptor } from './features/auth/interceptors/auth-interceptor';
 import { FeatherModule } from 'angular-feather';
 import { 
   Search, LogOut, Menu, X, Users, Folder, BarChart2, FileText,
-  Plus, Edit2, Info, Shield, Check, Trash, Eye, EyeOff, ChevronDown, Home, UploadCloud, RefreshCw
+  Plus, Edit2, Info, Shield, Check, Trash, Activity, Briefcase, UserX, UserCheck, Database, Eye, Download, EyeOff, ChevronDown, Home, UploadCloud, RefreshCw
 } from 'angular-feather/icons';
 
 registerLocaleData(localeEsCo, 'es-CO');
@@ -29,7 +29,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       FeatherModule.pick({
         Search, LogOut, Menu, X, Users, Folder, BarChart2, FileText,
-        Plus, Edit2, Info, Shield, Check, Trash, Eye, EyeOff, ChevronDown, Home, UploadCloud, RefreshCw
+        Plus, Edit2, Info, Shield, Check, Trash, Download, Activity, Briefcase, UserX, UserCheck, Database, Eye, EyeOff, ChevronDown, Home, UploadCloud, RefreshCw
       })
     ),
 

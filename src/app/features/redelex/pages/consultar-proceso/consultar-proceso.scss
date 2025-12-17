@@ -734,9 +734,8 @@
   .detail-grid > div { grid-column: span 12; } /* Móvil: 1 columna */
 }
 
-/* ya la tienes, la dejo aquí por claridad */
 .detail-grid--full {
-  grid-column: 1 / -1;
+  grid-column: 1 / -1 !important;
 }
 
 .detail-label {
