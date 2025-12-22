@@ -39,7 +39,6 @@ export class DashboardInmobiliariaComponent implements OnInit {
   nombreInmobiliaria = '';
   fechaActual = new Date();
 
-  // 1. DEFINICIÓN DEL ORDEN ESPECÍFICO
   readonly ORDER_EJECUTIVO = [
     'RECOLECCION Y VALIDACION DOCUMENTAL',
     'DEMANDA',
@@ -73,7 +72,7 @@ export class DashboardInmobiliariaComponent implements OnInit {
 
   ejecutivo: ClassGroup = this.initGroup();
   restitucion: ClassGroup = this.initGroup();
-  otros: ClassGroup = this.initGroup();
+  // Se eliminó el grupo 'otros' ya que no se usará.
 
   readonly ETAPA_COLORS: Record<string, string> = {
     'RECOLECCION Y VALIDACION DOCUMENTAL': '#fbbf24',
@@ -116,74 +115,68 @@ export class DashboardInmobiliariaComponent implements OnInit {
   }
 
   calculateMetrics(data: any[]) {
+    // Reiniciar contadores
     this.kpis = { total: 0, enPreparacion: 0, enJuzgado: 0, conSentencia: 0 };
     this.ciudadesStats = [];
-    
     this.ejecutivo = this.initGroup();
     this.restitucion = this.initGroup();
-    this.otros = this.initGroup();
 
     if (!data || data.length === 0) return;
 
-    this.kpis.total = data.length;
-
     const flowMapEjecutivo = new Map<string, number>();
     const flowMapRestitucion = new Map<string, number>();
-    const flowMapOtros = new Map<string, number>();
     const ciudadesMap = new Map<string, number>();
 
     const etapasAvanzadas = ['SENTENCIA', 'LIQUIDACION', 'AVALUO', 'REMATE', 'LANZAMIENTO', 'TERMINACION', 'TERMINADO'];
 
     data.forEach(p => {
-      const etapa = this.normalizeEtapa(p.etapaProcesal);
+      // 1. Clasificación del Tipo de Proceso
       const clase = (p.claseProceso || '').toUpperCase();
+      let isEjecutivo = false;
+      let isRestitucion = false;
+
+      if (clase.includes('EJECUTIVO') || clase.includes('SINGULAR')) {
+        isEjecutivo = true;
+      } else if (clase.includes('VERBAL') || clase.includes('RESTITUCION') || clase.includes('SUMARIO')) {
+        isRestitucion = true;
+      } else {
+        // 2. FILTRO: Si no es Ejecutivo ni Restitución, se ignora completamente (break del ciclo actual)
+        return; 
+      }
+
+      // Si llegamos aquí, el proceso cuenta para los KPIs
+      this.kpis.total++;
+
+      // 3. Normalización de Etapa (Manejo de vacíos incluido)
+      const etapa = this.normalizeEtapa(p.etapaProcesal);
       
-      // Descomentar para NO mostrar -- NO ESPECIFICADO -- 
-      // const ciudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
-      // if (!ciudad.includes('NO ESPECIFICADO')) {
-      //   ciudadesMap.set(ciudad, (ciudadesMap.get(ciudad) || 0) + 1);
-      // }
-      
-      // Descomentar para que -- NO ESPECIFICADO -- se muestre diferente 
-      // let rawCiudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
-      // if (rawCiudad.includes('NO ESPECIFICADO')) {
-      //     rawCiudad = 'PENDIENTE';
-      //   }
-      // const ciudad = rawCiudad;
-      // ciudadesMap.set(ciudad, (ciudadesMap.get(ciudad) || 0) + 1);
-        
-      // Descomentar para mostrar -- NO ESPECIFICADO --
-      let rawCiudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
-      const ciudad = rawCiudad;
-      ciudadesMap.set(ciudad, (ciudadesMap.get(ciudad) || 0) + 1);
+      // Ciudades
+      const ciudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
+      if (!ciudad.includes('NO ESPECIFICADO')) {
+        ciudadesMap.set(ciudad, (ciudadesMap.get(ciudad) || 0) + 1);
+      }
       
       const isPrep = etapa === 'RECOLECCION Y VALIDACION DOCUMENTAL';
       const isSentencia = etapasAvanzadas.some(adv => etapa.includes(adv));
       const isJuzgado = !isPrep && !isSentencia;
 
+      // Actualizar KPIs Globales
       if (isPrep) this.kpis.enPreparacion++;
       else if (isSentencia) this.kpis.conSentencia++;
       else this.kpis.enJuzgado++;
 
-      if (clase.includes('EJECUTIVO') || clase.includes('SINGULAR')) {
+      // Actualizar Grupos Específicos
+      if (isEjecutivo) {
         this.updateGroup(this.ejecutivo, flowMapEjecutivo, etapa, isPrep, isJuzgado, isSentencia);
-      } 
-      else if (clase.includes('VERBAL') || clase.includes('RESTITUCION') || clase.includes('SUMARIO')) {
+      } else if (isRestitucion) {
         this.updateGroup(this.restitucion, flowMapRestitucion, etapa, isPrep, isJuzgado, isSentencia);
-      } 
-      else {
-        this.updateGroup(this.otros, flowMapOtros, etapa, isPrep, isJuzgado, isSentencia);
       }
     });
 
-    // --- CAMBIO CLAVE: Pasar el orden personalizado ---
     this.ejecutivo.flowStats = this.generateChartData(flowMapEjecutivo, this.ejecutivo.total, this.ORDER_EJECUTIVO);
     this.restitucion.flowStats = this.generateChartData(flowMapRestitucion, this.restitucion.total, this.ORDER_RESTITUCION);
     
-    // Otros se mantiene ordenado por cantidad (sin tercer argumento)
-    this.otros.flowStats = this.generateChartData(flowMapOtros, this.otros.total);
-
-    // Ciudades se mantiene por cantidad
+    // Ciudades
     this.ciudadesStats = this.mapToSortedArray(ciudadesMap, this.kpis.total).slice(0, 15);
   }
 
@@ -195,7 +188,6 @@ export class DashboardInmobiliariaComponent implements OnInit {
     map.set(etapa, (map.get(etapa) || 0) + 1);
   }
 
-  // Ahora acepta un array opcional 'customOrder'
   private generateChartData(map: Map<string, number>, total: number, customOrder?: string[]): StatItem[] {
     let items = Array.from(map.entries()).map(([label, count]) => ({
       label,
@@ -205,25 +197,15 @@ export class DashboardInmobiliariaComponent implements OnInit {
     }));
 
     if (customOrder && customOrder.length > 0) {
-      // Ordenamiento Personalizado
       return items.sort((a, b) => {
         const idxA = customOrder.indexOf(a.label);
         const idxB = customOrder.indexOf(b.label);
-
-        // Si ambos están en la lista, ordenar por su posición en la lista
         if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        
-        // Si solo A está en la lista, A va primero
         if (idxA !== -1) return -1;
-        
-        // Si solo B está en la lista, B va primero
         if (idxB !== -1) return 1;
-
-        // Si ninguno está en la lista, ordenar por cantidad descendente (comportamiento default para 'Otros')
         return b.count - a.count;
       });
     } else {
-      // Ordenamiento por defecto (Mayor cantidad primero)
       return items.sort((a, b) => b.count - a.count);
     }
   }
@@ -240,16 +222,33 @@ export class DashboardInmobiliariaComponent implements OnInit {
   }
 
   private normalizeEtapa(raw: string): string {
-    if (!raw) return 'SIN ETAPA';
+    // MODIFICACION 1: Si es vacío, null o undefined, retorna Recolección.
+    if (!raw || raw.trim() === '') return 'RECOLECCION Y VALIDACION DOCUMENTAL';
+    
     const upper = raw.toUpperCase();
     if (upper.includes('ALISTAMIENTO') || upper.includes('DOCUMENTACION') || upper.includes('ASIGNACION')) return 'RECOLECCION Y VALIDACION DOCUMENTAL';
     if (upper.includes('AVALUO') || upper.includes('REMATE')) return 'LIQUIDACION';
     return upper;
   }
 
+  // Helpers para porcentajes (usados en HTML)
+  get pctPrep(): number { return this.kpis.total > 0 ? (this.kpis.enPreparacion / this.kpis.total) : 0; }
+  get pctJuzgado(): number { return this.kpis.total > 0 ? (this.kpis.enJuzgado / this.kpis.total) : 0; }
+  get pctSentencia(): number { return this.kpis.total > 0 ? (this.kpis.conSentencia / this.kpis.total) : 0; }
+
   get donutGradient(): string {
     if (this.kpis.total === 0) return 'conic-gradient(#e5e7eb 0% 100%)';
-    const pctPrep = (this.kpis.enPreparacion / this.kpis.total) * 100;
-    return `conic-gradient(#fbbf24 0% ${pctPrep}%, #260086 ${pctPrep}% 100%)`;
+    
+    // Convertimos a porcentajes 0-100 para CSS
+    const p1 = this.pctPrep * 100;
+    const p2 = p1 + (this.pctJuzgado * 100);
+    // p3 sería el resto hasta 100 (Sentencia)
+
+    // Colores: Prep (Amarillo), Juzgado (Azul Principal), Sentencia (Morado)
+    return `conic-gradient(
+      #fbbf24 0% ${p1}%, 
+      #2563eb ${p1}% ${p2}%, 
+      #f43f5e ${p2}% 100%
+    )`;
   }
 }

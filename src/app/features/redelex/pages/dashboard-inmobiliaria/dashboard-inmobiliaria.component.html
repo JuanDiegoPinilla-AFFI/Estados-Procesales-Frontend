@@ -53,7 +53,7 @@
       <div class="kpi-card success">
         <div class="icon-wrapper"><i-feather name="award"></i-feather></div>
         <div class="kpi-data">
-          <span class="label">Avanzados/Sentencia</span>
+          <span class="label">Con Sentencia</span>
           <span class="value">{{ kpis.conSentencia }}</span>
           <span class="sub-label">Etapas Finales</span>
         </div>
@@ -97,7 +97,7 @@
           <section class="class-section">
             <div class="section-title">
               <h3>Procesos de Restitución</h3>
-              <span class="badge badge-orange">{{ restitucion.total }} Procesos</span>
+              <span class="badge badge-blue">{{ restitucion.total }} Procesos</span>
             </div>
 
             <div class="mini-kpis-row">
@@ -121,24 +121,8 @@
             </div>
           </section>
         }
-
-        @if (otros.total > 0) {
-          <section class="class-section">
-            <div class="section-title">
-              <h3>Otros Procesos</h3>
-              <span class="badge badge-gray">{{ otros.total }} Procesos</span>
-            </div>
-            <div class="bars-container">
-              @for (stat of otros.flowStats; track stat.label) {
-                <div class="bar-row">
-                  <div class="bar-info"><span class="bar-label">{{ stat.label }}</span><span class="bar-val">{{ stat.count }}</span></div>
-                  <div class="progress-track"><div class="progress-fill" [style.width.%]="stat.pct" [style.background-color]="stat.color"></div></div>
-                </div>
-              }
-            </div>
-          </section>
-        }
-      </div>
+        
+        </div>
 
       <div class="right-column">
         
@@ -151,19 +135,26 @@
                 <span class="donut-label">Total</span>
               </div>
             </div>
+            
             <div class="chart-legend">
               <div class="legend-item">
-                <span class="dot court-dot"></span><span>En Juzgado</span>
+                <span class="dot prep-dot"></span>
+                <span>Recolección ({{ pctPrep | percent:'1.0-0' }})</span>
               </div>
               <div class="legend-item">
-                <span class="dot prep-dot"></span><span>En Recolección y Validación Documental</span>
+                <span class="dot court-dot"></span>
+                <span>Juzgado ({{ pctJuzgado | percent:'1.0-0' }})</span>
+              </div>
+              <div class="legend-item">
+                <span class="dot sentencia-dot"></span>
+                <span>Sentencia ({{ pctSentencia | percent:'1.0-0' }})</span>
               </div>
             </div>
           </div>
         </div>
 
         <div class="chart-card">
-          <div class="card-header"><h3>Top Ciudades</h3></div>
+          <div class="card-header"><h3>Top 15 Ciudades con Mayor Número de Procesos</h3></div>
           <div class="card-body">
             <div class="mini-list">
               @for (city of ciudadesStats; track city.label) {
