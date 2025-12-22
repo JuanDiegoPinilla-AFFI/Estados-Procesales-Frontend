@@ -197,7 +197,7 @@ export class ConsultarProcesoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.titleService.setTitle('Estados Procesales - Consulta de Procesos');
+    this.titleService.setTitle('Estados Procesales - Consultar Procesos');
   }
 
   formatDate(date?: string): string {

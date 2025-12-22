@@ -71,7 +71,7 @@ export class DashboardInmobiliariaComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.titleService.setTitle('Tablero de Control - Affi');
+    this.titleService.setTitle('Estados Procesales - Tablero de Control');
     this.loadData();
   }
 
