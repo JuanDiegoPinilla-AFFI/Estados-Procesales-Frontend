@@ -137,8 +137,21 @@ export class DashboardInmobiliariaComponent implements OnInit {
     data.forEach(p => {
       const etapa = this.normalizeEtapa(p.etapaProcesal);
       const clase = (p.claseProceso || '').toUpperCase();
-      const ciudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
-
+      
+      // Descomentar para NO mostrar -- NO ESPECIFICADO -- 
+      // const ciudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
+      // if (!ciudad.includes('NO ESPECIFICADO')) {
+      //   ciudadesMap.set(ciudad, (ciudadesMap.get(ciudad) || 0) + 1);
+      // }
+      
+      // Descomentar para que -- NO ESPECIFICADO -- se muestre diferente 
+      // if (rawCiudad.includes('NO ESPECIFICADO')) {
+        //   rawCiudad = 'PENDIENTE';
+        // }
+        
+      // Descomentar para mostrar -- NO ESPECIFICADO --
+      let rawCiudad = p.ciudadInmueble ? p.ciudadInmueble.trim().toUpperCase() : 'SIN CIUDAD';
+      const ciudad = rawCiudad;
       ciudadesMap.set(ciudad, (ciudadesMap.get(ciudad) || 0) + 1);
       
       const isPrep = etapa === 'RECOLECCION Y VALIDACION DOCUMENTAL';
