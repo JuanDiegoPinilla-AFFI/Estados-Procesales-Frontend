@@ -98,6 +98,7 @@ export class UsersListComponent implements OnInit {
     { key: 'inmo:create', label: 'Crear Inmobiliarias' },
     { key: 'inmo:edit', label: 'Editar Inmobiliarias' },
     { key: 'inmo:activate', label: 'Activar/Desactivar Inmobiliarias' },
+    { key: 'inmo:import', label: 'Importar Inmobiliarias' },
     { key: 'procesos:view_all', label: 'Ver TODOS los Procesos (Global)' },
     { key: 'procesos:view_own', label: 'Ver Mis Procesos (Propio)' },
     { key: 'reports:view', label: 'Ver Reportes' },
