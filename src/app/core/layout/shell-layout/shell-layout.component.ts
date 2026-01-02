@@ -1,3 +1,8 @@
+/*
+  Cambios (30-12-2025) - Santiago Obando:
+  - Añadí campo `ticketData.email` en el modal superior y validación básica.
+  - El modal ahora prefill con el email del usuario y lo envía al backend como reply-to.
+*/
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
 import { of, Subject, takeUntil } from 'rxjs';
@@ -29,7 +34,7 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
   userInitials = 'U';
   showSupportModal = false;
   isSendingTicket = false;
-  ticketData = { subject: '', content: '' };
+  ticketData = { email: '', subject: '', content: '' };
   menuSections: MenuSection[] = [];
   breadcrumbs: { label: string, active?: boolean }[] = [];
   currentTip = '';
@@ -136,7 +141,8 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
   }
 
   openSupportModal() {
-    this.ticketData = { subject: '', content: '' };
+    const user = this.authService.getUserData();
+    this.ticketData = { email: user?.email || '', subject: '', content: '' };
     this.showSupportModal = true;
   }
 
@@ -150,9 +156,25 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Validar email
+    if (!this.ticketData.email) {
+      AffiAlert.fire({ icon: 'warning', title: 'Correo requerido', text: 'Por favor ingresa tu correo electrónico.' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.ticketData.email)) {
+      AffiAlert.fire({ icon: 'warning', title: 'Email inválido', text: 'Por favor ingresa un correo electrónico válido.' });
+      return;
+    }
+
     this.isSendingTicket = true;
 
-    this.supportService.createTicket(this.ticketData.subject, this.ticketData.content).subscribe({
+    const userEmail = this.authService.getUserData()?.email || '';
+
+    const emailToSend = this.ticketData.email || userEmail;
+
+    this.supportService.createTicket(this.ticketData.subject, this.ticketData.content, undefined, emailToSend).subscribe({
       next: () => {
         this.isSendingTicket = false;
         this.closeSupportModal();

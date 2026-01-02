@@ -828,3 +828,12 @@
     transform: translateY(0) scale(1);
   }
 }
+
+// Estilo para el mensaje del email Santiago Obando
+.email-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
