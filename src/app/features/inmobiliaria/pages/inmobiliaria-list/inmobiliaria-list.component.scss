@@ -333,10 +333,15 @@
   border: 2px dashed var(--color-gray-300);
   border-radius: var(--border-radius-lg);
   padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   transition: all 0.2s;
   background: var(--bg-secondary);
   cursor: pointer;
+  min-height: 250px;
 
   &.drag-over {
     border-color: var(--color-primary);
@@ -374,8 +379,18 @@
   border-radius: var(--border-radius-md);
   color: var(--color-primary);
   font-weight: 500;
+  max-width: 100%;
   
   svg { width: 16px; height: 16px; }
+
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px; 
+    display: inline-block;
+    vertical-align: middle;
+  }
 }
 
 .helper-text {

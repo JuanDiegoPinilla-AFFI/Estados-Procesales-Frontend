@@ -392,26 +392,36 @@
       <div class="modal-body">
         @if (!isUploading && !importResult) {
           <div class="upload-area" 
-               [class.drag-over]="dragOver"
-               (dragover)="onDragOver($event)" 
-               (dragleave)="onDragLeave($event)" 
-               (drop)="onDrop($event)">
+              [class.drag-over]="dragOver"
+              (dragover)="onDragOver($event)" 
+              (dragleave)="onDragLeave($event)" 
+              (drop)="onDrop($event)">
             
             <i-feather name="upload-cloud" class="upload-icon"></i-feather>
-            <h4>Arrastra tu archivo Excel aquí</h4>
-            <p>o haz clic para seleccionar</p>
+            
+            <h4>{{ currentFile ? 'Archivo listo para subir' : 'Arrastra tu archivo Excel aquí' }}</h4>
+            
+            <p *ngIf="!currentFile">o haz clic para seleccionar</p>
             
             <input type="file" (change)="onFileSelected($event)" accept=".xlsx, .xls" id="fileInput" hidden>
-            <label for="fileInput" class="btn btn--secondary mt-4">Seleccionar Archivo</label>
+            
+            <label for="fileInput" class="btn btn--secondary mt-4">
+              {{ currentFile ? 'Cambiar Archivo' : 'Seleccionar Archivo' }}
+            </label>
             
             <div class="file-info" *ngIf="currentFile">
               <i-feather name="file-text"></i-feather>
               <span>{{ currentFile.name }}</span>
+              <i-feather name="x" 
+                        style="cursor: pointer; margin-left: 10px; color: #ef4444;" 
+                        (click)="currentFile = null; $event.stopPropagation()"
+                        title="Quitar archivo">
+              </i-feather>
             </div>
 
             <p class="helper-text mt-4">
-              <strong>Nota:</strong> El archivo debe contener las columnas <code>NIT</code>, <code>CODIGO</code> y <code>NOMBRE</code>.<br>
-              Opcionales: <code>FECHA_INICIO</code>, <code>DEPARTAMENTO</code>, <code>CIUDAD</code>, <code>TELEFONO</code>, <code>EMAIL</code>.<br>
+              <strong>Nota:</strong> El archivo debe contener las columnas <code>NIT</code>, <code>CODIGO</code>, <code>NOMBRE</code><br>
+              <code>FECHA_INICIO</code>, <code>DEPARTAMENTO</code>, <code>CIUDAD</code>, <code>TELEFONO</code>, <code>EMAIL</code>.<br>
               <span class="text-red-700">Los registros que no estén en el Excel serán <strong>INACTIVADOS</strong> y sus usuarios bloqueados.</span>
             </p>
           </div>
@@ -420,9 +430,26 @@
         @if (isUploading) {
           <div class="uploading-state">
             <div class="spinner mb-4"></div>
-            <h4>Procesando archivo...</h4>
-            <div class="progress-bar-container"><div class="progress-bar" [style.width.%]="uploadProgress"></div></div>
-            <p>{{ uploadProgress }}% Completado</p>
+            
+            <h4>
+              @if (isProcessingServer) {
+                Sincronizando base de datos...
+              } @else {
+                Subiendo archivo...
+              }
+            </h4>
+
+            <div class="progress-bar-container">
+              <div class="progress-bar" [style.width.%]="uploadProgress"></div>
+            </div>
+            
+            <p class="text-sm text-gray-500">
+              @if (isProcessingServer) {
+                El archivo se ha subido. Por favor espera mientras procesamos los registros...
+              } @else {
+                {{ uploadProgress }}% Completado
+              }
+            </p>
           </div>
         }
 

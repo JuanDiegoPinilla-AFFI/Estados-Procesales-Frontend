@@ -24,6 +24,7 @@ export class InmobiliariaListComponent implements OnInit {
   inmobiliarias: Inmobiliaria[] = [];
   loading = true;
   isSendingEmail = false;
+  isProcessingServer = false;
 
   showEditModal = false;
   showImportModal = false;
@@ -292,12 +293,17 @@ export class InmobiliariaListComponent implements OnInit {
     this.currentFile = null;
     this.uploadProgress = 0;
     this.isUploading = false;
+    this.isProcessingServer = false;
     this.importResult = null;
   }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
-    if (file) this.validateAndSetFile(file);
+    if (file) {
+      this.validateAndSetFile(file);
+    }
+    
+    event.target.value = ''; 
   }
 
   onDragOver(e: Event) { e.preventDefault(); e.stopPropagation(); this.dragOver = true; }
@@ -320,14 +326,19 @@ export class InmobiliariaListComponent implements OnInit {
   uploadFile() {
     if (!this.currentFile) return;
     this.isUploading = true;
+    this.isProcessingServer = false;
     this.uploadProgress = 0;
 
     this.inmoService.importInmobiliarias(this.currentFile).subscribe({
       next: (event) => {
         if (event.type === HttpEventType.UploadProgress && event.total) {
           this.uploadProgress = Math.round(100 * event.loaded / event.total);
+          if (this.uploadProgress === 100) {
+            this.isProcessingServer = true;
+          }
         } else if (event instanceof HttpResponse) {
           this.isUploading = false;
+          this.isProcessingServer = false;
           this.importResult = event.body as ImportResult;
           this.loadData();
           AffiAlert.fire({ 
