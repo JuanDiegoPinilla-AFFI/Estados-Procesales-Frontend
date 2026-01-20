@@ -8,8 +8,8 @@ import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
-import { InmobiliariaService, Inmobiliaria, ImportResult } from '../../services/inmobiliaria.service';
-import { AffiAlert } from '../../../../shared/services/affi-alert';
+//Importar la nueva interfaz de estadísticas Santiago Obando Hurtado
+import { InmobiliariaService, Inmobiliaria, ImportResult, InmobiliariaEstadisticasProcesos } from '../../services/inmobiliaria.service';import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
@@ -79,6 +79,10 @@ export class InmobiliariaListComponent implements OnInit {
     inactivos: 0,
     pctInactivos: 0
   };
+//Cambio Santiago Obando Hurtado
+//Nueva propiedad para las estadísticas de inmobiliarias con procesos jurídicos
+estadisticasProcesos: InmobiliariaEstadisticasProcesos | null = null;
+loadingEstadisticasProcesos = false;
 
   private titleService = inject(Title);
   private datePipe = inject(DatePipe);
@@ -95,10 +99,17 @@ export class InmobiliariaListComponent implements OnInit {
     private elementRef: ElementRef
   ) {}
 
-  ngOnInit() {
-    this.titleService.setTitle('Estados Procesales - Inmobiliarias');
-    this.loadData();
+//Cambio Santiago Obando Hurtado
+//Cargar estadísticas solo si es AFFI o ADMIN
+ngOnInit() {
+  this.titleService.setTitle('Estados Procesales - Inmobiliarias');
+  this.loadData();
+  
+  // Cargar estadísticas solo si es AFFI o ADMIN
+  if (this.authService.hasPermission('inmo:view') || this.authService.isAdmin()) {
+    this.loadEstadisticasProcesos();
   }
+}
 
   loadData() {
     this.loading = true;
@@ -126,15 +137,32 @@ export class InmobiliariaListComponent implements OnInit {
     this.stats = {
       total,
       conUsuario,
-      pctConUsuario: Math.round((conUsuario / total) * 100),
+      pctConUsuario: Math.round((conUsuario / total) * 100 * 100) / 100,
       sinUsuario: total - conUsuario,
-      pctSinUsuario: Math.round(((total - conUsuario) / total) * 100),
+      pctSinUsuario: Math.round(((total - conUsuario) / total) * 100 * 100) / 100,
       activos,
-      pctActivos: Math.round((activos / total) * 100),
+      pctActivos: Math.round((activos / total) * 100 * 100) / 100,
       inactivos: total - activos,
-      pctInactivos: Math.round(((total - activos) / total) * 100)
+      pctInactivos: Math.round(((total - activos) / total) * 100 * 100) / 100
     };
   }
+
+//Cambio Santiago Obando Hurtado
+//Nuevo método para cargar estadísticas de inmobiliarias con procesos jurídicos
+loadEstadisticasProcesos() {
+  this.loadingEstadisticasProcesos = true;
+  this.inmoService.getEstadisticasConProcesos().subscribe({
+    next: (data) => {
+      this.estadisticasProcesos = data;
+      this.loadingEstadisticasProcesos = false;
+    },
+    error: (err) => {
+      console.error('Error cargando estadísticas de procesos:', err);
+      this.estadisticasProcesos = null;
+      this.loadingEstadisticasProcesos = false;
+    }
+  });
+}
 
   onSendReminder() {
     AffiAlert.fire({

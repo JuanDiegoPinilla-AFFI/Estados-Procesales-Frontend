@@ -1295,3 +1295,30 @@
   animation: spin 0.8s linear infinite;
   margin-right: 6px;
 }
+
+// Colores purple para el icono
+.bg-purple-100 {
+  background-color: #f3e8ff;
+}
+
+.text-purple-700 {
+  color: #7e22ce;
+}
+
+// Asegurar que los textos de colores se vean bien
+.text-green-700 {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.text-red-700 {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+// Mejorar el espaciado de kpi-value-row
+.kpi-value-row {
+  margin: 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
