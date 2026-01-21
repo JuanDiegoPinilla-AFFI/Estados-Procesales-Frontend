@@ -29,6 +29,43 @@ export interface ImportResult {
   };
 }
 
+//Cambio Santiago Obando Hurtado
+//Nueva interfaz para las estadísticas de inmobiliarias con procesos jurídicos
+export interface InmobiliariaEstadisticasProcesos {
+  totalInmobiliariasConProcesos: number;
+  activas: {
+    cantidad: number;
+    porcentaje: number;
+  };
+  inactivas: {
+    cantidad: number;
+    porcentaje: number;
+  };
+    otrosDemandantes: {
+    cantidad: number;
+    porcentaje: number;
+  };
+}
+
+/**
+ * Nueva interfaz para estadísticas de usuarios en inmobiliarias con procesos
+ */
+export interface InmobiliariaEstadisticasUsuarios {
+  totalInmobiliariasConProcesos: number;
+  conUsuarioActivo: {
+    cantidad: number;
+    porcentaje: number;
+  };
+  conUsuarioInactivo: {
+    cantidad: number;
+    porcentaje: number;
+  };
+  sinUsuario: {
+    cantidad: number;
+    porcentaje: number;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,4 +101,16 @@ export class InmobiliariaService {
   triggerImportReminder(): Observable<any> {
     return this.http.get(`${this.apiUrl}/send-import-reminder`);
   }
+  
+
+  //Cambio Santiago Obando Hurtado
+  //Nuevo método para obtener estadísticas de inmobiliarias con procesos jurídicos
+  getEstadisticasConProcesos(): Observable<InmobiliariaEstadisticasProcesos> {
+    return this.http.get<InmobiliariaEstadisticasProcesos>(`${this.apiUrl}/estadisticas/con-procesos`);
+  }
+ 
+getEstadisticasUsuariosConProcesos(): Observable<InmobiliariaEstadisticasUsuarios> {
+  return this.http.get<InmobiliariaEstadisticasUsuarios>(`${this.apiUrl}/estadisticas/usuarios-con-procesos`);
+}
+  
 }
