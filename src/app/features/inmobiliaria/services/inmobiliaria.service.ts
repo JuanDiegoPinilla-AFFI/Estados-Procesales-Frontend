@@ -41,6 +41,10 @@ export interface InmobiliariaEstadisticasProcesos {
     cantidad: number;
     porcentaje: number;
   };
+    otrosDemandantes: {
+    cantidad: number;
+    porcentaje: number;
+  };
 }
 
 /**
