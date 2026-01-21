@@ -8,7 +8,6 @@ import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
-//Importar la nueva interfaz de estadísticas Santiago Obando Hurtado
 import { InmobiliariaService, Inmobiliaria, ImportResult, InmobiliariaEstadisticasProcesos } from '../../services/inmobiliaria.service';import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { AuthService } from '../../../auth/services/auth.service';
 
@@ -41,11 +40,12 @@ export class InmobiliariaListComponent implements OnInit {
   exportColumns = [
     { key: 'nit', label: 'NIT', selected: true },
     { key: 'codigo', label: 'Código', selected: true },
+    { key: 'tieneProcesos', label: '¿Tiene Procesos?', selected: true },
     { key: 'nombreInmobiliaria', label: 'Nombre Inmobiliaria', selected: true },
     { key: 'departamento', label: 'Departamento', selected: true },
-    { key: 'ciudad', label: 'Ciudad', selected: true },
+    { key: 'ciudad', label: 'Municipio', selected: true },
     { key: 'telefono', label: 'Teléfono', selected: true },
-    { key: 'emailContacto', label: 'Email Contacto', selected: true },
+    { key: 'emailContacto', label: 'Correo de Contacto', selected: true },
     { key: 'emailRegistrado', label: 'Usuario Asignado', selected: true },
     { key: 'fechaInicioFianza', label: 'Inicio Fianza', selected: true },
     { key: 'isActive', label: 'Estado', selected: true },
@@ -64,9 +64,13 @@ export class InmobiliariaListComponent implements OnInit {
     ciudad: '',
     estado: '',
     tieneUsuario: '',
+    tieneProcesos: '',
     fechaDesde: '',
     fechaHasta: ''
   };
+  showAdvancedFilters = false;
+
+  listaTieneProcesos = ['Sí', 'No'];
 
   stats = {
     total: 0,
@@ -79,10 +83,9 @@ export class InmobiliariaListComponent implements OnInit {
     inactivos: 0,
     pctInactivos: 0
   };
-//Cambio Santiago Obando Hurtado
-//Nueva propiedad para las estadísticas de inmobiliarias con procesos jurídicos
-estadisticasProcesos: InmobiliariaEstadisticasProcesos | null = null;
-loadingEstadisticasProcesos = false;
+
+  estadisticasProcesos: InmobiliariaEstadisticasProcesos | null = null;
+  loadingEstadisticasProcesos = false;
 
   private titleService = inject(Title);
   private datePipe = inject(DatePipe);
@@ -99,17 +102,15 @@ loadingEstadisticasProcesos = false;
     private elementRef: ElementRef
   ) {}
 
-//Cambio Santiago Obando Hurtado
-//Cargar estadísticas solo si es AFFI o ADMIN
-ngOnInit() {
-  this.titleService.setTitle('Estados Procesales - Inmobiliarias');
-  this.loadData();
-  
-  // Cargar estadísticas solo si es AFFI o ADMIN
-  if (this.authService.hasPermission('inmo:view') || this.authService.isAdmin()) {
-    this.loadEstadisticasProcesos();
+
+  ngOnInit() {
+    this.titleService.setTitle('Estados Procesales - Inmobiliarias');
+    this.loadData();
+    
+    if (this.authService.hasPermission('inmo:view') || this.authService.isAdmin()) {
+      this.loadEstadisticasProcesos();
+    }
   }
-}
 
   loadData() {
     this.loading = true;
@@ -147,22 +148,20 @@ ngOnInit() {
     };
   }
 
-//Cambio Santiago Obando Hurtado
-//Nuevo método para cargar estadísticas de inmobiliarias con procesos jurídicos
-loadEstadisticasProcesos() {
-  this.loadingEstadisticasProcesos = true;
-  this.inmoService.getEstadisticasConProcesos().subscribe({
-    next: (data) => {
-      this.estadisticasProcesos = data;
-      this.loadingEstadisticasProcesos = false;
-    },
-    error: (err) => {
-      console.error('Error cargando estadísticas de procesos:', err);
-      this.estadisticasProcesos = null;
-      this.loadingEstadisticasProcesos = false;
-    }
-  });
-}
+  loadEstadisticasProcesos() {
+    this.loadingEstadisticasProcesos = true;
+    this.inmoService.getEstadisticasConProcesos().subscribe({
+      next: (data) => {
+        this.estadisticasProcesos = data;
+        this.loadingEstadisticasProcesos = false;
+      },
+      error: (err) => {
+        console.error('Error cargando estadísticas de procesos:', err);
+        this.estadisticasProcesos = null;
+        this.loadingEstadisticasProcesos = false;
+      }
+    });
+  }
 
   onSendReminder() {
     AffiAlert.fire({
@@ -227,6 +226,11 @@ loadEstadisticasProcesos() {
         if (!match) return false;
       }
 
+      if (this.filtros.tieneProcesos) {
+        const tiene = inmo.tieneProcesos ? 'Sí' : 'No';
+        if (tiene !== this.filtros.tieneProcesos) return false;
+      }
+
       if (this.filtros.nit && !inmo.nit.includes(this.filtros.nit)) return false;
       if (this.filtros.codigo && !inmo.codigo.toLowerCase().includes(this.filtros.codigo.toLowerCase())) return false;
       if (this.filtros.nombreInmobiliaria && !inmo.nombreInmobiliaria.toLowerCase().includes(this.filtros.nombreInmobiliaria.toLowerCase())) return false;
@@ -270,10 +274,15 @@ loadEstadisticasProcesos() {
       ciudad: '',
       fechaDesde: '',
       fechaHasta: '',
+      tieneProcesos: '',
       estado: '',
       tieneUsuario: ''
     };
     this.currentPage = 1;
+  }
+
+  toggleAdvancedFilters() {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
   }
 
   get paginatedInmobiliarias() {
@@ -471,7 +480,7 @@ loadEstadisticasProcesos() {
     return this.exportColumns.some(col => col.selected);
   }
 
-async exportToExcel() {
+  async exportToExcel() {
     if (!this.hasSelectedColumns) {
       AffiAlert.fire({ icon: 'warning', title: 'Atención', text: 'Selecciona al menos una columna para exportar.' });
       return;
@@ -486,107 +495,90 @@ async exportToExcel() {
       const activeColumns = this.exportColumns.filter(c => c.selected);
 
       // ==========================================
-      // LOGO Y TÍTULO
+      // 1. LOGO Y TÍTULO
       // ==========================================
       const imageId = workbook.addImage({ base64: AFFI_LOGO_BASE64, extension: 'png' });
-      sheet.addImage(imageId, { tl: { col: 0, row: 0 }, ext: { width: 70, height: 70 } });
+      sheet.addImage(imageId, { tl: { col: 0, row: 0 }, ext: { width: 100, height: 100 } });
 
-      // Título
-      sheet.mergeCells('C2:H2');
-      const titleCell = sheet.getCell('C2');
+      const totalCols = Math.max(activeColumns.length, 8);
+      sheet.mergeCells(2, 3, 2, totalCols);
+      const titleCell = sheet.getCell(2, 3);
       titleCell.value = 'LISTADO DE INMOBILIARIAS';
       titleCell.font = { bold: true, size: 16, name: 'Calibri' };
       titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-      // Fecha
-      sheet.mergeCells('C3:H3');
-      const dateCell = sheet.getCell('C3');
+      sheet.mergeCells(3, 3, 3, totalCols);
+      const dateCell = sheet.getCell(3, 3);
       dateCell.value = `Fecha de generación: ${this.datePipe.transform(new Date(), "d 'de' MMMM 'de' yyyy")}`;
       dateCell.font = { size: 11, name: 'Calibri' };
       dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
       // ==========================================
-      // CUADROS DE ESTADÍSTICAS
+      // 2. TARJETAS DE ESTADÍSTICAS (TEXTOS MEJORADOS)
       // ==========================================
       let currentRow = 6;
+      const CORPORATE_COLOR = 'FF260086'; // Azul oscuro
+      const cardsTotalCols = 8;
 
-      // Helper para crear cuadros
-      const createStatBox = (col: number, row: number, title: string, value: string, bgColor: string, textColor: string = 'FFFFFFFF') => {
-        const startCol = col;
-        const endCol = col + 1;
-        const startRow = row;
-        const endRow = row + 1;
+      let startCol = 1;
+      if (activeColumns.length > cardsTotalCols) {
+        startCol = Math.floor((activeColumns.length - cardsTotalCols) / 2) + 1;
+      }
 
-        // Título del cuadro
-        sheet.mergeCells(startRow, startCol, startRow, endCol);
-        const titleCell = sheet.getCell(startRow, startCol);
+      const createStatBox = (colOffset: number, row: number, title: string, value: string) => {
+        const startColBox = startCol + colOffset;
+        const endColBox = startColBox + 1;
+
+        const invisibleBorder: Partial<ExcelJS.Borders> = {
+          top: { style: 'thin', color: { argb: CORPORATE_COLOR } },
+          left: { style: 'thin', color: { argb: CORPORATE_COLOR } },
+          bottom: { style: 'thin', color: { argb: CORPORATE_COLOR } },
+          right: { style: 'thin', color: { argb: CORPORATE_COLOR } }
+        };
+
+        // Título
+        sheet.mergeCells(row, startColBox, row, endColBox);
+        const titleCell = sheet.getCell(row, startColBox);
         titleCell.value = title;
-        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
-        titleCell.font = { bold: true, size: 10, color: { argb: textColor } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CORPORATE_COLOR } };
+        titleCell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        titleCell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' },
-          bottom: { style: 'thin' }
-        };
+        titleCell.border = invisibleBorder;
 
-        // Valor del cuadro
-        sheet.mergeCells(endRow, startCol, endRow, endCol);
-        const valueCell = sheet.getCell(endRow, startCol);
+        // Valor (Con salto de línea)
+        const valRow = row + 1;
+        sheet.mergeCells(valRow, startColBox, valRow, endColBox);
+        const valueCell = sheet.getCell(valRow, startColBox);
         valueCell.value = value;
-        valueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
-        valueCell.font = { bold: true, size: 14, color: { argb: textColor } };
-        valueCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        valueCell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' },
-          bottom: { style: 'thin' }
-        };
+        valueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CORPORATE_COLOR } };
+        // Reducimos un poco la fuente (size 12) para que quepan bien las dos líneas
+        valueCell.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+        valueCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        valueCell.border = invisibleBorder;
 
-        sheet.getRow(startRow).height = 25;
-        sheet.getRow(endRow).height = 30;
+        sheet.getRow(row).height = 25;
+        sheet.getRow(valRow).height = 35; // Aumentamos altura para que quepan 2 líneas
       };
 
-      // ==========================================
-      // PRIMERA FILA DE CUADROS
-      // ==========================================
-      // Total Inmobiliarias (Azul)
-      createStatBox(1, currentRow, 'TOTAL INMOBILIARIAS', this.stats.total.toString(), 'FF4472C4');
-      
-      // Con Usuario (Morado)
-      createStatBox(3, currentRow, 'CON USUARIO', `${this.stats.conUsuario} (${this.stats.pctConUsuario}%)`, 'FF8E44AD');
-      
-      // Sin Usuario (Naranja)
-      createStatBox(5, currentRow, 'SIN USUARIO', `${this.stats.sinUsuario} (${this.stats.pctSinUsuario}%)`, 'FFED7D31');
-
-      // Estado Operativo (Verde)
-      createStatBox(7, currentRow, 'ESTADO OPERATIVO', `${this.stats.activos} Activas (${this.stats.pctActivos}%)`, 'FF70AD47');
+      // --- PRIMERA FILA (TEXTOS INTUITIVOS) ---
+      createStatBox(0, currentRow, 'TOTAL INMOBILIARIAS', `${this.stats.total}\nRegistros Totales`);
+      createStatBox(2, currentRow, 'CON USUARIO', `${this.stats.conUsuario}\n(${this.stats.pctConUsuario}% Asignados)`);
+      createStatBox(4, currentRow, 'SIN USUARIO', `${this.stats.sinUsuario}\n(${this.stats.pctSinUsuario}% Pendientes)`);
+      createStatBox(6, currentRow, 'ESTADO OPERATIVO', `${this.stats.activos} Activas\n(${this.stats.pctActivos}% del total)`);
 
       currentRow += 3;
 
-      // ==========================================
-      // SEGUNDA FILA DE CUADROS (Procesos)
-      // ==========================================
+      // --- SEGUNDA FILA ---
       if (this.estadisticasProcesos) {
-        // Inmobiliarias con Procesos (Índigo)
-        createStatBox(1, currentRow, 'INMOBILIARIAS CON PROCESOS', this.estadisticasProcesos.totalInmobiliariasConProcesos.toString(), 'FF5B9BD5');
-        
-        // Activas (Verde claro)
-        createStatBox(3, currentRow, 'PROCESOS - ACTIVAS', `${this.estadisticasProcesos.activas.cantidad} (${this.estadisticasProcesos.activas.porcentaje}%)`, 'FF92D050');
-        
-        // Inactivas (Rojo)
-        createStatBox(5, currentRow, 'PROCESOS - INACTIVAS', `${this.estadisticasProcesos.inactivas.cantidad} (${this.estadisticasProcesos.inactivas.porcentaje}%)`, 'FFFF0000');
-
-        // NUEVO: Otros Demandantes (Amarillo)
-        createStatBox(7, currentRow, 'OTROS DEMANDANTES CON PROCESOS', `${this.estadisticasProcesos.otrosDemandantes.cantidad} (${this.estadisticasProcesos.otrosDemandantes.porcentaje}%)`, 'FFFFC000', 'FF000000');
-
+        createStatBox(0, currentRow, 'INMOBILIARIAS CON PROCESOS', `${this.estadisticasProcesos.totalInmobiliariasConProcesos}\nRegistros Totales`);
+        createStatBox(2, currentRow, 'PROCESOS - ACTIVAS', `${this.estadisticasProcesos.activas.cantidad}\n(${this.estadisticasProcesos.activas.porcentaje}% Activas)`);
+        createStatBox(4, currentRow, 'PROCESOS - INACTIVAS', `${this.estadisticasProcesos.inactivas.cantidad}\n(${this.estadisticasProcesos.inactivas.porcentaje}% Inactivas)`);
+        createStatBox(6, currentRow, 'OTROS DEMANDANTES', `${this.estadisticasProcesos.otrosDemandantes.cantidad}\n(${this.estadisticasProcesos.otrosDemandantes.porcentaje}% Externos)`);
         currentRow += 3;
       }
 
-      // Total registros exportados
-      sheet.mergeCells(currentRow, 1, currentRow, 3);
+      // "Total Registros" fijo a la IZQUIERDA
+      sheet.mergeCells(currentRow, 1, currentRow, 4);
       const totalCell = sheet.getCell(currentRow, 1);
       totalCell.value = `Total Registros Exportados: ${this.filteredInmobiliarias.length}`;
       totalCell.font = { bold: true, size: 12 };
@@ -594,67 +586,69 @@ async exportToExcel() {
       sheet.getRow(currentRow).height = 25;
 
       // ==========================================
-      // ENCABEZADOS DE COLUMNAS
+      // 3. TABLA DE DATOS
       // ==========================================
       const headerRowIndex = currentRow + 2;
       const headerRow = sheet.getRow(headerRowIndex);
-      
+
       activeColumns.forEach((col, index) => {
         const cell = headerRow.getCell(index + 1);
         cell.value = col.label;
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: CORPORATE_COLOR } };
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        cell.border = { 
-          top: { style: 'thin' }, 
-          left: { style: 'thin' }, 
-          bottom: { style: 'thin' }, 
-          right: { style: 'thin' } 
-        };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
       });
       sheet.getRow(headerRowIndex).height = 25;
 
-      // Ancho de columnas
-      activeColumns.forEach((col, index) => {
-        sheet.getColumn(index + 1).width = 20;
-      });
-
-      // ==========================================
-      // DATOS
-      // ==========================================
       this.filteredInmobiliarias.forEach((inmo, idx) => {
         const rowIndex = headerRowIndex + 1 + idx;
         const row = sheet.getRow(rowIndex);
 
         activeColumns.forEach((col, colIndex) => {
           let val: any = inmo[col.key as keyof Inmobiliaria];
-
           if (col.key === 'isActive') val = val ? 'ACTIVO' : 'INACTIVO';
           if (col.key === 'fechaInicioFianza') val = this.datePipe.transform(val, 'yyyy-MM-dd') || '';
           if (col.key === 'emailRegistrado') val = val || 'SIN USUARIO';
+          if (col.key === 'tieneProcesos') val = val ? 'SÍ' : 'NO';
 
           const cell = row.getCell(colIndex + 1);
           cell.value = val;
           cell.alignment = { vertical: 'middle', wrapText: true };
-          cell.border = { 
-            top: { style: 'thin', color: { argb: 'FFCCCCCC' } }, 
-            left: { style: 'thin', color: { argb: 'FFCCCCCC' } }, 
-            bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } }, 
-            right: { style: 'thin', color: { argb: 'FFCCCCCC' } } 
-          };
-          
+          cell.border = { top: { style: 'thin', color: { argb: 'FFCCCCCC' } }, left: { style: 'thin', color: { argb: 'FFCCCCCC' } }, bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } }, right: { style: 'thin', color: { argb: 'FFCCCCCC' } } };
+
           if (col.key === 'isActive') {
             cell.font = { color: { argb: val === 'ACTIVO' ? 'FF166534' : 'FF991B1B' }, bold: true };
           }
+
+          if (col.key === 'tieneProcesos' && val === 'NO') {
+            cell.font = { color: { argb: 'FFFF0000' }, bold: true };
+          }
+        });
+        // Sin row.height fijo para permitir auto-ajuste
+      });
+
+      // 4. AJUSTE DE ANCHO INTELIGENTE
+      activeColumns.forEach((col, index) => {
+        let maxLen = 12;
+        if (col.label.length > maxLen) maxLen = col.label.length;
+
+        this.filteredInmobiliarias.forEach(inmo => {
+          let val: any = inmo[col.key as keyof Inmobiliaria];
+          if (col.key === 'isActive') val = val ? 'ACTIVO' : 'INACTIVO';
+          if (col.key === 'fechaInicioFianza') val = this.datePipe.transform(val, 'yyyy-MM-dd') || '';
+          if (col.key === 'emailRegistrado') val = val || 'SIN USUARIO';
+
+          const cellLength = String(val || '').length;
+          if (cellLength > maxLen) maxLen = cellLength;
         });
 
-        row.height = 20;
+        sheet.getColumn(index + 1).width = Math.min(maxLen + 2, 50);
       });
 
       const buffer = await workbook.xlsx.writeBuffer();
       this.saveFile(buffer, 'xlsx');
       this.closeExportModal();
-
       AffiAlert.fire({ icon: 'success', title: 'Excel Generado', timer: 2000, showConfirmButton: false });
 
     } catch (error) {
@@ -665,10 +659,10 @@ async exportToExcel() {
     }
   }
 
-async exportToPdf() {
+  async exportToPdf() {
     if (!this.hasSelectedColumns) {
-       AffiAlert.fire({ icon: 'warning', title: 'Atención', text: 'Selecciona al menos una columna.' });
-       return;
+      AffiAlert.fire({ icon: 'warning', title: 'Atención', text: 'Selecciona al menos una columna.' });
+      return;
     }
 
     this.exportState = 'pdf';
@@ -677,104 +671,98 @@ async exportToPdf() {
     try {
       const doc = new jsPDF('landscape', 'mm', 'a4');
       const activeColumns = this.exportColumns.filter(c => c.selected);
-      
-      // ==========================================
-      // LOGO Y TÍTULO
-      // ==========================================
+
+      // Configuración
+      const pageWidth = 297;
+      const marginX = 14;
+
+      // Logo y Título
       doc.addImage(AFFI_LOGO_BASE64, 'PNG', 10, 5, 20, 20);
-      doc.setFontSize(16); 
+      doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.text('LISTADO DE INMOBILIARIAS', 148, 12, { align: 'center' });
-      
-      doc.setFontSize(11); 
+      doc.text('LISTADO DE INMOBILIARIAS', pageWidth / 2, 12, { align: 'center' });
+
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Fecha de generación: ${this.datePipe.transform(new Date(), "d 'de' MMMM 'de' yyyy")}`, 148, 18, { align: 'center' });
+      doc.text(`Fecha de generación: ${this.datePipe.transform(new Date(), "d 'de' MMMM 'de' yyyy")}`, pageWidth / 2, 18, { align: 'center' });
 
       // ==========================================
-      // CUADROS DE ESTADÍSTICAS
+      // TARJETAS (TEXTOS DESCRIPTIVOS)
       // ==========================================
       let yPosition = 28;
       const boxWidth = 60;
       const boxHeight = 15;
       const boxSpacing = 3;
-      let xPosition = 14;
 
-      // Helper para crear cuadros
-      const createStatBox = (x: number, y: number, title: string, value: string, color: number[], textColor: number[] = [255, 255, 255]) => {
-        // Fondo del cuadro
-        doc.setFillColor(color[0], color[1], color[2]);
+      const totalRowWidth = (boxWidth * 4) + (boxSpacing * 3);
+      let xPosition = (pageWidth - totalRowWidth) / 2;
+
+      const CORPORATE_RGB = [38, 0, 134];
+      const TEXT_WHITE = [255, 255, 255];
+
+      const createStatBox = (x: number, y: number, title: string, valueLine1: string, valueLine2: string) => {
+        doc.setFillColor(CORPORATE_RGB[0], CORPORATE_RGB[1], CORPORATE_RGB[2]);
         doc.rect(x, y, boxWidth, boxHeight, 'F');
-        
-        // Borde
-        doc.setDrawColor(0, 0, 0);
-        doc.rect(x, y, boxWidth, boxHeight, 'S');
-        
-        // Título
-        doc.setFontSize(9);
+
+        // Título pequeño arriba
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-        doc.text(title, x + boxWidth / 2, y + 5, { align: 'center' });
-        
-        // Valor
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text(value, x + boxWidth / 2, y + 11, { align: 'center' });
-        
-        // Resetear color de texto
-        doc.setTextColor(0, 0, 0);
+        doc.setTextColor(TEXT_WHITE[0], TEXT_WHITE[1], TEXT_WHITE[2]);
+        doc.text(title, x + boxWidth / 2, y + 4, { align: 'center' });
+
+        // Valor Grande (Línea 1)
+        doc.setFontSize(11);
+        doc.text(valueLine1, x + boxWidth / 2, y + 9, { align: 'center' });
+
+        // Descripción pequeña (Línea 2)
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(valueLine2, x + boxWidth / 2, y + 12.5, { align: 'center' });
       };
 
-      // ==========================================
-      // PRIMERA FILA DE CUADROS
-      // ==========================================
-      createStatBox(xPosition, yPosition, 'TOTAL INMOBILIARIAS', this.stats.total.toString(), [68, 114, 196]); // Azul
+      // --- FILA 1 ---
+      createStatBox(xPosition, yPosition, 'TOTAL INMOBILIARIAS', this.stats.total.toString(), 'Registros Totales');
       xPosition += boxWidth + boxSpacing;
-      
-      createStatBox(xPosition, yPosition, 'CON USUARIO', `${this.stats.conUsuario} (${this.stats.pctConUsuario}%)`, [142, 68, 173]); // Morado
-      xPosition += boxWidth + boxSpacing;
-      
-      createStatBox(xPosition, yPosition, 'SIN USUARIO', `${this.stats.sinUsuario} (${this.stats.pctSinUsuario}%)`, [237, 125, 49]); // Naranja
-      xPosition += boxWidth + boxSpacing;
-      
-      createStatBox(xPosition, yPosition, 'ACTIVAS', `${this.stats.activos} (${this.stats.pctActivos}%)`, [112, 173, 71]); // Verde
 
-      // ==========================================
-      // SEGUNDA FILA DE CUADROS (solo si hay estadísticas de procesos)
-      // ==========================================
+      createStatBox(xPosition, yPosition, 'CON USUARIO', this.stats.conUsuario.toString(), `${this.stats.pctConUsuario}% Asignados`);
+      xPosition += boxWidth + boxSpacing;
+
+      createStatBox(xPosition, yPosition, 'SIN USUARIO', this.stats.sinUsuario.toString(), `${this.stats.pctSinUsuario}% Pendientes`);
+      xPosition += boxWidth + boxSpacing;
+
+      createStatBox(xPosition, yPosition, 'ESTADO OPERATIVO', `${this.stats.activos} Activas`, `${this.stats.pctActivos}% del total`);
+
+      // --- FILA 2 ---
       if (this.estadisticasProcesos) {
         yPosition += boxHeight + boxSpacing + 2;
-        xPosition = 14;
-        
-        createStatBox(xPosition, yPosition, 'INMOB. CON PROCESOS', this.estadisticasProcesos.totalInmobiliariasConProcesos.toString(), [91, 155, 213]); // Índigo
-        xPosition += boxWidth + boxSpacing;
-        
-        createStatBox(xPosition, yPosition, 'PROC - ACTIVAS', `${this.estadisticasProcesos.activas.cantidad} (${this.estadisticasProcesos.activas.porcentaje}%)`, [146, 208, 80]); // Verde claro
-        xPosition += boxWidth + boxSpacing;
-        
-        createStatBox(xPosition, yPosition, 'PROC - INACTIVAS', `${this.estadisticasProcesos.inactivas.cantidad} (${this.estadisticasProcesos.inactivas.porcentaje}%)`, [255, 0, 0]); // Rojo
+        xPosition = (pageWidth - totalRowWidth) / 2;
+
+        createStatBox(xPosition, yPosition, 'INMOBILIARIAS CON PROCESOS', this.estadisticasProcesos.totalInmobiliariasConProcesos.toString(), 'Registros Totales');
         xPosition += boxWidth + boxSpacing;
 
-        // NUEVO: Otros Demandantes (Amarillo con texto negro)
-        createStatBox(xPosition, yPosition, 'OTROS DEMANDANTES', `${this.estadisticasProcesos.otrosDemandantes.cantidad} (${this.estadisticasProcesos.otrosDemandantes.porcentaje}%)`, [255, 192, 0], [0, 0, 0]); // Amarillo
+        createStatBox(xPosition, yPosition, 'PROCESOS - ACTIVAS', this.estadisticasProcesos.activas.cantidad.toString(), `${this.estadisticasProcesos.activas.porcentaje}% Activas`);
+        xPosition += boxWidth + boxSpacing;
 
-        yPosition += boxHeight + 5;
-      } else {
-        yPosition += boxHeight + 5;
+        createStatBox(xPosition, yPosition, 'PROCESOS - INACTIVAS', this.estadisticasProcesos.inactivas.cantidad.toString(), `${this.estadisticasProcesos.inactivas.porcentaje}% Inactivas`);
+        xPosition += boxWidth + boxSpacing;
+
+        createStatBox(xPosition, yPosition, 'OTROS DEMANDANTES', this.estadisticasProcesos.otrosDemandantes.cantidad.toString(), `${this.estadisticasProcesos.otrosDemandantes.porcentaje}% Externos`);
       }
 
-      // Total registros exportados
+      // Espacio antes de tabla
+      yPosition += boxHeight + 15;
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(0, 0, 0);
-      doc.text(`Total Registros Exportados: ${this.filteredInmobiliarias.length}`, 14, yPosition);
+      doc.text(`Total Registros Exportados: ${this.filteredInmobiliarias.length}`, marginX, yPosition);
       yPosition += 7;
 
-      // ==========================================
-      // TABLA DE DATOS
-      // ==========================================
+      // TABLA
       const bodyData = this.filteredInmobiliarias.map(inmo => {
         return activeColumns.map(col => {
           let val: any = inmo[col.key as keyof Inmobiliaria];
+          if (col.key === 'tieneProcesos') return val ? 'SÍ' : 'NO';
           if (col.key === 'isActive') return val ? 'ACTIVO' : 'INACTIVO';
           if (col.key === 'fechaInicioFianza') return this.datePipe.transform(val, 'yyyy-MM-dd') || '';
           if (col.key === 'emailRegistrado') return val || 'SIN USUARIO';
@@ -788,7 +776,8 @@ async exportToPdf() {
         body: bodyData,
         theme: 'grid',
         styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
-        headStyles: { fillColor: [31, 78, 120], textColor: [255, 255, 255], fontStyle: 'bold' },
+        headStyles: { fillColor: CORPORATE_RGB as any, textColor: [255, 255, 255], fontStyle: 'bold' },
+        margin: { left: marginX, right: marginX },
         columnStyles: { 0: { cellWidth: 'auto' } }
       });
 

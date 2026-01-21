@@ -119,25 +119,19 @@
               <div class="kpi-value">-</div>
               <span class="kpi-subtext">Cargando...</span>
             } @else if (estadisticasProcesos) {
-              <div class="kpi-value">{{ estadisticasProcesos.totalInmobiliariasConProcesos }} </div>
+              <!-- <div class="kpi-value">{{ estadisticasProcesos.totalInmobiliariasConProcesos }}</div> -->
               <div class="kpi-value-row">
-                <span class="text-green-700"
-                  >{{ estadisticasProcesos.activas.cantidad }} Activas</span
-                >
+                <span class="text-green-700">{{ estadisticasProcesos.activas.cantidad }} Activas</span>
               </div>
+
               <div class="progress-multi">
-                <div
-                  class="p-segment bg-green-500"
-                  [style.width.%]="estadisticasProcesos.activas.porcentaje"
-                ></div>
-                <div
-                  class="p-segment bg-red-200"
-                  [style.width.%]="estadisticasProcesos.inactivas.porcentaje"
-                ></div>
+                <div class="p-segment bg-green-500" [style.width.%]="estadisticasProcesos.activas.porcentaje"></div>
+                <div class="p-segment bg-red-200" [style.width.%]="estadisticasProcesos.inactivas.porcentaje"></div>
               </div>
-              <span class="kpi-subtext">
+              <span class="kpi-subtext" style="line-height: 1.4;">
                 {{ estadisticasProcesos.activas.porcentaje }}% Activas &bull;
-                {{ estadisticasProcesos.inactivas.cantidad }} Inactivas
+                {{ estadisticasProcesos.inactivas.porcentaje }}% Inactivas &bull;
+                {{ estadisticasProcesos.otrosDemandantes.porcentaje }}% Externos
               </span>
             } @else {
               <div class="kpi-value">0</div>
@@ -151,7 +145,7 @@
 
   <div class="card">
     <div class="filter-section">
-      <div class="filters-grid">
+      <div class="search-row">
         <label class="field full-width">
           <span class="field__label">Búsqueda Rápida</span>
           <div class="search-wrapper">
@@ -160,12 +154,14 @@
               type="text"
               [(ngModel)]="filtros.busquedaGeneral"
               (input)="currentPage = 1"
-              placeholder="Buscar NIT, Código, Nombre, Ciudad..."
+              placeholder="Buscar por NIT, Código, Nombre, Ciudad o Email..."
               class="field__input search-input"
             />
           </div>
         </label>
+      </div>
 
+      <div class="filters-grid">
         <label class="field">
           <span class="field__label">NIT</span>
           <input
@@ -173,7 +169,7 @@
             type="text"
             [(ngModel)]="filtros.nit"
             (input)="currentPage = 1"
-            placeholder="Ej: 900053370"
+            placeholder="Ej: 900..."
           />
         </label>
 
@@ -195,214 +191,149 @@
             type="text"
             [(ngModel)]="filtros.nombreInmobiliaria"
             (input)="currentPage = 1"
-            placeholder="Ej: AFFI"
+            placeholder="Nombre..."
           />
         </label>
 
-        <div class="field custom-select-container">
-          <span class="field__label">Departamento</span>
-          <div
-            class="custom-select"
-            (click)="toggleDropdown('departamento', $event)"
-            [class.open]="activeDropdown === 'departamento'"
+        <div class="field toggle-field">
+          <label class="field__label">&nbsp;</label> <button 
+            class="btn btn--secondary btn--toggle" 
+            (click)="toggleAdvancedFilters()"
+            [class.active]="showAdvancedFilters"
           >
-            <span class="selected-value" [class.placeholder]="!filtros.departamento">{{
-              filtros.departamento || 'Todos'
-            }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              @if (activeDropdown === 'departamento') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'departamento') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('departamento', '')">Todos</div>
-                @for (depto of listaDepartamentos; track depto) {
-                  <div
-                    class="option"
-                    (click)="selectFilterOption('departamento', depto)"
-                    [class.selected]="filtros.departamento === depto"
-                  >
-                    {{ depto }}
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Ciudad</span>
-          <div
-            class="custom-select"
-            (click)="toggleDropdown('ciudad', $event)"
-            [class.open]="activeDropdown === 'ciudad'"
-          >
-            <span class="selected-value" [class.placeholder]="!filtros.ciudad">{{
-              filtros.ciudad || 'Todas'
-            }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              @if (activeDropdown === 'ciudad') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'ciudad') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('ciudad', '')">Todas</div>
-                @for (ciudad of listaCiudades; track ciudad) {
-                  <div
-                    class="option"
-                    (click)="selectFilterOption('ciudad', ciudad)"
-                    [class.selected]="filtros.ciudad === ciudad"
-                  >
-                    {{ ciudad }}
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="field">
-          <span class="field__label">Inicio Fianza (Desde)</span>
-          <input
-            class="field__input"
-            type="date"
-            [(ngModel)]="filtros.fechaDesde"
-            (input)="currentPage = 1"
-          />
-        </div>
-
-        <div class="field">
-          <span class="field__label">Inicio Fianza (Hasta)</span>
-          <input
-            class="field__input"
-            type="date"
-            [(ngModel)]="filtros.fechaHasta"
-            (input)="currentPage = 1"
-          />
-        </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Estado</span>
-          <div
-            class="custom-select"
-            (click)="toggleDropdown('estado', $event)"
-            [class.open]="activeDropdown === 'estado'"
-          >
-            <span class="selected-value" [class.placeholder]="!filtros.estado">{{
-              filtros.estado || 'Todos'
-            }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              @if (activeDropdown === 'estado') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'estado') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('estado', '')">Todos</div>
-                @for (estado of listaEstados; track estado) {
-                  <div
-                    class="option"
-                    (click)="selectFilterOption('estado', estado)"
-                    [class.selected]="filtros.estado === estado"
-                  >
-                    {{ estado }}
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Usuario Asignado</span>
-          <div
-            class="custom-select"
-            (click)="toggleDropdown('tieneUsuario', $event)"
-            [class.open]="activeDropdown === 'tieneUsuario'"
-          >
-            <span class="selected-value" [class.placeholder]="!filtros.tieneUsuario">{{
-              filtros.tieneUsuario || 'Todos'
-            }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              @if (activeDropdown === 'tieneUsuario') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'tieneUsuario') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('tieneUsuario', '')">Todos</div>
-                @for (tipo of listaTieneUsuario; track tipo) {
-                  <div
-                    class="option"
-                    (click)="selectFilterOption('tieneUsuario', tipo)"
-                    [class.selected]="filtros.tieneUsuario === tipo"
-                  >
-                    {{ tipo }}
-                  </div>
-                }
-              </div>
-            </div>
-          }
+            <i-feather [name]="showAdvancedFilters ? 'chevron-up' : 'filter'" style="width: 16px; height: 16px; margin-right: 6px;"></i-feather>
+            {{ showAdvancedFilters ? 'Menos filtros' : 'Filtros avanzados' }}
+          </button>
         </div>
       </div>
+
+      @if (showAdvancedFilters) {
+        <div class="filters-grid advanced-filters">
+          
+          <div class="field custom-select-container">
+            <span class="field__label">Departamento</span>
+            <div
+              class="custom-select"
+              (click)="toggleDropdown('departamento', $event)"
+              [class.open]="activeDropdown === 'departamento'"
+            >
+              <span class="selected-value" [class.placeholder]="!filtros.departamento">{{
+                filtros.departamento || 'Todos'
+              }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'departamento') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'departamento') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('departamento', '')">Todos</div>
+                  @for (depto of listaDepartamentos; track depto) {
+                    <div class="option" (click)="selectFilterOption('departamento', depto)" [class.selected]="filtros.departamento === depto">{{ depto }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Ciudad</span>
+            <div
+              class="custom-select"
+              (click)="toggleDropdown('ciudad', $event)"
+              [class.open]="activeDropdown === 'ciudad'"
+            >
+              <span class="selected-value" [class.placeholder]="!filtros.ciudad">{{
+                filtros.ciudad || 'Todas'
+              }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'ciudad') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'ciudad') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('ciudad', '')">Todas</div>
+                  @for (ciudad of listaCiudades; track ciudad) {
+                    <div class="option" (click)="selectFilterOption('ciudad', ciudad)" [class.selected]="filtros.ciudad === ciudad">{{ ciudad }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field__label">Inicio Fianza (Desde)</span>
+            <input class="field__input" type="date" [(ngModel)]="filtros.fechaDesde" (input)="currentPage = 1" />
+          </div>
+
+          <div class="field">
+            <span class="field__label">Inicio Fianza (Hasta)</span>
+            <input class="field__input" type="date" [(ngModel)]="filtros.fechaHasta" (input)="currentPage = 1" />
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Estado</span>
+            <div class="custom-select" (click)="toggleDropdown('estado', $event)" [class.open]="activeDropdown === 'estado'">
+              <span class="selected-value" [class.placeholder]="!filtros.estado">{{ filtros.estado || 'Todos' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'estado') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'estado') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('estado', '')">Todos</div>
+                  @for (estado of listaEstados; track estado) {
+                    <div class="option" (click)="selectFilterOption('estado', estado)" [class.selected]="filtros.estado === estado">{{ estado }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Usuario Asignado</span>
+            <div class="custom-select" (click)="toggleDropdown('tieneUsuario', $event)" [class.open]="activeDropdown === 'tieneUsuario'">
+              <span class="selected-value" [class.placeholder]="!filtros.tieneUsuario">{{ filtros.tieneUsuario || 'Todos' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'tieneUsuario') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'tieneUsuario') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('tieneUsuario', '')">Todos</div>
+                  @for (tipo of listaTieneUsuario; track tipo) {
+                    <div class="option" (click)="selectFilterOption('tieneUsuario', tipo)" [class.selected]="filtros.tieneUsuario === tipo">{{ tipo }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">¿Tiene Procesos?</span>
+            <div class="custom-select" (click)="toggleDropdown('tieneProcesos', $event)" [class.open]="activeDropdown === 'tieneProcesos'">
+              <span class="selected-value" [class.placeholder]="!filtros.tieneProcesos">{{ filtros.tieneProcesos || 'Todos' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'tieneProcesos') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'tieneProcesos') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('tieneProcesos', '')">Todos</div>
+                  @for (opcion of listaTieneProcesos; track opcion) {
+                    <div class="option" (click)="selectFilterOption('tieneProcesos', opcion)" [class.selected]="filtros.tieneProcesos === opcion">{{ opcion }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
     </div>
 
     @if (loading) {
@@ -420,6 +351,7 @@
               <tr>
                 <th>Inmobiliaria / Ubicación</th>
                 <th>NIT / Código</th>
+                <th>¿Tiene Procesos?</th>
                 <th>Contacto</th>
                 <th>Inicio Fianza</th>
                 <th>Usuario</th>
@@ -464,6 +396,19 @@
                       <span class="code-pill">NIT: {{ inmo.nit }}</span>
                       <span class="code-pill code-pill--blue">COD: {{ inmo.codigo }}</span>
                     </div>
+                  </td>
+                  <td>
+                    @if (inmo.tieneProcesos) {
+                      <span class="status-badge status-badge--active status-badge--large">
+                        <i-feather name="check-circle" style="width: 16px; height: 16px;"></i-feather> 
+                         Sí
+                      </span>
+                    } @else {
+                      <span class="status-badge status-badge--inactive status-badge--large">
+                        <i-feather name="x-circle" style="width: 16px; height: 16px;"></i-feather> 
+                         No
+                      </span>
+                    }
                   </td>
                   <td>
                     <div class="company-info">

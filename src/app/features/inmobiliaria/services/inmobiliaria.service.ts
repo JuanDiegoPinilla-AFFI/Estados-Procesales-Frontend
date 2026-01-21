@@ -17,6 +17,7 @@ export interface Inmobiliaria {
   emailContacto?: string;
   fechaInicioFianza?: string | Date;
   modifiedBy?: string;
+  tieneProcesos?: boolean;
 }
 
 export interface ImportResult {
@@ -29,8 +30,6 @@ export interface ImportResult {
   };
 }
 
-//Cambio Santiago Obando Hurtado
-//Nueva interfaz para las estadísticas de inmobiliarias con procesos jurídicos
 export interface InmobiliariaEstadisticasProcesos {
   totalInmobiliariasConProcesos: number;
   activas: {
@@ -47,9 +46,6 @@ export interface InmobiliariaEstadisticasProcesos {
   };
 }
 
-/**
- * Nueva interfaz para estadísticas de usuarios en inmobiliarias con procesos
- */
 export interface InmobiliariaEstadisticasUsuarios {
   totalInmobiliariasConProcesos: number;
   conUsuarioActivo: {

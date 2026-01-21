@@ -85,37 +85,33 @@
         </div>
       </div>
 
+      <!-- <div class="kpi-card">
+        <div class="kpi-icon bg-purple-100 text-purple-700">
+          <i-feather name="briefcase"></i-feather>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Usuarios con Procesos</span>
 
-
-<div class="kpi-card">
-  <div class="kpi-icon bg-purple-100 text-purple-700">
-    <i-feather name="briefcase"></i-feather>
-  </div>
-  <div class="kpi-content">
-    <span class="kpi-label">Inmobiliarias con Procesos</span>
-
-    @if (loadingEstadisticasInmoUsuarios) {
-      <div class="kpi-value">-</div>
-      <span class="kpi-subtext">Cargando...</span>
-    } @else if (estadisticasInmoUsuarios) {
-      <div class="kpi-value">{{ estadisticasInmoUsuarios.conUsuarioActivo.cantidad + estadisticasInmoUsuarios.conUsuarioInactivo.cantidad }}</div>
-      <div class="kpi-value-row">
-        <span class="text-green-700">{{ estadisticasInmoUsuarios.conUsuarioActivo.cantidad }} Activos</span>
-      </div>
-      <div class="progress-multi">
-        <div class="p-segment bg-green-500" [style.width.%]="estadisticasInmoUsuarios.conUsuarioActivo.porcentaje"></div>
-        <div class="p-segment bg-red-500" [style.width.%]="estadisticasInmoUsuarios.conUsuarioInactivo.porcentaje"></div>
-      </div>
-      <span class="kpi-subtext">
-        {{ estadisticasInmoUsuarios.conUsuarioActivo.porcentaje }}% Activos &bull; {{ estadisticasInmoUsuarios.conUsuarioInactivo.cantidad }} Inactivos
-      </span>
-    } @else {
-      <div class="kpi-value">0</div>
-      <span class="kpi-subtext">Error al cargar</span>
-    }
-  </div>
-</div>
-
+          @if (loadingEstadisticasInmoUsuarios) {
+            <div class="kpi-value">-</div>
+            <span class="kpi-subtext">Cargando...</span>
+          } @else if (estadisticasInmoUsuarios) {
+            <div class="kpi-value-row">
+              <span class="text-green-700">{{ estadisticasInmoUsuarios.conUsuarioActivo.cantidad }} Activos</span>
+            </div>
+            <div class="progress-multi">
+              <div class="p-segment bg-green-500" [style.width.%]="estadisticasInmoUsuarios.conUsuarioActivo.porcentaje"></div>
+              <div class="p-segment bg-red-500" [style.width.%]="estadisticasInmoUsuarios.conUsuarioInactivo.porcentaje"></div>
+            </div>
+            <span class="kpi-subtext">
+              {{ estadisticasInmoUsuarios.conUsuarioActivo.porcentaje }}% Activos &bull; {{ estadisticasInmoUsuarios.conUsuarioInactivo.cantidad }} Inactivos
+            </span>
+          } @else {
+            <div class="kpi-value">0</div>
+            <span class="kpi-subtext">Error al cargar</span>
+          }
+        </div>
+      </div> -->
     </div>
   }
 

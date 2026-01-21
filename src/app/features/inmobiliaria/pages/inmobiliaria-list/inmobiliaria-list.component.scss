@@ -59,16 +59,33 @@
   margin-bottom: var(--spacing-xl);
 }
 
+/* Fila independiente para la búsqueda rápida */
+.search-row {
+  margin-bottom: 1rem;
+}
+
+/* Grilla principal de filtros */
 .filters-grid {
   display: grid;
+  /* Ajustamos minmax a 200px para permitir 4 columnas en pantallas grandes */
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--spacing-lg);
+  align-items: end; /* Alinea los inputs y el botón al fondo */
+
+  /* Estilos específicos para la sección desplegable */
+  &.advanced-filters {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-gray-200); /* Línea divisoria sutil */
+    animation: slideDown 0.3s ease-out;
+  }
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Una sola columna en móvil */
   }
 }
 
+/* Contenedor de cada campo */
 .field {
   display: flex;
   flex-direction: column;
@@ -77,14 +94,21 @@
   &.full-width {
     grid-column: 1 / -1;
   }
+  
+  /* Utilidad para alinear el botón toggle si es necesario */
+  &.toggle-field {
+    justify-content: flex-end;
+  }
 }
 
 .field__label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-semibold);
   color: var(--color-gray-700);
+  white-space: nowrap; /* Evita que el label se rompa en dos líneas */
 }
 
+/* Wrapper del buscador con icono */
 .search-wrapper {
   position: relative;
   display: flex;
@@ -119,6 +143,49 @@
 
     &::placeholder {
       color: var(--color-gray-400);
+    }
+  }
+}
+
+/* Estilo del Botón "Filtros Avanzados" */
+.btn--toggle {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(38, 0, 134, 0.03);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease;
+  
+  i-feather, svg {
+    display: flex;
+  }
+  
+  /* 1. HOVER NORMAL (Cuando NO está desplegado) */
+  &:hover {
+    background: rgba(38, 0, 134, 0.1);
+    transform: translateY(-1px);
+  }
+
+  /* 2. ESTADO ACTIVO (Cuando SÍ está desplegado) */
+  &.active {
+    background: var(--color-primary);
+    color: white;
+    border-style: solid;
+    box-shadow: 0 2px 4px rgba(38, 0, 134, 0.2);
+
+    /* 3. HOVER EN ESTADO ACTIVO (La corrección vital) */
+    &:hover {
+      background: var(--color-primary); /* Forzamos que se quede azul oscuro */
+      filter: brightness(1.1); /* Lo aclaramos un pelín para dar feedback visual */
+      transform: translateY(-1px);
+      color: white; /* Aseguramos que el texto siga blanco */
     }
   }
 }
@@ -268,6 +335,9 @@
 .status-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--border-radius-full);
   font-size: var(--font-size-xs);
@@ -278,6 +348,17 @@
   transition: all var(--transition-fast);
   letter-spacing: 0.03em;
   border: 1px solid transparent;
+
+  i-feather {
+    display: flex; 
+  }
+
+  &--large {
+    font-size: 0.85rem; 
+    padding: 6px 16px;  
+    font-weight: 700;   
+    min-width: 80px;    
+  }
 
   &--active {
     background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
@@ -1158,7 +1239,6 @@
 .bg-red-200 { background-color: #fecaca; }
 
 
-//Cambios Santiago Obando Hurtado
 .bg-indigo-100 {
   background-color: #e0e7ff;
 }
@@ -1171,3 +1251,10 @@
   color: #15803d;
 }
 
+.status-badge--procesos {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+}
