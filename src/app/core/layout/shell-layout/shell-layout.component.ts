@@ -274,6 +274,9 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
       'admin': 'Administrador', 
       'affi': 'Colaborador Affi',
       'inmobiliaria': 'Inmobiliaria',
+      'gerente_comercial': 'Gerente Comercial',
+      'director_comercial': 'Director Comercial',
+      'gerente_cuenta': 'Gerente de Cuenta',
       'user': 'Inmobiliaria' 
     };
     return roleMap[role.toLowerCase()] || role;

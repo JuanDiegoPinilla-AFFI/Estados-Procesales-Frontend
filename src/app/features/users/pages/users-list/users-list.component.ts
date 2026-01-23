@@ -1,3 +1,4 @@
+import { InmobiliariaService, InmobiliariaEstadisticasUsuarios } from '../../../inmobiliaria/services/inmobiliaria.service';
 import { HostListener, ElementRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -41,6 +42,9 @@ export class UsersListComponent implements OnInit {
     inactive: 0,
     pctInactive: 0
   };
+
+estadisticasInmoUsuarios: InmobiliariaEstadisticasUsuarios | null = null;
+loadingEstadisticasInmoUsuarios = false;
 
   showEditModal = false;
   showPermissionsModal = false;
@@ -86,6 +90,9 @@ export class UsersListComponent implements OnInit {
   availableRoles = [
     { value: 'admin', label: 'Administrador' },
     { value: 'affi', label: 'Colaborador Affi' },
+    { value: 'gerente_comercial', label: 'Gerente Comercial' },
+    { value: 'director_comercial', label: 'Director Comercial' },
+    { value: 'gerente_cuenta', label: 'Gerente de Cuenta' },
     { value: 'inmobiliaria', label: 'Inmobiliaria' }
   ];
 
@@ -110,18 +117,19 @@ export class UsersListComponent implements OnInit {
   isDropdownOpen = false;
   inmoSearchTerm = '';
 
-  constructor(
-    private usersService: UsersService,
-    private inmoLookupService: InmobiliariaLookupService,
-    private elementRef: ElementRef
-  ) {}
+constructor(
+  private usersService: UsersService,
+  private inmoLookupService: InmobiliariaLookupService,
+  private elementRef: ElementRef,
+  private inmobiliariaService: InmobiliariaService  
+) {}
 
-  ngOnInit() {
-    this.titleService.setTitle('Estados Procesales - Usuarios');
-    this.loadUsers();
-    this.loadInmobiliarias();
-  }
-
+ngOnInit() {
+  this.titleService.setTitle('Estados Procesales - Usuarios');
+  this.loadUsers();
+  this.loadInmobiliarias();
+  this.loadEstadisticasInmoUsuarios();
+}
   loadUsers() {
     this.loading = true;
     this.usersService.getAllUsers().subscribe({
@@ -159,6 +167,27 @@ export class UsersListComponent implements OnInit {
       pctInactive: Math.round(((total - active) / total) * 100)
     };
   }
+
+  /**
+ * Carga estadísticas de inmobiliarias con procesos según estado de usuario
+ * Muestra cuántas inmobiliarias con procesos tienen usuario activo vs inactivo
+ */
+loadEstadisticasInmoUsuarios() {
+  console.log('[UsersList] Iniciando carga de estadísticas de inmobiliarias con usuarios');
+  this.loadingEstadisticasInmoUsuarios = true;
+  this.inmobiliariaService.getEstadisticasUsuariosConProcesos().subscribe({
+    next: (data) => {
+      console.log('[UsersList] Estadísticas cargadas:', data);
+      this.estadisticasInmoUsuarios = data;
+      this.loadingEstadisticasInmoUsuarios = false;
+    },
+    error: (err) => {
+      console.error('[UsersList] Error cargando estadísticas:', err);
+      this.estadisticasInmoUsuarios = null;
+      this.loadingEstadisticasInmoUsuarios = false;
+    }
+  });
+}
 
   loadInmobiliarias() {
     this.inmoLookupService.getAll().subscribe({

@@ -128,9 +128,11 @@ export class AuthService {
     switch (role) {
       case 'admin':
         return '/panel/usuarios';
-        
-      case 'affi':
-        return '/panel/consultas/consultar-proceso';
+      
+    case 'gerente_comercial':
+    case 'director_comercial':
+    case 'gerente_cuenta':
+      return '/panel/consultas/consultar-proceso';
         
       case 'inmobiliaria':
         return '/panel/consultas/dashboard';

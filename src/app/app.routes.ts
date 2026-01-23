@@ -18,7 +18,14 @@ export const routes: Routes = [
     loadComponent: () => 
       import('./core/layout/shell-layout/shell-layout.component')
         .then(m => m.ShellLayoutComponent),
-    canActivate: [roleGuard(['admin', 'affi', 'inmobiliaria'])],
+    canActivate: [roleGuard([
+      'admin', 
+      'affi', 
+      'inmobiliaria', 
+      'gerente_comercial', 
+      'director_comercial', 
+      'gerente_cuenta'
+    ])],
     children: [
       {
         path: 'consultas',

@@ -38,7 +38,13 @@ export const REDELEX_ROUTES: Routes = [
         path: 'consultar-proceso',
         loadComponent: () => import('./pages/consultar-proceso/consultar-proceso')
           .then(m => m.ConsultarProcesoComponent),
-        canActivate: [permissionGuard('procesos:view_all')]
+        canActivate: [roleGuard([
+          'admin', 
+          'affi', 
+          'gerente_comercial', 
+          'director_comercial', 
+          'gerente_cuenta'
+        ])]
       },
       {
         path: 'informe-inmobiliaria',

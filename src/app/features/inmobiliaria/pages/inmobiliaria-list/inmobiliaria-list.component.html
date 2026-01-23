@@ -3,20 +3,26 @@
     <div class="header-content">
       <div>
         <h2>Inmobiliarias</h2>
-        <p>Base de datos de clientes. Sincroniza masivamente desde Excel &bull;
-          Mostrando: {{ filteredInmobiliarias.length }} registros</p>
+        <p>
+          Base de datos de clientes. Sincroniza masivamente desde Excel &bull; Mostrando:
+          {{ filteredInmobiliarias.length }} registros
+        </p>
       </div>
-      
+
       <div class="header-actions">
         <button class="btn btn--secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
-        <button class="btn btn--secondary" 
-                (click)="onSendReminder()" 
-                [disabled]="isSendingEmail"
-                *ngIf="authService.hasPermission('inmo:import') || authService.isAdmin()"
-                title="Enviar recordatorio de importación">
-          
+        <button
+          class="btn btn--secondary"
+          (click)="onSendReminder()"
+          [disabled]="isSendingEmail"
+          *ngIf="authService.hasPermission('inmo:import') || authService.isAdmin()"
+          title="Enviar recordatorio de importación"
+        >
           @if (isSendingEmail) {
-            <span class="spinner-loader" style="border-top-color: #6b7280; border-color: rgba(107, 114, 128, 0.3);"></span>
+            <span
+              class="spinner-loader"
+              style="border-top-color: #6b7280; border-color: rgba(107, 114, 128, 0.3)"
+            ></span>
             Enviando...
           } @else {
             <i-feather name="bell" class="btn-icon-left"></i-feather>
@@ -28,9 +34,11 @@
           Exportar
         </button>
 
-        <button class="btn btn--primary" 
-                (click)="openImportModal()" 
-                *ngIf="authService.hasPermission('inmo:import') || authService.isAdmin()">
+        <button
+          class="btn btn--primary"
+          (click)="openImportModal()"
+          *ngIf="authService.hasPermission('inmo:import') || authService.isAdmin()"
+        >
           <i-feather name="upload-cloud" class="btn-icon-left"></i-feather>
           Importar Excel
         </button>
@@ -40,7 +48,6 @@
 
   @if (!loading) {
     <div class="stats-grid-overview">
-      
       <div class="kpi-card">
         <div class="kpi-icon bg-blue-100 text-blue-700">
           <i-feather name="database"></i-feather>
@@ -62,7 +69,8 @@
           <div class="progress-mini">
             <div class="progress-fill bg-purple-500" [style.width.%]="stats.pctConUsuario"></div>
           </div>
-          <span class="kpi-subtext">{{ stats.pctConUsuario }}% Asignados</span>
+                <!-- Porcentaje de inmobiliarias con usuario asignado sobre el total -->
+          <span class="kpi-subtext">{{ stats.pctConUsuario | number:'1.2-2' }}% Asignados</span>
         </div>
       </div>
 
@@ -73,10 +81,10 @@
         <div class="kpi-content">
           <span class="kpi-label">Sin Usuario</span>
           <div class="kpi-value">{{ stats.sinUsuario }}</div>
-           <div class="progress-mini">
+          <div class="progress-mini">
             <div class="progress-fill bg-orange-500" [style.width.%]="stats.pctSinUsuario"></div>
           </div>
-          <span class="kpi-subtext">{{ stats.pctSinUsuario }}% Pendientes</span>
+          <span class="kpi-subtext">{{ stats.pctSinUsuario | number:'1.2-2' }}% Pendientes</span>
         </div>
       </div>
 
@@ -89,163 +97,250 @@
           <div class="kpi-value-row">
             <span class="text-green-700">{{ stats.activos }} Activas</span>
           </div>
-           <div class="progress-multi">
+          <div class="progress-multi">
             <div class="p-segment bg-green-500" [style.width.%]="stats.pctActivos"></div>
             <div class="p-segment bg-red-200" [style.width.%]="stats.pctInactivos"></div>
           </div>
           <span class="kpi-subtext">
-            {{ stats.pctActivos }}% Activas &bull; {{ stats.inactivos }} Inactivas
+            {{ stats.pctActivos | number:'1.2-2' }}% Activas &bull; {{ stats.pctInactivos | number:'1.2-2' }}% Inactivas
           </span>
         </div>
       </div>
 
+      @if (authService.hasPermission('inmo:view') || authService.isAdmin()) {
+        <div class="kpi-card">
+          <div class="kpi-icon bg-indigo-100 text-indigo-700">
+            <i-feather name="file-text"></i-feather>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Inmobiliarias con Procesos</span>
+
+            @if (loadingEstadisticasProcesos) {
+              <div class="kpi-value">-</div>
+              <span class="kpi-subtext">Cargando...</span>
+            } @else if (estadisticasProcesos) {
+              <!-- <div class="kpi-value">{{ estadisticasProcesos.totalInmobiliariasConProcesos }}</div> -->
+              <div class="kpi-value-row">
+                <span class="text-green-700">{{ estadisticasProcesos.activas.cantidad }} Activas</span>
+              </div>
+
+              <div class="progress-multi">
+                <div class="p-segment bg-green-500" [style.width.%]="estadisticasProcesos.activas.porcentaje"></div>
+                <div class="p-segment bg-red-200" [style.width.%]="estadisticasProcesos.inactivas.porcentaje"></div>
+              </div>
+              <span class="kpi-subtext" style="line-height: 1.4;">
+                {{ estadisticasProcesos.activas.porcentaje }}% Activas &bull;
+                {{ estadisticasProcesos.inactivas.porcentaje }}% Inactivas &bull;
+                {{ estadisticasProcesos.otrosDemandantes.porcentaje }}% Externos
+              </span>
+            } @else {
+              <div class="kpi-value">0</div>
+              <span class="kpi-subtext">Error al cargar</span>
+            }
+          </div>
+        </div>
+      }
     </div>
   }
 
   <div class="card">
     <div class="filter-section">
-      <div class="filters-grid">
-
+      <div class="search-row">
         <label class="field full-width">
           <span class="field__label">Búsqueda Rápida</span>
           <div class="search-wrapper">
             <i-feather name="search" class="search-icon"></i-feather>
-            <input 
-              type="text" 
-              [(ngModel)]="filtros.busquedaGeneral" 
+            <input
+              type="text"
+              [(ngModel)]="filtros.busquedaGeneral"
               (input)="currentPage = 1"
-              placeholder="Buscar NIT, Código, Nombre, Ciudad..." 
+              placeholder="Buscar por NIT, Código, Nombre, Ciudad o Email..."
               class="field__input search-input"
-            >
+            />
           </div>
         </label>
+      </div>
 
+      <div class="filters-grid">
         <label class="field">
           <span class="field__label">NIT</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.nit" (input)="currentPage = 1" placeholder="Ej: 900053370">
+          <input
+            class="field__input"
+            type="text"
+            [(ngModel)]="filtros.nit"
+            (input)="currentPage = 1"
+            placeholder="Ej: 900..."
+          />
         </label>
 
         <label class="field">
           <span class="field__label">Código</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.codigo" (input)="currentPage = 1" placeholder="Ej: AFFI">
+          <input
+            class="field__input"
+            type="text"
+            [(ngModel)]="filtros.codigo"
+            (input)="currentPage = 1"
+            placeholder="Ej: AFFI"
+          />
         </label>
 
         <label class="field">
           <span class="field__label">Nombre Inmobiliaria</span>
-          <input class="field__input" type="text" [(ngModel)]="filtros.nombreInmobiliaria" (input)="currentPage = 1" placeholder="Ej: AFFI">
+          <input
+            class="field__input"
+            type="text"
+            [(ngModel)]="filtros.nombreInmobiliaria"
+            (input)="currentPage = 1"
+            placeholder="Nombre..."
+          />
         </label>
 
-        <div class="field custom-select-container">
-          <span class="field__label">Departamento</span>
-          <div class="custom-select" (click)="toggleDropdown('departamento', $event)" [class.open]="activeDropdown === 'departamento'">
-            <span class="selected-value" [class.placeholder]="!filtros.departamento">{{ filtros.departamento || 'Todos' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'departamento') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'departamento') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('departamento', '')">Todos</div>
-                @for (depto of listaDepartamentos; track depto) {
-                  <div class="option" (click)="selectFilterOption('departamento', depto)" [class.selected]="filtros.departamento === depto">{{ depto }}</div>
-                }
-              </div>
-            </div>
-          }
+        <div class="field toggle-field">
+          <label class="field__label">&nbsp;</label> <button 
+            class="btn btn--secondary btn--toggle" 
+            (click)="toggleAdvancedFilters()"
+            [class.active]="showAdvancedFilters"
+          >
+            <i-feather [name]="showAdvancedFilters ? 'chevron-up' : 'filter'" style="width: 16px; height: 16px; margin-right: 6px;"></i-feather>
+            {{ showAdvancedFilters ? 'Menos filtros' : 'Filtros avanzados' }}
+          </button>
         </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Ciudad</span>
-          <div class="custom-select" (click)="toggleDropdown('ciudad', $event)" [class.open]="activeDropdown === 'ciudad'">
-            <span class="selected-value" [class.placeholder]="!filtros.ciudad">{{ filtros.ciudad || 'Todas' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'ciudad') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'ciudad') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('ciudad', '')">Todas</div>
-                @for (ciudad of listaCiudades; track ciudad) {
-                  <div class="option" (click)="selectFilterOption('ciudad', ciudad)" [class.selected]="filtros.ciudad === ciudad">{{ ciudad }}</div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="field">
-          <span class="field__label">Inicio Fianza (Desde)</span>
-          <input class="field__input" type="date" [(ngModel)]="filtros.fechaDesde" (input)="currentPage = 1">
-        </div>
-        
-        <div class="field">
-          <span class="field__label">Inicio Fianza (Hasta)</span>
-          <input class="field__input" type="date" [(ngModel)]="filtros.fechaHasta" (input)="currentPage = 1">
-        </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Estado</span>
-          <div class="custom-select" (click)="toggleDropdown('estado', $event)" [class.open]="activeDropdown === 'estado'">
-            <span class="selected-value" [class.placeholder]="!filtros.estado">{{ filtros.estado || 'Todos' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'estado') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'estado') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('estado', '')">Todos</div>
-                @for (estado of listaEstados; track estado) {
-                  <div class="option" (click)="selectFilterOption('estado', estado)" [class.selected]="filtros.estado === estado">{{ estado }}</div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="field custom-select-container">
-          <span class="field__label">Usuario Asignado</span>
-          <div class="custom-select" (click)="toggleDropdown('tieneUsuario', $event)" [class.open]="activeDropdown === 'tieneUsuario'">
-            <span class="selected-value" [class.placeholder]="!filtros.tieneUsuario">{{ filtros.tieneUsuario || 'Todos' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              @if (activeDropdown === 'tieneUsuario') {
-                <polyline points="6 15 12 9 18 15"></polyline>
-              } @else {
-                <polyline points="6 9 12 15 18 9"></polyline>
-              }
-            </svg>
-          </div>
-          @if (activeDropdown === 'tieneUsuario') {
-            <div class="dropdown-menu">
-              <div class="options-list">
-                <div class="option" (click)="selectFilterOption('tieneUsuario', '')">Todos</div>
-                @for (tipo of listaTieneUsuario; track tipo) {
-                  <div class="option" (click)="selectFilterOption('tieneUsuario', tipo)" [class.selected]="filtros.tieneUsuario === tipo">{{ tipo }}</div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
       </div>
+
+      @if (showAdvancedFilters) {
+        <div class="filters-grid advanced-filters">
+          
+          <div class="field custom-select-container">
+            <span class="field__label">Departamento</span>
+            <div
+              class="custom-select"
+              (click)="toggleDropdown('departamento', $event)"
+              [class.open]="activeDropdown === 'departamento'"
+            >
+              <span class="selected-value" [class.placeholder]="!filtros.departamento">{{
+                filtros.departamento || 'Todos'
+              }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'departamento') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'departamento') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('departamento', '')">Todos</div>
+                  @for (depto of listaDepartamentos; track depto) {
+                    <div class="option" (click)="selectFilterOption('departamento', depto)" [class.selected]="filtros.departamento === depto">{{ depto }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Ciudad</span>
+            <div
+              class="custom-select"
+              (click)="toggleDropdown('ciudad', $event)"
+              [class.open]="activeDropdown === 'ciudad'"
+            >
+              <span class="selected-value" [class.placeholder]="!filtros.ciudad">{{
+                filtros.ciudad || 'Todas'
+              }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'ciudad') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'ciudad') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('ciudad', '')">Todas</div>
+                  @for (ciudad of listaCiudades; track ciudad) {
+                    <div class="option" (click)="selectFilterOption('ciudad', ciudad)" [class.selected]="filtros.ciudad === ciudad">{{ ciudad }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field__label">Inicio Fianza (Desde)</span>
+            <input class="field__input" type="date" [(ngModel)]="filtros.fechaDesde" (input)="currentPage = 1" />
+          </div>
+
+          <div class="field">
+            <span class="field__label">Inicio Fianza (Hasta)</span>
+            <input class="field__input" type="date" [(ngModel)]="filtros.fechaHasta" (input)="currentPage = 1" />
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Estado</span>
+            <div class="custom-select" (click)="toggleDropdown('estado', $event)" [class.open]="activeDropdown === 'estado'">
+              <span class="selected-value" [class.placeholder]="!filtros.estado">{{ filtros.estado || 'Todos' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'estado') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'estado') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('estado', '')">Todos</div>
+                  @for (estado of listaEstados; track estado) {
+                    <div class="option" (click)="selectFilterOption('estado', estado)" [class.selected]="filtros.estado === estado">{{ estado }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">Usuario Asignado</span>
+            <div class="custom-select" (click)="toggleDropdown('tieneUsuario', $event)" [class.open]="activeDropdown === 'tieneUsuario'">
+              <span class="selected-value" [class.placeholder]="!filtros.tieneUsuario">{{ filtros.tieneUsuario || 'Todos' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'tieneUsuario') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'tieneUsuario') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('tieneUsuario', '')">Todos</div>
+                  @for (tipo of listaTieneUsuario; track tipo) {
+                    <div class="option" (click)="selectFilterOption('tieneUsuario', tipo)" [class.selected]="filtros.tieneUsuario === tipo">{{ tipo }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="field custom-select-container">
+            <span class="field__label">¿Tiene Procesos?</span>
+            <div class="custom-select" (click)="toggleDropdown('tieneProcesos', $event)" [class.open]="activeDropdown === 'tieneProcesos'">
+              <span class="selected-value" [class.placeholder]="!filtros.tieneProcesos">{{ filtros.tieneProcesos || 'Todos' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @if (activeDropdown === 'tieneProcesos') { <polyline points="6 15 12 9 18 15"></polyline> } @else { <polyline points="6 9 12 15 18 9"></polyline> }
+              </svg>
+            </div>
+            @if (activeDropdown === 'tieneProcesos') {
+              <div class="dropdown-menu">
+                <div class="options-list">
+                  <div class="option" (click)="selectFilterOption('tieneProcesos', '')">Todos</div>
+                  @for (opcion of listaTieneProcesos; track opcion) {
+                    <div class="option" (click)="selectFilterOption('tieneProcesos', opcion)" [class.selected]="filtros.tieneProcesos === opcion">{{ opcion }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
     </div>
 
     @if (loading) {
-      <div class="helper"><div class="spinner"></div><p>Cargando datos...</p></div>
+      <div class="helper">
+        <div class="spinner"></div>
+        <p>Cargando datos...</p>
+      </div>
     }
 
     @if (!loading) {
@@ -254,8 +349,12 @@
           <table class="excel-table">
             <thead>
               <tr>
-                <th>Inmobiliaria / Ubicación</th> <th>NIT / Código</th>
-                <th>Contacto</th> <th>Inicio Fianza</th> <th>Usuario</th>
+                <th>Inmobiliaria / Ubicación</th>
+                <th>NIT / Código</th>
+                <th>¿Tiene Procesos?</th>
+                <th>Contacto</th>
+                <th>Inicio Fianza</th>
+                <th>Usuario</th>
                 <th>Estado</th>
                 <th class="text-right">Acciones</th>
               </tr>
@@ -266,68 +365,120 @@
                   <td>
                     <div class="company-info">
                       <span class="company-name">{{ inmo.nombreInmobiliaria }}</span>
-                      
+
                       <span class="company-nit" *ngIf="inmo.ciudad || inmo.departamento">
-                        {{ inmo.ciudad || 'Sin ciudad' }} {{ inmo.departamento ? '(' + inmo.departamento + ')' : '' }}
+                        {{ inmo.ciudad || 'Sin ciudad' }}
+                        {{ inmo.departamento ? '(' + inmo.departamento + ')' : '' }}
                       </span>
 
-                      @if(inmo.updatedAt) {
-                        <span style="font-size: 0.65rem; color: #9ca3af; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-                          <i-feather name="clock" style="width: 10px; height: 10px;"></i-feather>
-                          {{ inmo.updatedAt | date:'dd/MM/yy' }} 
-                          @if(inmo.modifiedBy) { &bull; {{ inmo.modifiedBy }} }
+                      @if (inmo.updatedAt) {
+                        <span
+                          style="
+                            font-size: 0.65rem;
+                            color: #9ca3af;
+                            display: flex;
+                            align-items: center;
+                            gap: 4px;
+                            margin-top: 2px;
+                          "
+                        >
+                          <i-feather name="clock" style="width: 10px; height: 10px"></i-feather>
+                          {{ inmo.updatedAt | date: 'dd/MM/yy' }}
+                          @if (inmo.modifiedBy) {
+                            &bull; {{ inmo.modifiedBy }}
+                          }
                         </span>
                       }
                     </div>
                   </td>
                   <td>
-                    <div class="codes-cell" style="flex-direction: column; align-items: flex-start;">
+                    <div class="codes-cell" style="flex-direction: column; align-items: flex-start">
                       <span class="code-pill">NIT: {{ inmo.nit }}</span>
                       <span class="code-pill code-pill--blue">COD: {{ inmo.codigo }}</span>
                     </div>
                   </td>
-                 <td>
+                  <td>
+                    @if (inmo.tieneProcesos) {
+                      <span class="status-badge status-badge--active status-badge--large">
+                        <i-feather name="check-circle" style="width: 16px; height: 16px;"></i-feather> 
+                         Sí
+                      </span>
+                    } @else {
+                      <span class="status-badge status-badge--inactive status-badge--large">
+                        <i-feather name="x-circle" style="width: 16px; height: 16px;"></i-feather> 
+                         No
+                      </span>
+                    }
+                  </td>
+                  <td>
                     <div class="company-info">
-                       @if(inmo.telefono) { 
-                         <span class="contact-item">
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="contact-icon">
-                             <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.49-5.15-3.8-6.62-6.62l1.97-1.57c.23-.23.31-.56.25-.87-.36-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3.5 3 4.15 3 4.99 3 14.28 10.72 22 20.01 22c.84 0 1.49-.65 1.49-1.19V16.37c0-.55-.45-.99-.99-.99z"/>
-                           </svg> 
-                           {{ inmo.telefono }}
-                         </span> 
-                       }
-                       @if(inmo.emailContacto) { 
-                         <span class="contact-item contact-item--email" title="{{inmo.emailContacto}}">
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="contact-icon">
-                             <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                           </svg>
-                           {{ inmo.emailContacto }}
-                         </span> 
-                       }
+                      @if (inmo.telefono) {
+                        <span class="contact-item">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            class="contact-icon"
+                          >
+                            <path
+                              d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.49-5.15-3.8-6.62-6.62l1.97-1.57c.23-.23.31-.56.25-.87-.36-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3.5 3 4.15 3 4.99 3 14.28 10.72 22 20.01 22c.84 0 1.49-.65 1.49-1.19V16.37c0-.55-.45-.99-.99-.99z"
+                            />
+                          </svg>
+                          {{ inmo.telefono }}
+                        </span>
+                      }
+                      @if (inmo.emailContacto) {
+                        <span
+                          class="contact-item contact-item--email"
+                          title="{{ inmo.emailContacto }}"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            class="contact-icon"
+                          >
+                            <path
+                              d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
+                            />
+                          </svg>
+                          {{ inmo.emailContacto }}
+                        </span>
+                      }
                     </div>
                   </td>
                   <td>
-                    @if(inmo.fechaInicioFianza) {
-                      <span class="text-sm text-gray-700 font-medium">{{ inmo.fechaInicioFianza | date:'dd/MM/yyyy' }}</span>
+                    @if (inmo.fechaInicioFianza) {
+                      <span class="text-sm text-gray-700 font-medium">{{
+                        inmo.fechaInicioFianza | date: 'dd/MM/yyyy'
+                      }}</span>
                     } @else {
                       <span class="text-xs text-gray-400">-</span>
                     }
                   </td>
                   <td>
                     @if (inmo.emailRegistrado) {
-                      <div style="display: flex; flex-direction: column;">
-                        <span class="text-sm text-gray-700 font-medium">{{ inmo.emailRegistrado }}</span>
-                        @if(!inmo.isActive) { <span class="text-xs text-red-700" style="font-weight: bold;">BLOQUEADO</span> }
+                      <div style="display: flex; flex-direction: column">
+                        <span class="text-sm text-gray-700 font-medium">{{
+                          inmo.emailRegistrado
+                        }}</span>
+                        @if (!inmo.isActive) {
+                          <span class="text-xs text-red-700" style="font-weight: bold"
+                            >BLOQUEADO</span
+                          >
+                        }
                       </div>
                     } @else {
                       <span class="text-xs text-gray-400 italic">Sin asignar</span>
                     }
                   </td>
                   <td>
-                    <span (click)="toggleStatus(inmo)"
+                    <span
+                      (click)="toggleStatus(inmo)"
                       class="status-badge"
                       [class.status-badge--active]="inmo.isActive"
-                      [class.status-badge--inactive]="!inmo.isActive">
+                      [class.status-badge--inactive]="!inmo.isActive"
+                    >
                       {{ inmo.isActive ? 'Activo' : 'Inactivo' }}
                     </span>
                   </td>
@@ -354,11 +505,17 @@
 
         @if (filteredInmobiliarias.length > 0) {
           <div class="pagination">
-            <button class="pagination__btn" [disabled]="currentPage === 1" (click)="prevPage()">← Anterior</button>
+            <button class="pagination__btn" [disabled]="currentPage === 1" (click)="prevPage()">
+              ← Anterior
+            </button>
             <div class="pagination__info">
               <span>Página {{ currentPage }} de {{ totalPages }}</span>
               <div class="page-size-selector custom-select-container">
-                <div class="custom-select" (click)="toggleDropdown('pageSize', $event)" [class.open]="activeDropdown === 'pageSize'">
+                <div
+                  class="custom-select"
+                  (click)="toggleDropdown('pageSize', $event)"
+                  [class.open]="activeDropdown === 'pageSize'"
+                >
                   <span class="selected-value">{{ itemsPerPage }} / pág</span>
                   <span class="arrow">▼</span>
                 </div>
@@ -366,14 +523,26 @@
                   <div class="dropdown-menu dropdown-menu--up">
                     <div class="options-list">
                       @for (size of pageSizeOptions; track size) {
-                        <div class="option" (click)="selectPageSize(size)" [class.selected]="itemsPerPage === size">{{ size }}</div>
+                        <div
+                          class="option"
+                          (click)="selectPageSize(size)"
+                          [class.selected]="itemsPerPage === size"
+                        >
+                          {{ size }}
+                        </div>
                       }
                     </div>
                   </div>
                 }
               </div>
             </div>
-            <button class="pagination__btn" [disabled]="currentPage === totalPages" (click)="nextPage()">Siguiente →</button>
+            <button
+              class="pagination__btn"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Siguiente →
+            </button>
           </div>
         }
       </div>
@@ -388,41 +557,57 @@
         <h3>Sincronización Masiva</h3>
         <button class="close-btn" (click)="closeModals()"><i-feather name="x"></i-feather></button>
       </div>
-      
+
       <div class="modal-body">
         @if (!isUploading && !importResult) {
-          <div class="upload-area" 
-              [class.drag-over]="dragOver"
-              (dragover)="onDragOver($event)" 
-              (dragleave)="onDragLeave($event)" 
-              (drop)="onDrop($event)">
-            
+          <div
+            class="upload-area"
+            [class.drag-over]="dragOver"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
             <i-feather name="upload-cloud" class="upload-icon"></i-feather>
-            
-            <h4>{{ currentFile ? 'Archivo listo para subir' : 'Arrastra tu archivo Excel aquí' }}</h4>
-            
+
+            <h4>
+              {{ currentFile ? 'Archivo listo para subir' : 'Arrastra tu archivo Excel aquí' }}
+            </h4>
+
             <p *ngIf="!currentFile">o haz clic para seleccionar</p>
-            
-            <input type="file" (change)="onFileSelected($event)" accept=".xlsx, .xls" id="fileInput" hidden>
-            
+
+            <input
+              type="file"
+              (change)="onFileSelected($event)"
+              accept=".xlsx, .xls"
+              id="fileInput"
+              hidden
+            />
+
             <label for="fileInput" class="btn btn--secondary mt-4">
               {{ currentFile ? 'Cambiar Archivo' : 'Seleccionar Archivo' }}
             </label>
-            
+
             <div class="file-info" *ngIf="currentFile">
               <i-feather name="file-text"></i-feather>
               <span>{{ currentFile.name }}</span>
-              <i-feather name="x" 
-                        style="cursor: pointer; margin-left: 10px; color: #ef4444;" 
-                        (click)="currentFile = null; $event.stopPropagation()"
-                        title="Quitar archivo">
+              <i-feather
+                name="x"
+                style="cursor: pointer; margin-left: 10px; color: #ef4444"
+                (click)="currentFile = null; $event.stopPropagation()"
+                title="Quitar archivo"
+              >
               </i-feather>
             </div>
 
             <p class="helper-text mt-4">
-              <strong>Nota:</strong> El archivo debe contener las columnas <code>NIT</code>, <code>CODIGO</code>, <code>NOMBRE</code><br>
-              <code>FECHA_INICIO</code>, <code>DEPARTAMENTO</code>, <code>CIUDAD</code>, <code>TELEFONO</code>, <code>EMAIL</code>.<br>
-              <span class="text-red-700">Los registros que no estén en el Excel serán <strong>INACTIVADOS</strong> y sus usuarios bloqueados.</span>
+              <strong>Nota:</strong> El archivo debe contener las columnas <code>NIT</code>,
+              <code>CODIGO</code>, <code>NOMBRE</code><br />
+              <code>FECHA_INICIO</code>, <code>DEPARTAMENTO</code>, <code>CIUDAD</code>,
+              <code>TELEFONO</code>, <code>EMAIL</code>.<br />
+              <span class="text-red-700"
+                >Los registros que no estén en el Excel serán <strong>INACTIVADOS</strong> y sus
+                usuarios bloqueados.</span
+              >
             </p>
           </div>
         }
@@ -430,7 +615,7 @@
         @if (isUploading) {
           <div class="uploading-state">
             <div class="spinner mb-4"></div>
-            
+
             <h4>
               @if (isProcessingServer) {
                 Sincronizando base de datos...
@@ -442,7 +627,7 @@
             <div class="progress-bar-container">
               <div class="progress-bar" [style.width.%]="uploadProgress"></div>
             </div>
-            
+
             <p class="text-sm text-gray-500">
               @if (isProcessingServer) {
                 El archivo se ha subido. Por favor espera mientras procesamos los registros...
@@ -459,7 +644,7 @@
               <i-feather name="check" class="success-icon"></i-feather>
             </div>
             <h3 class="text-green-600 mb-4">¡Sincronización Completada!</h3>
-            
+
             <div class="stats-grid">
               <div class="stat-card bg-blue-50 text-blue-700">
                 <span class="stat-val">{{ importResult.resumen.procesados_excel }}</span>
@@ -483,7 +668,9 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn--secondary" (click)="closeModals()">{{ importResult ? 'Cerrar' : 'Cancelar' }}</button>
+        <button class="btn btn--secondary" (click)="closeModals()">
+          {{ importResult ? 'Cerrar' : 'Cancelar' }}
+        </button>
         @if (!isUploading && !importResult) {
           <button class="btn btn--primary" (click)="uploadFile()" [disabled]="!currentFile">
             <i-feather name="refresh-cw" class="btn-icon-left"></i-feather> Iniciar Sincronización
@@ -502,53 +689,53 @@
         <button class="close-btn" (click)="closeModals()"><i-feather name="x"></i-feather></button>
       </div>
       <div class="modal-body">
-        
         <div class="form-group">
           <label>Nombre Inmobiliaria</label>
-          <input [(ngModel)]="selectedInmo.nombreInmobiliaria" class="field__input">
+          <input [(ngModel)]="selectedInmo.nombreInmobiliaria" class="field__input" />
         </div>
 
         <div class="row">
           <div class="form-group">
             <label>NIT</label>
-            <input [(ngModel)]="selectedInmo.nit" class="field__input">
+            <input [(ngModel)]="selectedInmo.nit" class="field__input" />
           </div>
           <div class="form-group">
             <label>Código</label>
-            <input [(ngModel)]="selectedInmo.codigo" class="field__input">
+            <input [(ngModel)]="selectedInmo.codigo" class="field__input" />
           </div>
         </div>
-        <br>
+        <br />
         <div class="row">
           <div class="form-group">
             <label>Departamento</label>
-            <input [(ngModel)]="selectedInmo.departamento" class="field__input">
+            <input [(ngModel)]="selectedInmo.departamento" class="field__input" />
           </div>
           <div class="form-group">
             <label>Ciudad</label>
-            <input [(ngModel)]="selectedInmo.ciudad" class="field__input">
+            <input [(ngModel)]="selectedInmo.ciudad" class="field__input" />
           </div>
         </div>
-        <br>
+        <br />
         <div class="row">
           <div class="form-group">
             <label>Teléfono</label>
-            <input [(ngModel)]="selectedInmo.telefono" class="field__input">
+            <input [(ngModel)]="selectedInmo.telefono" class="field__input" />
           </div>
           <div class="form-group">
             <label>Correo</label>
-            <input [(ngModel)]="selectedInmo.emailContacto" class="field__input">
+            <input [(ngModel)]="selectedInmo.emailContacto" class="field__input" />
           </div>
         </div>
-        <br>
+        <br />
         <div class="form-group">
           <label>Fecha Inicio Fianza</label>
-          <input type="date" 
-                 [ngModel]="selectedInmo.fechaInicioFianza | date:'yyyy-MM-dd'" 
-                 (ngModelChange)="selectedInmo.fechaInicioFianza = $event"
-                 class="field__input">
+          <input
+            type="date"
+            [ngModel]="selectedInmo.fechaInicioFianza | date: 'yyyy-MM-dd'"
+            (ngModelChange)="selectedInmo.fechaInicioFianza = $event"
+            class="field__input"
+          />
         </div>
-
       </div>
       <div class="modal-footer">
         <button class="btn btn--secondary" (click)="closeModals()">Cancelar</button>
@@ -563,11 +750,13 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3>Exportar Datos</h3>
-        <button class="close-btn" (click)="closeExportModal()"><i-feather name="x"></i-feather></button>
+        <button class="close-btn" (click)="closeExportModal()">
+          <i-feather name="x"></i-feather>
+        </button>
       </div>
       <div class="modal-body">
         <p class="helper-text">Selecciona las columnas que deseas incluir en el reporte:</p>
-        
+
         <div class="columns-actions">
           <button class="btn-link" (click)="selectAllColumns(true)">Marcar todas</button>
           <button class="btn-link" (click)="selectAllColumns(false)">Desmarcar todas</button>
@@ -576,20 +765,28 @@
         <div class="columns-grid">
           @for (col of exportColumns; track col.key) {
             <label class="permission-item" [class.active]="col.selected">
-              <input type="checkbox" [checked]="col.selected" (change)="toggleColumn(col.key)">
+              <input type="checkbox" [checked]="col.selected" (change)="toggleColumn(col.key)" />
               <span class="perm-label">{{ col.label }}</span>
             </label>
           }
         </div>
       </div>
-      
+
       <div class="modal-footer">
-        <button class="btn btn--secondary" (click)="closeExportModal()" [disabled]="exportState !== 'idle'">
+        <button
+          class="btn btn--secondary"
+          (click)="closeExportModal()"
+          [disabled]="exportState !== 'idle'"
+        >
           Cancelar
         </button>
 
         <div class="export-buttons">
-          <button class="btn btn--excel" (click)="exportToExcel()" [disabled]="exportState !== 'idle'">
+          <button
+            class="btn btn--excel"
+            (click)="exportToExcel()"
+            [disabled]="exportState !== 'idle'"
+          >
             @if (exportState === 'excel') {
               <span class="spinner-loader"></span> Generando...
             } @else {
