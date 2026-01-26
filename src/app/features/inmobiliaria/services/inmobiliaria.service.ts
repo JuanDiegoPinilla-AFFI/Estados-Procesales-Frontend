@@ -15,6 +15,8 @@ export interface Inmobiliaria {
   ciudad?: string;
   telefono?: string;
   emailContacto?: string;
+  nombreRepresentante?: string;
+  emailRepresentante?: string;
   fechaInicioFianza?: string | Date;
   modifiedBy?: string;
   tieneProcesos?: boolean;
@@ -98,15 +100,15 @@ export class InmobiliariaService {
     return this.http.get(`${this.apiUrl}/send-import-reminder`);
   }
   
-
-  //Cambio Santiago Obando Hurtado
-  //Nuevo método para obtener estadísticas de inmobiliarias con procesos jurídicos
   getEstadisticasConProcesos(): Observable<InmobiliariaEstadisticasProcesos> {
     return this.http.get<InmobiliariaEstadisticasProcesos>(`${this.apiUrl}/estadisticas/con-procesos`);
   }
  
-getEstadisticasUsuariosConProcesos(): Observable<InmobiliariaEstadisticasUsuarios> {
-  return this.http.get<InmobiliariaEstadisticasUsuarios>(`${this.apiUrl}/estadisticas/usuarios-con-procesos`);
-}
-  
+  getEstadisticasUsuariosConProcesos(): Observable<InmobiliariaEstadisticasUsuarios> {
+    return this.http.get<InmobiliariaEstadisticasUsuarios>(`${this.apiUrl}/estadisticas/usuarios-con-procesos`);
+  }
+
+  getDetallePorNit(nit: string): Observable<Inmobiliaria> {
+    return this.http.get<Inmobiliaria>(`${this.apiUrl}/detalle-modal/${nit}`);
+  }
 }

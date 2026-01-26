@@ -189,7 +189,16 @@
                         @for (s of sujetoDemandante; track $index) {
                           <div class="subject-card">
                             <div class="detail-grid">
-                              <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p></div>
+                              <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p>
+                                <button class="btn-info-inmo" (click)="abrirModalInmo(s.NumeroIdentificacion)" title="Ver detalle inmobiliaria">
+                                    Información de la inmobiliaria 
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
+                              </div>
                               <div><p class="detail-label">Tipo Identificación</p><p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p></div>
                               <div><p class="detail-label">Número Identificación</p><p class="detail-value">{{ s.NumeroIdentificacion || '-' }}</p></div>
                             </div>
@@ -554,3 +563,80 @@
     </section>
   </div>
 </div>
+
+@if (showModalInmo && infoInmo) {
+  <div class="modal-overlay fade-in" (click)="cerrarModalInmo()">
+    
+    <div class="modal-card modal-inmo slide-in" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header-branded">
+        <div class="header-content">
+          <h3>{{ infoInmo.nombreInmobiliaria }}</h3>
+          
+          @if (infoInmo.cluster) {
+            <span class="badge-tier">Cluster {{ infoInmo.cluster }}</span>
+          } @else {
+             <span class="badge-tier">Sin Cluster</span>
+          }
+        </div>
+        
+        <button class="close-btn-branded" (click)="cerrarModalInmo()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body-branded">
+        
+        <div class="section-title">Información General</div>
+        <div class="info-grid-clean">
+          <div class="info-item">
+            <span class="label">NIT</span>
+            <span class="value">{{ infoInmo.nit }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Zona</span>
+            <span class="value">{{ infoInmo.zonaAffi || 'No registrada' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Monto Afianzado</span>
+            <span class="value">$ {{ (infoInmo.montoAfianzado || 0) | number }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Contratos</span>
+            <span class="value">{{ infoInmo.cantidadContratos || 0 }}</span>
+          </div>
+        </div>
+
+        <div class="section-title">Representante Legal</div>
+        <div class="card-soft">
+          <div class="avatar-circle">
+            {{ (infoInmo.nombreRepresentante || 'N')[0] | uppercase }}
+          </div>
+          <div class="person-info">
+            <strong>{{ infoInmo.nombreRepresentante || 'No registrado' }}</strong>
+            <span class="email" title="{{ infoInmo.emailRepresentante }}">{{ infoInmo.emailRepresentante || 'Sin correo' }}</span>
+          </div>
+        </div>
+
+        @if (infoInmo.equipoComercial) {
+          <div class="section-title">Equipo Comercial</div>
+          <div class="commercial-grid">
+            
+            <div class="card-outline">
+              <span class="role-label">Gerente de Cuenta</span>
+              <strong>{{ infoInmo.equipoComercial.gerenteNombre || 'N/A' }}</strong>
+              <span>{{ infoInmo.equipoComercial.gerenteEmail }}</span>
+            </div>
+
+            <div class="card-outline">
+              <span class="role-label">Director Comercial</span>
+              <strong>{{ infoInmo.equipoComercial?.directorName || infoInmo.directorName || 'N/A' }}</strong>
+              <span>{{ infoInmo.equipoComercial.directorEmail }}</span>
+            </div>
+
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

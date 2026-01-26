@@ -1,0 +1,40 @@
+<div class="maintenance-layout">
+  <div class="card maintenance-card slide-in">
+    
+    <div class="maintenance-header">
+      <div class="logo-container">
+        <img src="/Affi.png" alt="logo" height="300" class="logo-img" />
+      </div>
+    </div>
+
+    <div class="maintenance-body">
+      <div class="icon-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+      </div>
+
+      <h1>Estamos en Mantenimiento</h1>
+      
+      <p class="description">
+        Estamos realizando mejoras importantes en la plataforma <strong>Estados Procesales</strong> para brindarte un mejor servicio.
+      </p>
+
+      <div class="info-box">
+        <p>Por favor, intenta ingresar nuevamente en unos minutos.</p>
+      </div>
+
+      <button class="btn btn--primary full-width" (click)="retry()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Reintentar conexión
+      </button>
+    </div>
+
+    <div class="maintenance-footer">
+      <p>&copy; {{ 2026 }} Affi. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</div>
