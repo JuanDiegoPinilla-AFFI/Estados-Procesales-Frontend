@@ -11,6 +11,8 @@ import { saveAs } from 'file-saver';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 import { UserOptions } from 'jspdf-autotable';
 import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe';
+// CORRECCIÓN 1: Se agregó un '../' adicional para llegar a la carpeta features correcta
+import { InmobiliariaService } from '../../../inmobiliaria/services/inmobiliaria.service';
 
 interface ProcesoPorCedula {
   procesoId: number;
@@ -177,10 +179,14 @@ export class ConsultarProcesoComponent implements OnInit {
     abogados: true,
   };
 
+  showModalInmo = false;
+  infoInmo: any = null;
+
   constructor(
     private redelexService: RedelexService,
     private titleService: Title,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private inmoService: InmobiliariaService
   ) {}
 
   ngOnInit(): void {
@@ -219,6 +225,49 @@ export class ConsultarProcesoComponent implements OnInit {
       this.openActuaciones.add(actId);
     }
   }
+  
+  abrirModalInmo(nit: string) {
+    console.log('1. Click en abrir modal. NIT recibido:', nit); // <--- LOG
+
+    if (!nit) {
+      console.warn('NIT vacío o indefinido');
+      return;
+    }
+
+    const cleanNit = nit.replace(/\D/g, ''); 
+    console.log('2. NIT Limpio a consultar:', cleanNit); // <--- LOG
+    
+    this.inmoService.getDetallePorNit(cleanNit).subscribe({
+      next: (data: any) => {
+        console.log('3. Respuesta del backend:', data); // <--- LOG
+
+        if (data) {
+          this.infoInmo = data;
+          this.showModalInmo = true;
+          console.log('4. showModalInmo puesto en TRUE'); // <--- LOG
+        } else {
+          AffiAlert.fire({ 
+            icon: 'info', 
+            title: 'Sin información', 
+            text: 'No se encontraron datos ampliados en nuestra base de datos para este NIT.' 
+          });
+        }
+      },
+      error: (err: any) => {
+        console.error('Error en la petición:', err);
+        AffiAlert.fire({ 
+          icon: 'error', 
+          title: 'Error', 
+          text: 'Hubo un error al consultar la inmobiliaria.' 
+        });
+      }
+    });
+  }
+
+  cerrarModalInmo() {
+    this.showModalInmo = false;
+    this.infoInmo = null;
+  }
 
   private agruparActuacionesPorCuatrimestre() {
     if (!this.proceso || !this.proceso.actuacionesRecientes) return;
@@ -247,18 +296,13 @@ export class ConsultarProcesoComponent implements OnInit {
       if (b.year !== a.year) return b.year - a.year;
       return b.periodo - a.periodo;
     });
-
-    // Abrimos el primero por defecto
-    // if (this.bloquesActuaciones.length > 0 && this.openBloques.size === 0) {
-    //   this.openBloques.add(this.bloquesActuaciones[0].label);
-    // }
   }
 
   private construirStepper() {
     if (!this.proceso) return;
 
     const claseRaw = (this.proceso.claseProceso || '').toUpperCase();
-    let idsVisibles: number[] = []; // INICIAMOS VACÍO
+    let idsVisibles: number[] = []; 
 
     if (claseRaw.includes('VERBAL SUMARIO') || claseRaw.includes('VERBAL SUMARIO')) {
       idsVisibles = REGLAS_VISIBILIDAD['VERBAL SUMARIO'];

@@ -1932,3 +1932,230 @@
     min-height: 56px;
   }
 }
+
+/* =========================================
+   ESTILOS COMPLETOS DEL MODAL INMOBILIARIA
+   ========================================= */
+
+/* 1. Botón disparador (Icono de info en la tabla) */
+.value-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .detail-value { margin: 0; }
+}
+
+.btn-info-inmo {
+  background: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    svg { stroke: white; }
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--color-primary);
+    transition: stroke 0.2s;
+  }
+}
+
+/* 2. Overlay (Fondo oscuro detrás del modal) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Oscurece el fondo */
+  z-index: 9999; /* Asegura estar encima de todo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px); /* Efecto borroso opcional */
+}
+
+/* 3. Tarjeta Principal del Modal */
+.modal-inmo {
+  border: none;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  .modal-header {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #4c1d95 100%);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .inmo-section {
+    h4 {
+      color: var(--color-primary);
+      border-bottom: 2px solid var(--bg-secondary);
+      font-size: 0.75rem;
+    }
+  }
+
+  .contact-card {
+    border: 1px solid var(--color-gray-100);
+    background: #ffffff;
+    
+    .avatar-placeholder {
+      background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+      box-shadow: 0 4px 6px rgba(109, 40, 217, 0.2);
+    }
+  }
+}
+
+/* 4. Secciones internas */
+.inmo-section {
+  margin-bottom: 1.5rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h4 {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+    padding-bottom: 0.5rem;
+    margin: 0 0 1rem 0;
+  }
+}
+
+/* Grid de datos generales */
+.detail-grid-modal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  
+  .label { 
+    font-size: 0.75rem; 
+    color: var(--color-gray-500); 
+    margin-bottom: 2px; 
+  }
+  .value { 
+    font-weight: 600; 
+    color: var(--color-gray-800); 
+    font-size: 0.95rem; 
+  }
+}
+
+/* Tarjeta de Contacto (Rep. Legal) */
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--bg-secondary, #f8fafc);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  
+  .avatar-placeholder {
+    width: 40px; 
+    height: 40px;
+    background-color: var(--color-primary-light, #3b82f6);
+    color: white;
+    border-radius: 50%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  
+  .contact-info {
+    display: flex; 
+    flex-direction: column;
+    
+    strong { 
+      font-size: 0.95rem; 
+      color: var(--color-gray-900); 
+    }
+    .email { 
+      font-size: 0.85rem; 
+      color: var(--color-gray-500); 
+      word-break: break-all;
+    }
+  }
+}
+
+/* Grid del Equipo Comercial */
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  
+  @media (max-width: 480px) { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+.team-member {
+  background: white;
+  padding: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  
+  .role { 
+    display: block; 
+    font-size: 0.65rem; 
+    color: var(--color-primary); 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 0.03em; 
+    margin-bottom: 4px;
+  }
+  
+  strong { 
+    display: block; 
+    font-size: 0.85rem; 
+    margin-bottom: 2px; 
+    color: var(--color-gray-800); 
+  }
+  
+  .email-sm { 
+    font-size: 0.75rem; 
+    color: var(--color-gray-500); 
+    word-break: break-all; 
+  }
+}
+
+/* 5. Animaciones */
+.fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

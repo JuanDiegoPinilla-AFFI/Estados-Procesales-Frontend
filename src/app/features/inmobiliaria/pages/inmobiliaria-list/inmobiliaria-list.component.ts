@@ -47,6 +47,8 @@ export class InmobiliariaListComponent implements OnInit {
     { key: 'telefono', label: 'Teléfono', selected: true },
     { key: 'emailContacto', label: 'Correo de Contacto', selected: true },
     { key: 'emailRegistrado', label: 'Usuario Asignado', selected: true },
+    { key: 'nombreRepresentante', label: 'Nombre Rep. Legal', selected: true },
+    { key: 'emailRepresentante', label: 'Email Rep. Legal', selected: true },
     { key: 'fechaInicioFianza', label: 'Inicio Fianza', selected: true },
     { key: 'isActive', label: 'Estado', selected: true },
   ];
@@ -411,6 +413,8 @@ export class InmobiliariaListComponent implements OnInit {
       ciudad: this.selectedInmo.ciudad,
       telefono: this.selectedInmo.telefono,
       emailContacto: this.selectedInmo.emailContacto,
+      nombreRepresentante: this.selectedInmo.nombreRepresentante,
+      emailRepresentante: this.selectedInmo.emailRepresentante,
       fechaInicioFianza: this.selectedInmo.fechaInicioFianza,
       isActive: this.selectedInmo.isActive
     };
