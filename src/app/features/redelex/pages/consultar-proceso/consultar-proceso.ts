@@ -233,14 +233,13 @@ export class ConsultarProcesoComponent implements OnInit {
       return;
     }
 
-    // Identificamos que este NIT específico está cargando
     this.loadingInmoNit = nit;
 
     const cleanNit = nit.replace(/\D/g, ''); 
     
     this.inmoService.getDetallePorNit(cleanNit).subscribe({
       next: (data: any) => {
-        this.loadingInmoNit = null; // Terminó la carga
+        this.loadingInmoNit = null;
 
         if (data) {
           this.infoInmo = data;
@@ -254,7 +253,7 @@ export class ConsultarProcesoComponent implements OnInit {
         }
       },
       error: (err: any) => {
-        this.loadingInmoNit = null; // Terminó la carga (con error)
+        this.loadingInmoNit = null;
         console.error('Error en la petición:', err);
         AffiAlert.fire({ 
           icon: 'error', 
