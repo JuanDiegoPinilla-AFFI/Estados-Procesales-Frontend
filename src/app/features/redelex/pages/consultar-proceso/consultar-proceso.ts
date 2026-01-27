@@ -137,6 +137,7 @@ export class ConsultarProcesoComponent implements OnInit {
   bloquesActuaciones: BloqueActuaciones[] = [];
   openBloques = new Set<string>();
   openActuaciones = new Set<string>();
+  loadingInmoNit: string | null = null;
 
   etapasStepper: EtapaConfig[] = [];
   etapaActualIndex: number = -1;
@@ -227,38 +228,38 @@ export class ConsultarProcesoComponent implements OnInit {
   }
   
   abrirModalInmo(nit: string) {
-    console.log('1. Click en abrir modal. NIT recibido:', nit); // <--- LOG
-
     if (!nit) {
       console.warn('NIT vacío o indefinido');
       return;
     }
 
+    // Identificamos que este NIT específico está cargando
+    this.loadingInmoNit = nit;
+
     const cleanNit = nit.replace(/\D/g, ''); 
-    console.log('2. NIT Limpio a consultar:', cleanNit); // <--- LOG
     
     this.inmoService.getDetallePorNit(cleanNit).subscribe({
       next: (data: any) => {
-        console.log('3. Respuesta del backend:', data); // <--- LOG
+        this.loadingInmoNit = null; // Terminó la carga
 
         if (data) {
           this.infoInmo = data;
           this.showModalInmo = true;
-          console.log('4. showModalInmo puesto en TRUE'); // <--- LOG
         } else {
           AffiAlert.fire({ 
             icon: 'info', 
             title: 'Sin información', 
-            text: 'No se encontraron datos ampliados en nuestra base de datos para este NIT.' 
+            text: 'No se encontraron datos ampliados en HubSpot para este NIT.' 
           });
         }
       },
       error: (err: any) => {
+        this.loadingInmoNit = null; // Terminó la carga (con error)
         console.error('Error en la petición:', err);
         AffiAlert.fire({ 
           icon: 'error', 
           title: 'Error', 
-          text: 'Hubo un error al consultar la inmobiliaria.' 
+          text: 'Hubo un error al consultar la información de la inmobiliaria.' 
         });
       }
     });

@@ -190,13 +190,21 @@
                           <div class="subject-card">
                             <div class="detail-grid">
                               <div><p class="detail-label">Nombre</p><p class="detail-value">{{ s.Nombre || '-' }}</p>
-                                <button class="btn-info-inmo" (click)="abrirModalInmo(s.NumeroIdentificacion)" title="Ver detalle inmobiliaria">
-                                    Información de la inmobiliaria 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="12" y1="16" x2="12" y2="12"></line>
-                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                    </svg>
+                                <button class="btn-info-inmo" 
+                                        (click)="abrirModalInmo(s.NumeroIdentificacion)" 
+                                        [disabled]="loadingInmoNit === s.NumeroIdentificacion"
+                                        title="Ver detalle inmobiliaria">
+                                    
+                                    @if (loadingInmoNit === s.NumeroIdentificacion) {
+                                      <span class="spinner-loader"></span> Cargando info...
+                                    } @else {
+                                      Información de la inmobiliaria 
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                          <circle cx="12" cy="12" r="10"></circle>
+                                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                      </svg>
+                                    }
                                 </button>
                               </div>
                               <div><p class="detail-label">Tipo Identificación</p><p class="detail-value">{{ s.TipoIdentificacion || '-' }}</p></div>
