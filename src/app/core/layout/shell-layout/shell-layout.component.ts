@@ -152,41 +152,72 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
 
   sendTicket() {
     if (!this.ticketData.subject || !this.ticketData.content) {
-      AffiAlert.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Por favor completa el asunto y el mensaje.' });
+      AffiAlert.fire({ 
+        icon: 'warning', 
+        title: 'Campos incompletos', 
+        text: 'Por favor completa el asunto y el mensaje.' 
+      });
       return;
     }
 
-    // Validar email
     if (!this.ticketData.email) {
-      AffiAlert.fire({ icon: 'warning', title: 'Correo requerido', text: 'Por favor ingresa tu correo electrónico.' });
+      AffiAlert.fire({ 
+        icon: 'warning', 
+        title: 'Correo requerido', 
+        text: 'Por favor ingresa tu correo electrónico.' 
+      });
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.ticketData.email)) {
-      AffiAlert.fire({ icon: 'warning', title: 'Email inválido', text: 'Por favor ingresa un correo electrónico válido.' });
+      AffiAlert.fire({ 
+        icon: 'warning', 
+        title: 'Email inválido', 
+        text: 'Por favor ingresa un correo electrónico válido.' 
+      });
       return;
     }
 
     this.isSendingTicket = true;
 
-    const userEmail = this.authService.getUserData()?.email || '';
+    const hubspotSubtema = 'Soporte Técnico';
+    
+    const Subject = this.ticketData.subject;
 
+    const userEmail = this.authService.getUserData()?.email || '';
     const emailToSend = this.ticketData.email || userEmail;
 
-    this.supportService.createTicket(this.ticketData.subject, this.ticketData.content, undefined, emailToSend).subscribe({
+    this.supportService.createTicket(
+      hubspotSubtema,
+      Subject,
+      undefined, 
+      emailToSend
+    ).subscribe({
       next: () => {
         this.isSendingTicket = false;
         this.closeSupportModal();
         AffiAlert.fire({ 
           icon: 'success', 
-          title: 'Ticket Creado', 
-          text: 'Hemos recibido tu solicitud. Nuestro equipo te contactará pronto.' 
+          title: 'Solicitud Recibida', 
+          html: `
+            <p><strong>El equipo de servicio al cliente te atenderá pronto.</strong></p>
+            <p>📧 Te responderemos a: <strong>${emailToSend}</strong></p>
+            <p style="margin-top: 12px; color: #666;">Revisa tu bandeja de entrada en los próximos minutos.</p>
+          `
         });
+        
+        this.ticketData.subject = '';
+        this.ticketData.content = '';
       },
-      error: () => {
+      error: (err) => {
         this.isSendingTicket = false;
-        AffiAlert.fire({ icon: 'error', title: 'Error', text: 'No pudimos crear el ticket. Intenta de nuevo más tarde.' });
+        console.error('Error al crear ticket:', err);
+        AffiAlert.fire({ 
+          icon: 'error', 
+          title: 'Error', 
+          text: 'No pudimos crear el ticket. Intenta de nuevo más tarde.' 
+        });
       }
     });
   }

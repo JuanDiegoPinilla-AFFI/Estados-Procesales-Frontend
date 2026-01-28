@@ -19,6 +19,8 @@ import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../auth/services/auth.service';
 
+type SubjectOption = { label: string; value: string };
+
 @Component({
   selector: 'app-detalle-proceso',
   standalone: true,
@@ -27,6 +29,7 @@ import { AuthService } from '../../../auth/services/auth.service';
   templateUrl: './detalle-proceso.html',
   styleUrls: ['./detalle-proceso.scss']
 })
+
 export class DetalleProcesoComponent implements OnInit {
   private datePipe = inject(DatePipe);
   private clasePipe = inject(ClaseProcesoPipe);
@@ -46,17 +49,18 @@ export class DetalleProcesoComponent implements OnInit {
   showSupportModal = false;
   isSendingTicket = false;
 
-  subjectOptions: string[] = [
-    'Dudas sobre avance procesal',
-    'Recuperación del Inmueble',
-    'Valores en recuperación'
+  subjectOptions: SubjectOption[] = [
+    { label: 'Dudas sobre avance procesal', value: 'Dudas sobre avance procesal' },
+    { label: 'Recuperación del Inmueble', value: 'Recuperación del Inmueble' },
+    { label: 'Valores en Recuperación', value: 'Valores en Recuperación' },
   ];
 
-ticketData = { 
-  email: '',
-  subject: '', 
-  content: '' 
-};
+  ticketData = {
+    email: '',
+    subject: '',
+    subjectLabel: '',
+    content: ''
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -79,6 +83,12 @@ ticketData = {
   
   onSelectChange(event: Event) {
     this.selectOpen = false;
+    
+    const selected = this.subjectOptions.find(opt => opt.value === this.ticketData.subject);
+    if(selected) {
+      this.ticketData.subjectLabel = selected.label;
+    }
+
     (event.target as HTMLSelectElement).blur();
   }
 
@@ -125,100 +135,102 @@ ticketData = {
     }
   }
 
-openSupportModal() {
-  const user = this.authService.getUserData();
-  this.ticketData = {
-    email: user?.email || '',
-    subject: '', 
-    content: ''
-  };
-  this.showSupportModal = true;
-}
+  openSupportModal() {
+    const user = this.authService.getUserData();
+    this.ticketData = {
+      email: user?.email || '',
+      subject: '', 
+      subjectLabel: '',
+      content: ''
+    };
+    this.showSupportModal = true;
+  }
+
   closeSupportModal() {
     this.showSupportModal = false;
   }
 
-sendTicket() {
-  // Validar email
-  if (!this.ticketData.email) {
-    AffiAlert.fire({ 
-      icon: 'warning', 
-      title: 'Correo requerido', 
-      text: 'Por favor ingresa tu correo electrónico.' 
-    });
-    return;
-  }
-
-  // Validar formato de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(this.ticketData.email)) {
-    AffiAlert.fire({ 
-      icon: 'warning', 
-      title: 'Email inválido', 
-      text: 'Por favor ingresa un correo electrónico válido.' 
-    });
-    return;
-  }
-
-  // Validar asunto
-  if (!this.ticketData.subject || this.ticketData.subject === '') {
-    AffiAlert.fire({ 
-      icon: 'warning', 
-      title: 'Campos incompletos', 
-      text: 'Por favor selecciona una opción válida en el asunto.' 
-    });
-    return;
-  }
-
-  // Validar mensaje
-  if (!this.ticketData.content) {
-    AffiAlert.fire({ 
-      icon: 'warning', 
-      title: 'Campos vacíos', 
-      text: 'Por favor escribe un mensaje.' 
-    });
-    return;
-  }
-
-  this.isSendingTicket = true;
-
-  const metadata = {
-    procesoId: this.procesoId!,
-    radicado: this.detalle?.numeroRadicacion,
-    cuenta: this.detalle?.codigoAlterno || 'N/A', 
-    etapa: this.detalle?.etapaProcesal,
-    clase: this.detalle?.claseProceso || 'N/A'    
-  };
-
-  this.supportService.createTicket(
-    this.ticketData.subject, 
-    this.ticketData.content, 
-    metadata,
-    this.ticketData.email
-  ).subscribe({
-    next: () => {
-      this.isSendingTicket = false;
-      this.closeSupportModal();
+  sendTicket() {
+    // Validar email
+    if (!this.ticketData.email) {
       AffiAlert.fire({ 
-        icon: 'success', 
-        title: 'Solicitud Recibida', 
-        html: `
-          <p><strong>El equipo jurídico ha recibido los datos del proceso.</strong></p>
-          <p>📧 Te responderemos a: <strong>${this.ticketData.email}</strong></p>
-          <p style="margin-top: 12px; color: #666;">Revisa tu bandeja de entrada en las próximas horas.</p>
-        `
+        icon: 'warning', 
+        title: 'Correo requerido', 
+        text: 'Por favor ingresa tu correo electrónico.' 
       });
-    },
-    error: () => {
-      this.isSendingTicket = false;
-      AffiAlert.fire({ 
-        icon: 'error', 
-        title: 'Error', 
-        text: 'No pudimos crear el ticket. Intenta nuevamente.' 
-      });
+      return;
     }
-  });
-}
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.ticketData.email)) {
+      AffiAlert.fire({ 
+        icon: 'warning', 
+        title: 'Email inválido', 
+        text: 'Por favor ingresa un correo electrónico válido.' 
+      });
+      return;
+    }
+
+    // Validar asunto
+    if (!this.ticketData.subject || this.ticketData.subject === '') {
+      AffiAlert.fire({ 
+        icon: 'warning', 
+        title: 'Campos incompletos', 
+        text: 'Por favor selecciona una opción válida en el asunto.' 
+      });
+      return;
+    }
+
+    // Validar mensaje
+    if (!this.ticketData.content) {
+      AffiAlert.fire({ 
+        icon: 'warning', 
+        title: 'Campos vacíos', 
+        text: 'Por favor escribe un mensaje.' 
+      });
+      return;
+    }
+
+    this.isSendingTicket = true;
+
+    const metadata = {
+      procesoId: this.procesoId!,
+      radicado: this.detalle?.numeroRadicacion,
+      cuenta: this.detalle?.codigoAlterno || 'N/A', 
+      etapa: this.detalle?.etapaProcesal,
+      clase: this.detalle?.claseProceso || 'N/A'    
+    };
+
+    this.supportService.createTicket(
+      this.ticketData.subject, 
+      this.ticketData.content, 
+      { ...metadata }, 
+      this.ticketData.email
+    ).subscribe({
+      next: () => {
+        this.isSendingTicket = false;
+        this.closeSupportModal();
+        AffiAlert.fire({ 
+          icon: 'success', 
+          title: 'Solicitud Recibida', 
+          html: `
+            <p><strong>El equipo jurídico ha recibido los datos del proceso.</strong></p>
+            <p>📧 Te responderemos a: <strong>${this.ticketData.email}</strong></p>
+            <p style="margin-top: 12px; color: #666;">Revisa tu bandeja de entrada en los próximos minutos.</p>
+          `
+        });
+      },
+      error: () => {
+        this.isSendingTicket = false;
+        AffiAlert.fire({ 
+          icon: 'error', 
+          title: 'Error', 
+          text: 'No pudimos crear el ticket. Intenta nuevamente.' 
+        });
+      }
+    });
+  }
 
   getNombreSujeto(tipoBuscado: string): string {
     if (!this.detalle || !this.detalle.sujetos) return 'No registrado';

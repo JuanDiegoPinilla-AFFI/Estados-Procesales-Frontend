@@ -322,8 +322,8 @@
 
               <option value="" disabled>Selecciona una opción</option>
 
-              <option *ngFor="let option of subjectOptions" [value]="option">
-                {{ option }}
+              <option *ngFor="let opt of subjectOptions" [value]="opt.value">
+                {{ opt.label }}
               </option>
             </select>
 
