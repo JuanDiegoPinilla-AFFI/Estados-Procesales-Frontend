@@ -25,7 +25,7 @@ export interface Inmobiliaria {
 export interface ImportResult {
   message: string;
   resumen: {
-    procesados_excel: number;
+    procesados_origen: number;
     nuevos: number;
     actualizados: number;
     inactivados: number;
