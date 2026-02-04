@@ -338,9 +338,9 @@ export class ConsultarProcesoComponent implements OnInit {
       this.etapaActualConfig = {
         id: 0,
         nombreInterno: [etapaBD],
-        nombreCliente: etapaBD || 'ETAPA ACTUAL', 
+        nombreCliente: etapaBD || 'No se encuentra información de la etapa', 
         color: '#E5E7EB',
-        definicion: 'Información del estado actual del proceso.'
+        definicion: 'No se encuentra información de la etapa.'
       };
     }
   }
