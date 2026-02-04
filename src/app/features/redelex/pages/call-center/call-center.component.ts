@@ -202,7 +202,6 @@ ngOnInit() {
         this.loading = false;
         if (res.success && res.procesos.length > 0) {
           this.procesosEncontrados = res.procesos.map((p: any) => {
-            // 1. Mapeo de Clase Proceso
             let clase = p.claseProceso ? p.claseProceso.toUpperCase() : '';
             if (clase.includes('EJECUTIVO')) {
               clase = 'EJECUTIVO';
@@ -210,11 +209,13 @@ ngOnInit() {
               clase = 'RESTITUCIÓN';
             }
 
-            // 2. Mapeo de Etapa Procesal (Normalización)
             let etapaOriginal = p.etapaProcesal ? p.etapaProcesal.toUpperCase() : '';
             let etapaTransformada = etapaOriginal;
 
-            // Lógica de grupos para asegurar que coincida aunque traiga texto adicional
+            if (!etapaOriginal) {
+              etapaTransformada = 'RECOLECCION Y VALIDACION DOCUMENTAL'; 
+            }
+
             if (['ALISTAMIENTO', 'DOCUMENTACION', 'ASIGNACION'].some(e => etapaOriginal.includes(e))) {
               etapaTransformada = 'RECOLECCION Y VALIDACION DOCUMENTAL';
             } else if (etapaOriginal.includes('MANDAMIENTO')) {
