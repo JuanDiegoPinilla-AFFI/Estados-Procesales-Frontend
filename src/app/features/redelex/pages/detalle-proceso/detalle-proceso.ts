@@ -1,8 +1,3 @@
-/*
-  Cambios (30-12-2025) - Santiago Obando:
-  - Al crear tickets desde el detalle de proceso ahora se envía `ticketData.email` al backend.
-  - Motivo: permitir que el email ingresado en el modal detalle se utilice como reply-to.
-*/
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -18,13 +13,14 @@ import { getEtapaConfig, getEtapasParaStepper, EtapaProcesal } from './etapas-pr
 import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../auth/services/auth.service';
+import { FeatherModule } from "angular-feather";
 
 type SubjectOption = { label: string; value: string };
 
 @Component({
   selector: 'app-detalle-proceso',
   standalone: true,
-  imports: [CommonModule, RouterLink, ClaseProcesoPipe, FormsModule],
+  imports: [CommonModule, RouterLink, ClaseProcesoPipe, FormsModule, FeatherModule],
   providers: [DatePipe, ClaseProcesoPipe], 
   templateUrl: './detalle-proceso.html',
   styleUrls: ['./detalle-proceso.scss']
@@ -135,6 +131,36 @@ export class DetalleProcesoComponent implements OnInit {
     }
   }
 
+  getSentenciaClass(valor?: string | null): string {
+    const v = (valor ?? '').trim().toLowerCase();
+
+    if (!v || v === '(vacio)' || v === '-- sin sentencia --') return 'pendiente';
+    if (v === 'a favor') return 'favor';
+    if (v === 'en contra') return 'contra';
+    if (v === 'parcialmente a favor') return 'parcial';
+
+    return 'pendiente';
+  }
+
+  getSentenciaLabel(valor?: string | null): string {
+    const v = (valor ?? '').trim();
+    if (!v || v.toLowerCase() === '(vacio)' || v.toLowerCase() === '-- sin sentencia --') {
+      return 'PENDIENTE';
+    }
+    return v;
+  }
+
+  getSentenciaIcon(valor?: string | null): string {
+    const v = (valor ?? '').trim().toLowerCase();
+
+    if (!v || v === '(vacio)' || v === '-- sin sentencia --') return 'clock';
+    if (v === 'a favor') return 'check-circle';
+    if (v === 'en contra') return 'x-circle';
+    if (v === 'parcialmente a favor') return 'alert-triangle';
+
+    return 'clock';
+  }
+
   openSupportModal() {
     const user = this.authService.getUserData();
     this.ticketData = {
@@ -194,30 +220,61 @@ export class DetalleProcesoComponent implements OnInit {
 
     this.isSendingTicket = true;
 
-    const metadata = {
-      procesoId: this.procesoId!,
-      radicado: this.detalle?.numeroRadicacion,
-      cuenta: this.detalle?.codigoAlterno || 'N/A', 
-      etapa: this.detalle?.etapaProcesal,
-      clase: this.detalle?.claseProceso || 'N/A'    
-    };
+      let claseNormalizada = this.detalle?.claseProceso || 'N/A';
+      const claseUpper = claseNormalizada.toUpperCase();
+      
+      if (claseUpper.includes('EJECUTIVO')) {
+        claseNormalizada = 'EJECUTIVO';
+      } else if (claseUpper.includes('VERBAL') || claseUpper.includes('RESTITUCION')) {
+        claseNormalizada = 'RESTITUCIÓN';
+      }
 
-    this.supportService.createTicket(
-      this.ticketData.subject, 
-      this.ticketData.content, 
-      { ...metadata }, 
-      this.ticketData.email
-    ).subscribe({
+      const configEtapa = getEtapaConfig(this.detalle?.etapaProcesal);
+      const etapaNormalizada = configEtapa ? configEtapa.nombreCliente : (this.detalle?.etapaProcesal || 'N/A');
+
+      const metadata = {
+        procesoId: this.procesoId!,
+        radicado: this.detalle?.numeroRadicacion,
+        cuenta: this.detalle?.codigoAlterno || 'N/A',
+        etapa: etapaNormalizada, 
+        clase: claseNormalizada  
+      };
+
+      const emailToSend = this.ticketData.email.toLowerCase().trim();
+
+      this.supportService.createTicket(
+        this.ticketData.subject, 
+        this.ticketData.content, 
+        { ...metadata }, 
+        emailToSend
+      ).subscribe({
       next: () => {
         this.isSendingTicket = false;
         this.closeSupportModal();
+
+        const mailIcon = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        `;
+
         AffiAlert.fire({ 
           icon: 'success', 
           title: 'Solicitud Recibida', 
           html: `
-            <p><strong>El equipo jurídico ha recibido los datos del proceso.</strong></p>
-            <p>📧 Te responderemos a: <strong>${this.ticketData.email}</strong></p>
-            <p style="margin-top: 12px; color: #666;">Revisa tu bandeja de entrada en los próximos minutos.</p>
+            <div style="color: #374151; font-size: 1rem;">
+              <p style="margin: 0 0 12px 0;">El equipo jurídico ha recibido los datos del proceso.</p>
+              
+              <div style="background: #f9fafb; padding: 10px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                ${mailIcon} 
+                <span>Te responderemos a: <strong style="color: #111827;">${emailToSend}</strong></span>
+              </div>
+
+              <p style="margin: 0; color: #9ca3af; font-size: 0.85em;">
+                Revisa tu bandeja de entrada en los próximos minutos.
+              </p>
+            </div>
           `
         });
       },

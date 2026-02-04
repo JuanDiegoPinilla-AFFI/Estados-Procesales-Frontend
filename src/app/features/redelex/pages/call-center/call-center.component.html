@@ -135,32 +135,51 @@
             <h4 class="section-title">Datos de Empresa</h4>
             <div class="fields-grid">
               <div class="form-field">
-                <label class="field-label">
-                  <i-feather name="hash"></i-feather>
-                  NIT (Busca en HubSpot)
-                </label>
+                <label class="field-label"><i-feather name="hash"></i-feather> NIT</label>
                 <div class="field-input-wrapper">
                   <input type="text" formControlName="companyNit" placeholder="Ej: 805000082">
-                  <span *ngIf="hubspotInfo.companyFound" class="status-icon">
-                    <i-feather name="check-circle"></i-feather>
-                  </span>
+                  <span *ngIf="hubspotInfo.companyFound" class="status-icon"><i-feather name="check-circle"></i-feather></span>
                 </div>
               </div>
               
               <div class="form-field">
-                <label class="field-label">
-                  <i-feather name="briefcase"></i-feather>
-                  Nombre Inmobiliaria
-                </label>
+                <label class="field-label"><i-feather name="briefcase"></i-feather> Nombre Inmobiliaria</label>
                 <input type="text" formControlName="companyName" [class.disabled]="hubspotInfo.companyFound">
               </div>
 
-              <div class="form-field">
-                <label class="field-label">
-                  <i-feather name="briefcase"></i-feather>
-                  Gerente Comercial
-                </label>
-                <input type="text" formControlName="gerenteComercial" [class.disabled]="hubspotInfo.companyFound">
+              <div class="form-field" *ngIf="form.get('cluster')?.value">
+                <label class="field-label"><i-feather name="grid"></i-feather> Cluster</label>
+                <input readonly type="text" formControlName="cluster" [class.disabled]="hubspotInfo.companyFound">
+              </div>
+
+              <div class="form-field" *ngIf="form.get('zona')?.value">
+                <label class="field-label"><i-feather name="map-pin"></i-feather> Zona</label>
+                <input readonly type="text" formControlName="zona" [class.disabled]="hubspotInfo.companyFound">
+              </div>
+
+              <div class="form-field" *ngIf="form.get('montoAfianzado')?.value">
+                <label class="field-label"><i-feather name="dollar-sign"></i-feather> Monto Afianzado</label>
+                <input readonly type="text" formControlName="montoAfianzado" [class.disabled]="hubspotInfo.companyFound">
+              </div>
+
+              <div class="form-field" *ngIf="form.get('contratos')?.value">
+                <label class="field-label"><i-feather name="file-text"></i-feather> Contratos</label>
+                <input readonly type="text" formControlName="contratos" [class.disabled]="hubspotInfo.companyFound">
+              </div>
+
+              <div class="form-field" *ngIf="form.get('gerenteCuenta')?.value">
+                <label class="field-label"><i-feather name="user-check"></i-feather> Gerente de Cuenta</label>
+                <input readonly type="text" formControlName="gerenteCuenta" [class.disabled]="hubspotInfo.companyFound">
+              </div>
+
+              <div class="form-field" *ngIf="form.get('directorComercial')?.value">
+                <label class="field-label"><i-feather name="award"></i-feather> Director Comercial</label>
+                <input readonly type="text" formControlName="directorComercial" [class.disabled]="hubspotInfo.companyFound">
+              </div>
+
+              <div class="form-field full-width" *ngIf="form.get('representanteLegal')?.value">
+                <label class="field-label"><i-feather name="shield"></i-feather> Representante Legal</label>
+                <input readonly type="text" formControlName="representanteLegal" [class.disabled]="hubspotInfo.companyFound">
               </div>
             </div>
           </div>
@@ -186,7 +205,7 @@
                   <i-feather name="user"></i-feather>
                   Nombre Completo
                 </label>
-                <input type="text" formControlName="contactName">
+                <input type="text" formControlName="contactName" [class.disabled]="hubspotInfo.contactFound">
               </div>
               
               <div class="form-field">
@@ -194,7 +213,15 @@
                   <i-feather name="phone"></i-feather>
                   Teléfono
                 </label>
-                <input type="text" formControlName="contactPhone" placeholder="+57 300 000 0000">
+                <input type="text" formControlName="contactPhone" placeholder="+57 300 000 0000" [class.disabled]="hubspotInfo.contactFound">
+              </div>
+
+              <div class="form-field" *ngIf="form.get('contactAffi')?.value">
+                <label class="field-label">
+                  <i-feather name="briefcase"></i-feather>
+                  Cargo
+                </label>
+                <input readonly type="text" formControlName="contactAffi" [class.disabled]="hubspotInfo.contactFound">
               </div>
             </div>
           </div>
@@ -252,14 +279,13 @@
             </p>
           </div>
 
-          <!-- Búsqueda de procesos -->
           <div class="search-section">
             <div class="form-field">
               <label class="field-label">
                 <i-feather name="credit-card"></i-feather>
                 Cédula Inquilino / Demandado
               </label>
-              <input type="text" formControlName="inquilinoIdentificacion" placeholder="Buscar en Redelex...">
+              <input type="text" formControlName="inquilinoIdentificacion" placeholder="Buscar en Redelex..." (keyup.enter)="buscarProcesos()">
             </div>
             <button type="button" (click)="buscarProcesos()" class="search-btn" [disabled]="loading">
               <span *ngIf="loading" class="btn-spinner"></span>
@@ -268,38 +294,85 @@
             </button>
           </div>
 
-          <!-- Tabla de resultados -->
-          <div *ngIf="procesosEncontrados.length > 0" class="procesos-table-wrapper">
-            <table class="procesos-table">
-              <thead>
-                <tr>
-                  <th>ID Proceso</th>
-                  <th>Radicado</th>
-                  <th>Cuenta</th>
-                  <th>Inquilino</th>
-                  <th>Clase Proceso</th>
-                  <th>Etapa Procesal</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let proc of procesosEncontrados">
-                  <td class="cell-radicado">{{ proc.procesoId }}</td>
-                  <td class="cell-radicado">{{ proc.numeroRadicacion }}</td>
-                  <td class="cell-radicado">{{ proc.codigoAlterno }}</td>
-                  <td>{{ proc.demandadoNombre }}</td>
-                  <td>{{ proc.claseProceso }}</td>
-                  <td class="cell-etapa">{{ proc.etapaProcesal }}</td>
-                  <td style="text-align: right;">
-                    <button type="button" (click)="seleccionarProceso(proc)" class="select-btn">
-                      Seleccionar
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div *ngIf="procesosEncontrados.length > 0" class="results-container">
+            <div class="table-filter-bar">
+              <div class="filter-input-wrapper">
+                <i-feather name="filter" class="filter-icon"></i-feather>
+                <input 
+                  type="text" 
+                  [(ngModel)]="filterProcesosTerm" 
+                  [ngModelOptions]="{standalone: true}" 
+                  (ngModelChange)="currentPage = 1" 
+                  placeholder="Filtrar resultados por nombre, radicado o cuenta..."
+                >
+              </div>
+              <span class="results-count">
+                <strong>{{ filteredProcesos.length }}</strong> procesos encontrados
+              </span>
+            </div>
+
+            <div class="procesos-table-wrapper">
+              <table class="procesos-table">
+                <thead>
+                  <tr>
+                    <th>ID Proceso</th>
+                    <th>Radicado</th>
+                    <th>Cuenta</th>
+                    <th>Inquilino</th>
+                    <th>Cédula</th>
+                    <th>Clase Proceso</th>
+                    <th>Etapa Procesal</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let proc of paginatedProcesos">
+                    <td class="cell-radicado">{{ proc.procesoId }}</td>
+                    <td class="cell-radicado">{{ proc.numeroRadicacion }}</td>
+                    <td class="cell-radicado">{{ proc.codigoAlterno }}</td>
+                    <td>{{ proc.demandadoNombre }}</td>
+                    <td class="cell-radicado">{{ proc.demandadoIdentificacion }}</td>
+                    <td>{{ proc.claseProceso }}</td>
+                    <td class="cell-etapa">{{ proc.etapaProcesal }}</td>
+                    <td style="text-align: right;">
+                      <button type="button" (click)="seleccionarProceso(proc)" class="select-btn">
+                        Seleccionar
+                      </button>
+                    </td>
+                  </tr>
+                  
+                  <tr *ngIf="paginatedProcesos.length === 0">
+                    <td colspan="7" class="empty-state">
+                      No hay coincidencias con tu filtro.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination-controls" *ngIf="filteredProcesos.length > itemsPerPage">
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === 1" 
+                (click)="changePage(-1)">
+                <i-feather name="chevron-left"></i-feather> Anterior
+              </button>
+              
+              <span class="page-info">
+                Página <strong>{{ currentPage }}</strong> de <strong>{{ totalPages }}</strong>
+              </span>
+              
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === totalPages" 
+                (click)="changePage(1)">
+                Siguiente <i-feather name="chevron-right"></i-feather>
+              </button>
+            </div>
           </div>
-          
+          <br>
           <!-- Proceso seleccionado -->
           <div *ngIf="selectedProceso" class="selected-proceso-alert">
             <i-feather name="check-circle"></i-feather>

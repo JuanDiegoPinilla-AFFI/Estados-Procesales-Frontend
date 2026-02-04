@@ -14,7 +14,7 @@ import {
   PhoneOutgoing, ChevronLeft, ChevronRight, ArrowDownLeft, ArrowUpRight, PhoneCall,
   Layers, Bell, Clock, Calendar, CheckCircle, Award, TrendingUp, Activity, Briefcase,
   UserX, UserCheck, Database, Eye, Download, EyeOff, ChevronDown, Home, UploadCloud,
-  RefreshCw, ShieldOff, AlertCircle, XCircle
+  RefreshCw, ShieldOff, AlertCircle, XCircle, MapPin, DollarSign, Grid, Filter, AlertTriangle
 } from 'angular-feather/icons';
 
 registerLocaleData(localeEsCo, 'es-CO');
@@ -32,7 +32,7 @@ export const appConfig: ApplicationConfig = {
         ArrowUpRight, Bell, PhoneForwarded, ChevronLeft, ChevronRight, PhoneIncoming,
         PhoneOutgoing, PhoneCall, Clock, Calendar, Layers, Award, CheckCircle, TrendingUp,
         Activity, Briefcase, UserX, UserCheck, Database, Eye, EyeOff, ChevronDown, Home,
-        UploadCloud, RefreshCw, ShieldOff, AlertCircle, XCircle
+        UploadCloud, RefreshCw, ShieldOff, AlertCircle, XCircle, MapPin, DollarSign, Grid, Filter, AlertTriangle
       })
     ),
     { provide: LOCALE_ID, useValue: 'es-CO' }

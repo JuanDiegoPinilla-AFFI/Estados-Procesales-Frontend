@@ -749,25 +749,26 @@
   }
 
   .value {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+
     font-size: var(--font-size-base);
     font-weight: var(--font-bold);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-    color: #065f46;
     border-radius: var(--border-radius-md);
-    border-left: 4px solid #10b981;
+    border-left: 4px solid transparent;
     transition: all var(--transition-fast);
-    position: relative;
-    overflow: hidden;
 
-    &::before {
-      content: '✓';
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 20px;
-      opacity: 0.2;
+    .value__icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      opacity: 0.95;
+    }
+
+    .value__text {
+      line-height: 1;
     }
 
     &:hover {
@@ -775,14 +776,28 @@
       box-shadow: var(--shadow-sm);
     }
 
-    &.pending {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    &.pendiente {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      color: #374151;
+      border-left-color: #9ca3af;
+    }
+
+    &.favor {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      color: #065f46;
+      border-left-color: #10b981;
+    }
+
+    &.contra {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      color: #991b1b;
+      border-left-color: #ef4444;
+    }
+
+    &.parcial {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
       color: #92400e;
       border-left-color: #f59e0b;
-
-      &::before {
-        content: '⏳';
-      }
     }
   }
 
@@ -1316,11 +1331,17 @@
   }
 }
 
-// Estilo para el mensaje del email Santiago Obando
 .email-hint {
-  display: block;
-  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
   color: var(--color-primary);
   font-size: 0.8rem;
   font-weight: 500;
+  line-height: 1;
+
+  svg {
+    flex-shrink: 0;
+  }
 }

@@ -197,13 +197,30 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
       next: () => {
         this.isSendingTicket = false;
         this.closeSupportModal();
+
+        const mailIcon = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        `;
+
         AffiAlert.fire({ 
           icon: 'success', 
           title: 'Solicitud Recibida', 
           html: `
-            <p><strong>El equipo de servicio al cliente te atenderá pronto.</strong></p>
-            <p>📧 Te responderemos a: <strong>${emailToSend}</strong></p>
-            <p style="margin-top: 12px; color: #666;">Revisa tu bandeja de entrada en los próximos minutos.</p>
+            <div style="color: #374151; font-size: 1rem;">
+              <p style="margin: 0 0 12px 0;">El equipo de servicio al cliente te atenderá pronto.</p>
+              
+              <div style="background: #f9fafb; padding: 10px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                ${mailIcon} 
+                <span>Te responderemos a: <strong style="color: #111827;">${emailToSend}</strong></span>
+              </div>
+
+              <p style="margin: 0; color: #9ca3af; font-size: 0.85em;">
+                Revisa tu bandeja de entrada en los próximos minutos.
+              </p>
+            </div>
           `
         });
         
