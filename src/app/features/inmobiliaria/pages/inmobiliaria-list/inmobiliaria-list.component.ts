@@ -492,8 +492,9 @@ export class InmobiliariaListComponent implements OnInit {
     await new Promise(r => setTimeout(r, 100));
 
     try {
-      const ExcelJS = await import('exceljs');
-      const workbook = new ExcelJS.Workbook();
+      const ExcelJSModule = await import('exceljs');
+      const Excel = ExcelJSModule.default;
+      const workbook = new Excel.Workbook();
       const sheet = workbook.addWorksheet('Inmobiliarias');
       const activeColumns = this.exportColumns.filter(c => c.selected);
 

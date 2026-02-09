@@ -335,9 +335,9 @@ export class DetalleProcesoComponent implements OnInit {
         });
         return;
       }
-
-      const ExcelJS = await import('exceljs');
-      const workbook = new ExcelJS.Workbook();
+      const ExcelJSModule = await import('exceljs');
+      const Excel = ExcelJSModule.default;
+      const workbook = new Excel.Workbook();
       const sheet = workbook.addWorksheet('Ficha Técnica');
 
       sheet.getColumn(1).width = 30; 

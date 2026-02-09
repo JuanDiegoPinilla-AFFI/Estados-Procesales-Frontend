@@ -652,9 +652,10 @@ export class ConsultarProcesoComponent implements OnInit {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      const ExcelJS = await import('exceljs');  
+      const ExcelJSModule = await import('exceljs');
+      const Excel = ExcelJSModule.default;  
       const rows = this.buildExportRows();
-      const workbook = new ExcelJS.Workbook();
+      const workbook = new Excel.Workbook();
       const sheet = workbook.addWorksheet('Detalle proceso');
 
       try {

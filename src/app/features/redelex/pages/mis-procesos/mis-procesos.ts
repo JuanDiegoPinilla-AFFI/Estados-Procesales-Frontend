@@ -377,8 +377,9 @@ export class MisProcesosComponent implements OnInit {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     try {
-      const ExcelJS = await import('exceljs');
-      const workbook = new ExcelJS.Workbook();
+      const ExcelJSModule = await import('exceljs');
+      const Excel = ExcelJSModule.default;
+      const workbook = new Excel.Workbook();
       const activeColumns = this.exportColumns.filter(c => c.selected);
       const sheet = workbook.addWorksheet('Mis Procesos');
       const allBoxes = this.getResumenBoxes();
