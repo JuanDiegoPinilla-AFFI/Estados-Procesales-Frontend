@@ -64,7 +64,7 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadUserData();
-
+    this.supportService.identifyUser();
     this.selectRandomTip();
     
     this.authService.refreshUserProfile()
@@ -365,6 +365,8 @@ export class ShellLayoutComponent implements OnInit, OnDestroy {
   }
 
   logout() {
+    this.supportService.clearIdentity(); 
+
     this.authService.logout().subscribe({
       next: () => {
         this.router.navigate(['/auth/login']);

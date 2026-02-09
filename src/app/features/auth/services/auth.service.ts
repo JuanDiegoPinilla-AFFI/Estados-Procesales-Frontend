@@ -26,6 +26,7 @@ export interface UserData {
     name?: string;
     email?: string;
     role?: string;
+    nit?: string;
     permissions?: string[];
 }
 
@@ -77,6 +78,7 @@ export class AuthService {
       name: userData.name || userData.nombre || '',
       email: userData.email || '',
       role: userData.role || userData.rol || 'inmobiliaria',
+      nit: userData.nit || undefined,
       permissions: userData.permissions || []
     };
     localStorage.setItem('redelex_user', JSON.stringify(normalizedData));
