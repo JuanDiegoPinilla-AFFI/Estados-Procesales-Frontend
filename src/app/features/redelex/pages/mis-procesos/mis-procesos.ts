@@ -5,12 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { RedelexService } from '../../services/redelex.service';
 import { Title } from '@angular/platform-browser';
-import * as ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
+import type * as ExcelJS from 'exceljs';
 
 registerLocaleData(localeEsCo, 'es-CO');
 
@@ -379,8 +377,9 @@ export class MisProcesosComponent implements OnInit {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     try {
-      const activeColumns = this.exportColumns.filter(c => c.selected);
+      const ExcelJS = await import('exceljs');
       const workbook = new ExcelJS.Workbook();
+      const activeColumns = this.exportColumns.filter(c => c.selected);
       const sheet = workbook.addWorksheet('Mis Procesos');
       const allBoxes = this.getResumenBoxes();
       const midPoint = Math.ceil(allBoxes.length / 2);
@@ -538,6 +537,8 @@ export class MisProcesosComponent implements OnInit {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
       const activeColumns = this.exportColumns.filter(c => c.selected);
       const etapaColIndex = activeColumns.findIndex(c => c.key === 'etapaProcesal');
       const allBoxes = this.getResumenBoxes();

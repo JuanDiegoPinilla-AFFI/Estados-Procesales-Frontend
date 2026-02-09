@@ -8,9 +8,7 @@ import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { FeatherModule } from 'angular-feather';
 import { RegisterPayload } from '../../../auth/services/auth.service';
 import { Title } from '@angular/platform-browser';
-import * as ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 
 @Component({
@@ -327,6 +325,7 @@ loadEstadisticasInmoUsuarios() {
     await new Promise(r => setTimeout(r, 100));
 
     try {
+      const ExcelJS = await import('exceljs');
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Usuarios');
       const activeColumns = this.exportColumns.filter(c => c.selected);
@@ -377,6 +376,8 @@ loadEstadisticasInmoUsuarios() {
     }
 
     try {
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
       const doc = new jsPDF('landscape', 'mm', 'a4');
       const activeColumns = this.exportColumns.filter(c => c.selected);
 

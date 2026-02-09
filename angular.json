@@ -18,11 +18,20 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "allowedCommonJsDependencies": [
+              "exceljs",
+              "file-saver",
+              "sweetalert2",
+              "html2canvas",
+              "jspdf",
+              "canvg",
+              "raf",
+              "rgbcolor",
+              "core-js"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -44,8 +53,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "3MB",
-                  "maximumError": "6MB"
+                  "maximumWarning": "700kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",

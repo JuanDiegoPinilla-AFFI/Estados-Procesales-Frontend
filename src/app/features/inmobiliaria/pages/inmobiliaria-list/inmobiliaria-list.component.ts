@@ -4,12 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { FeatherModule } from 'angular-feather';
 import { Title } from '@angular/platform-browser';
-import * as ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 import { InmobiliariaService, Inmobiliaria, ImportResult, InmobiliariaEstadisticasProcesos } from '../../services/inmobiliaria.service';import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { AuthService } from '../../../auth/services/auth.service';
+import type * as ExcelJS from 'exceljs';
 
 @Component({
   selector: 'app-inmobiliaria-list',
@@ -494,6 +492,7 @@ export class InmobiliariaListComponent implements OnInit {
     await new Promise(r => setTimeout(r, 100));
 
     try {
+      const ExcelJS = await import('exceljs');
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Inmobiliarias');
       const activeColumns = this.exportColumns.filter(c => c.selected);
@@ -673,6 +672,8 @@ export class InmobiliariaListComponent implements OnInit {
     await new Promise(r => setTimeout(r, 100));
 
     try {
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
       const doc = new jsPDF('landscape', 'mm', 'a4');
       const activeColumns = this.exportColumns.filter(c => c.selected);
 

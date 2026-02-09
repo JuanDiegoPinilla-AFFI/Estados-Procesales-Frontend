@@ -4,15 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { RedelexService, ProcesoDetalleDto, AbogadoDto, SujetosDto, MedidasDto } from '../../services/redelex.service';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 import { UserOptions } from 'jspdf-autotable';
 import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe';
-// CORRECCIÓN 1: Se agregó un '../' adicional para llegar a la carpeta features correcta
 import { InmobiliariaService } from '../../../inmobiliaria/services/inmobiliaria.service';
+import type * as ExcelJS from 'exceljs';
 
 interface ProcesoPorCedula {
   procesoId: number;
@@ -655,6 +652,7 @@ export class ConsultarProcesoComponent implements OnInit {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
+      const ExcelJS = await import('exceljs');  
       const rows = this.buildExportRows();
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Detalle proceso');
@@ -757,6 +755,8 @@ export class ConsultarProcesoComponent implements OnInit {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
       const p = this.proceso;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();

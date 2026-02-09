@@ -5,15 +5,13 @@ import { RedelexService } from '../../services/redelex.service';
 import { Title } from '@angular/platform-browser';
 import { SupportService } from '../../../../core/services/support.service';
 import { ClaseProcesoPipe } from '../../../../shared/pipes/clase-proceso.pipe';
-import * as ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AFFI_LOGO_BASE64 } from '../../../../shared/assets/affi-logo-base64';
 import { getEtapaConfig, getEtapasParaStepper, EtapaProcesal } from './etapas-procesales.config';
 import { AffiAlert } from '../../../../shared/services/affi-alert';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../auth/services/auth.service';
 import { FeatherModule } from "angular-feather";
+import type * as ExcelJS from 'exceljs';
 
 type SubjectOption = { label: string; value: string };
 
@@ -338,6 +336,7 @@ export class DetalleProcesoComponent implements OnInit {
         return;
       }
 
+      const ExcelJS = await import('exceljs');
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Ficha Técnica');
 
@@ -490,6 +489,8 @@ export class DetalleProcesoComponent implements OnInit {
         });
         return;
       }
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
       const doc = new jsPDF('p', 'mm', 'a4'); 
       const pageWidth = doc.internal.pageSize.width;
       const margin = 15;
