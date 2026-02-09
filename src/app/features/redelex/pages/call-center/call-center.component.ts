@@ -70,7 +70,8 @@ export class CallCenterComponent {
       inquilinoIdentificacion: [''],
       inquilinoNombre: [''],
       cuenta: [''],
-      procesoId: ['']
+      procesoId: [''],
+      response: ['', Validators.required]
     });
 
     this.setupAutocomplete();
@@ -367,6 +368,16 @@ ngOnInit() {
   }
 
   submit() {
+    if (this.currentStep === 4 && this.form.get('response')?.invalid) {
+      AffiAlert.fire({
+        icon: 'warning',
+        title: 'Falta información',
+        text: 'Debe ingresar la respuesta a la consulta.',
+        timer: 2500
+      });
+      return;
+    }
+
     if (this.form.invalid) {
       AffiAlert.fire({
         icon: 'warning',
@@ -390,6 +401,7 @@ ngOnInit() {
       claseProceso: this.selectedProceso?.claseProceso, 
       etapaProcesal: this.selectedProceso?.etapaProcesal,
       query: this.form.get('query')?.value,
+      response: this.form.get('response')?.value,
       procesoId: this.form.get('procesoId')?.value,
       cuenta: this.form.get('cuenta')?.value,
       inquilinoIdentificacion: this.form.get('inquilinoIdentificacion')?.value,

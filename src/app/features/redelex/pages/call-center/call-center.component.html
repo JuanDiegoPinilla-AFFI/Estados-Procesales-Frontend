@@ -372,16 +372,26 @@
               </button>
             </div>
           </div>
-          <br>
+
           <!-- Proceso seleccionado -->
           <div *ngIf="selectedProceso" class="selected-proceso-alert">
             <i-feather name="check-circle"></i-feather>
             <p class="alert-text">
-              Proceso seleccionado: <strong>{{ selectedProceso.claseProceso }}</strong> ({{ selectedProceso.etapaProcesal }})
+              Proceso seleccionado: <strong>{{ selectedProceso.procesoId }}</strong> - <strong>{{ selectedProceso.claseProceso }}</strong> ({{ selectedProceso.etapaProcesal }})
             </p>
           </div>
+          <br>
+          <div class="form-field">
+            <label class="field-label">
+              <i-feather name="edit-3"></i-feather>
+              Respuesta de la Consulta / Solicitud
+            </label>
+            <textarea 
+              formControlName="response" 
+              rows="8" 
+              placeholder="Escriba aquí la respuesta a la consulta..."></textarea>
+          </div>
         </div>
-
       </form>
     </div>
 
