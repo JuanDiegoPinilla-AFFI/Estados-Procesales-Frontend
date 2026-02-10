@@ -71,7 +71,8 @@ export class CallCenterComponent {
       inquilinoNombre: [''],
       cuenta: [''],
       procesoId: [''],
-      response: ['', Validators.required]
+      response: ['', Validators.required],
+      sendEmailCopy: [true]
     });
 
     this.setupAutocomplete();
@@ -405,7 +406,8 @@ ngOnInit() {
       procesoId: this.form.get('procesoId')?.value,
       cuenta: this.form.get('cuenta')?.value,
       inquilinoIdentificacion: this.form.get('inquilinoIdentificacion')?.value,
-      inquilinoNombre: this.form.get('inquilinoNombre')?.value
+      inquilinoNombre: this.form.get('inquilinoNombre')?.value,
+      sendNotification: this.form.get('sendEmailCopy')?.value
     };
 
     this.http.post(`${this.apiUrl}/support/call-ticket`, payload).subscribe({
