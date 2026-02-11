@@ -391,10 +391,11 @@
               rows="8" 
               placeholder="Escriba aquí la respuesta a la consulta..."></textarea>
           </div>
-          <div class="checkbox-wrapper" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <input type="checkbox" id="sendEmailCopy" formControlName="sendEmailCopy" style="width: auto;">
-            <label for="sendEmailCopy" style="cursor: pointer; color: var(--color-gray-700); font-weight: 500;">
-              Enviar copia de la consulta y respuesta al correo del cliente (<strong>{{ form.get('contactEmail')?.value }}</strong>)
+          <div class="email-copy-container">
+            <input type="checkbox" id="sendEmailCopy" formControlName="sendEmailCopy">
+            <label for="sendEmailCopy">
+              Enviar copia de la consulta y respuesta al correo del cliente 
+              <span class="client-email">({{ form.get('contactEmail')?.value }})</span>
             </label>
           </div>
         </div>

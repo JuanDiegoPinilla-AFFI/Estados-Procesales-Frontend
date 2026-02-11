@@ -1083,3 +1083,61 @@ input.disabled {
   color: var(--color-gray-500);
   font-style: italic;
 }
+
+.email-copy-container {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+    
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:active {
+      transform: scale(0.85);
+    }
+  }
+
+  label {
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    color: var(--color-gray-700);
+    user-select: none;
+    
+    transition: color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+
+    .client-email {
+      font-weight: var(--font-semibold);
+      margin-left: 0.25rem;
+      color: var(--color-primary); 
+    }
+
+    &:hover {
+      color: var(--color-primary);
+      
+      transform: translateX(4px);
+    }
+  }
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.email-copy-container {
+  animation: fadeInSlide 0.4s ease-out forwards;
+}
