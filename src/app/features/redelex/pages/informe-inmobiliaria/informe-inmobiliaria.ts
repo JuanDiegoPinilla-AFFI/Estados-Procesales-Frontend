@@ -238,15 +238,27 @@ export class InformeInmobiliariaComponent implements OnInit {
       next: (response) => {
         const datosLimpios = (response.data || []).map(item => {
           const newItem = { ...item };
+
+          // 1. Limpiar Nombre Demandado
           if (newItem.demandadoNombre && newItem.demandadoNombre.includes(',')) {
             newItem.demandadoNombre = newItem.demandadoNombre.split(',')[0].trim();
           }
+
+          // 2. Limpiar ID Demandado
           if (newItem.demandadoIdentificacion && newItem.demandadoIdentificacion.includes(',')) {
             newItem.demandadoIdentificacion = newItem.demandadoIdentificacion.split(',')[0].trim();
           }
+
+          // 3. Limpiar Nombre Demandante
           if (newItem.demandanteNombre && newItem.demandanteNombre.includes(',')) {
             newItem.demandanteNombre = newItem.demandanteNombre.split(',')[0].trim();
           }
+
+          // 4. Limpiar ID Demandante (Esto faltaba)
+          if (newItem.demandanteIdentificacion && newItem.demandanteIdentificacion.includes(',')) {
+            newItem.demandanteIdentificacion = newItem.demandanteIdentificacion.split(',')[0].trim();
+          }
+
           return newItem;
         });
         
