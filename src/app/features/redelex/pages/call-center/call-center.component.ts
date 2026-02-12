@@ -379,6 +379,16 @@ ngOnInit() {
       return;
     }
 
+    if (!this.selectedProceso) {
+      AffiAlert.fire({
+        icon: 'warning',
+        title: 'Proceso requerido',
+        text: 'Debe buscar y seleccionar un proceso de la lista para poder finalizar.',
+        timer: 3000
+      });
+      return;
+    }
+
     if (this.form.invalid) {
       AffiAlert.fire({
         icon: 'warning',
