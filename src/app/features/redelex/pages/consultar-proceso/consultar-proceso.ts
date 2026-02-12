@@ -206,6 +206,21 @@ export class ConsultarProcesoComponent implements OnInit {
     }
   }
 
+  validarNumeros(event: any, campo: 'identificacion' | 'procesoId') {
+    const input = event.target as HTMLInputElement;
+    const valorLimpio = input.value.replace(/[^0-9]/g, '');
+
+    if (input.value !== valorLimpio) {
+      input.value = valorLimpio;
+    }
+
+    if (campo === 'identificacion') {
+      this.identificacion = valorLimpio;
+    } else if (campo === 'procesoId') {
+      this.procesoId = valorLimpio ? Number(valorLimpio) : null;
+    }
+  }
+
   formatMoney(value?: number | string): string {
     if (value === null || value === undefined || value === '') return '-';
 

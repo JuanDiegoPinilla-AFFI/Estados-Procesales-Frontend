@@ -15,8 +15,9 @@
           type="text"
           placeholder="Ej: 63560272"
           [(ngModel)]="identificacion"
+          (input)="validarNumeros($event, 'identificacion')" 
         />
-      </label>
+        </label>
 
       <button class="btn btn--primary" (click)="buscarPorCedula()">
         Buscar procesos
@@ -32,9 +33,10 @@
         <span class="field__label">ID del proceso</span>
         <input
           class="field__input"
-          type="number"
+          type="text"
           placeholder="Ej: 398059"
           [(ngModel)]="procesoId"
+          (input)="validarNumeros($event, 'procesoId')"
         />
       </label>
 
